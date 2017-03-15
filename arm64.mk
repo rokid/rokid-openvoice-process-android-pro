@@ -11,6 +11,7 @@ LOCAL_SHARED_LIBRARIES := \
 		liblog \
 		libutils 
 
+THIRD_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_MODULE := runtime
 LOCAL_MULTILIB := 32
 LOCAL_ARM_MODE := arm
