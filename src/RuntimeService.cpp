@@ -10,7 +10,10 @@ using namespace siren;
 
 bool RuntimeService::init(){
 	SirenService* siren_service = new SirenService();
-	siren_service->init(this);
+	if(!siren_service->init(this)){
+		ALOGE("init siren failed.");
+		return false;
+	}
 
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
 	pthread_join(siren_thread, NULL);

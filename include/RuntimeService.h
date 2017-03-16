@@ -16,9 +16,13 @@ class RuntimeService : public BnRuntimeService{
 	public:
 		class VoiceMessage{
 			public:
+				void* buff;
 				int length;
 				siren_event_t event;
-				void* buff;
+				int has_voice;
+				int has_voiceprint;
+				int has_sl;
+				double sl_degree;
 		};
 		static char const* getServiceName(){
 			return "RuntimeService";
