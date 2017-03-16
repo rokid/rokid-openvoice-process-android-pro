@@ -1,5 +1,5 @@
-#ifndef IRKRUNTIME_SERVICE_H
-#define IRKRUNTIME_SERVICE_H
+#ifndef IRUNTIME_SERVICE_H
+#define IRUNTIME_SERVICE_H
 
 #include <binder/IInterface.h>
 #include <binder/Parcel.h>
@@ -11,14 +11,14 @@ enum{
 	TRANSACTION_SIREN_NLP = 1
 };
 
-class IRKRuntimeService : public IInterface {
+class IRuntimeService : public IInterface {
 	public:	
-		DECLARE_META_INTERFACE(RKRuntimeService);
+		DECLARE_META_INTERFACE(RuntimeService);
 };
 
-class BnRKRuntimeService : public BnInterface<IRKRuntimeService> {
+class BnRuntimeService : public BnInterface<IRuntimeService> {
 	public:	
 		virtual status_t onTransact(uint32_t code, const Parcel &data, Parcel *reply, uint32_t flag = 0);
 };
 
-#endif // IRKRUNTIME_SERVICE_H
+#endif // IRUNTIME_SERVICE_H
