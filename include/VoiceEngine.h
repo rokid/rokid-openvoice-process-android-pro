@@ -1,18 +1,18 @@
-#ifndef SIREN_SERVICE_H
-#define SIREN_SERVICE_H
+#ifndef VOICE_ENGINE_H
+#define VOICE_ENGINE_H
 
 #include "RuntimeService.h"
 #include "mic/mic_array.h"
 
 namespace siren{
 
-class SirenService{
+class VoiceEngine{
 	public:
 		bool init(RuntimeService*);
+		void set_siren_state_change(int state);
 		RuntimeService* runtime_service;
 	private:
 		siren_t _siren;
-		siren_state_changed_callback_t siren_state_change;
 };
 
 int init_input(void*);
@@ -36,4 +36,4 @@ void voice_event_callback(void* token, int length, siren_event_t event,
 
 } // namespace siren
 
-#endif // SIREN_SERVICE_H
+#endif // VOICE_ENGINE_H

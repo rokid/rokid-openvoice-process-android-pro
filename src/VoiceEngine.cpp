@@ -1,9 +1,9 @@
-#define LOG_TAG "SirenService"
+#define LOG_TAG "VoiceEngine"
 #define LOG_NDEBUG 0
 
 #include <string.h>
 #include <hardware/hardware.h>
-#include "include/SirenService.h"
+#include "include/VoiceEngine.h"
 
 using namespace siren;
 using namespace android;
@@ -23,11 +23,15 @@ siren_proc_callback_t siren_callback = {
 	voice_event_callback
 };
 
+siren_state_changed_callback_t siren_state_change = {
+	state_changed_callback
+};
+
 static inline int mic_array_device_open(const hw_module_t *module, struct mic_array_device_t **device){
 	return module->methods->open(module, MIC_ARRAY_HARDWARE_MODULE_ID, (struct hw_device_t **)device);
 }
 
-bool SirenService::init(RuntimeService *runtime){
+bool VoiceEngine::init(RuntimeService *runtime){
 	this->runtime_service = runtime;
 
 	//1. open mic driver.
@@ -46,9 +50,12 @@ bool SirenService::init(RuntimeService *runtime){
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
 	//4 set siren state
-	siren_state_change.state_changed_callback = state_changed_callback;
-	set_siren_state(_siren, SIREN_STATE_SLEEP, &siren_state_change);
+	set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
+}
+
+void VoiceEngine::set_siren_state_change(int state){
+	set_siren_state(_siren, state, &siren_state_change);
 }
 
 int siren::init_input(void *token){
@@ -94,7 +101,7 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 	RuntimeService *runtime_service = (RuntimeService*)token;
 	
 	pthread_mutex_lock(runtime_service->siren_mutex);
-	if(has_voice && length > 0){
+//	if(has_voice && length > 0){
 		//add to siren_queue
 		RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
 		memcpy(voice_msg->buff, buff, length);	
@@ -107,7 +114,7 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 
 		runtime_service->voice_queue.push_front(voice_msg);
 		pthread_cond_signal(runtime_service->siren_cond);
-	}
+//	}
 	pthread_mutex_unlock(runtime_service->siren_mutex);
 }
 

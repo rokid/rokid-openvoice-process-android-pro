@@ -23,13 +23,24 @@ class RuntimeService : public BnRuntimeService{
 				int has_voiceprint;
 				int has_sl;
 				double sl_degree;
+
+				int id = -1;
 		};
+
+		enum{
+			SIREN_STATE_UNKNOW = 0,
+			SIREN_STATE_AWAKE,
+			SIREN_STATE_SLEEP,
+		};
+		int current_status = SIREN_STATE_UNKNOW;
+
 		static char const* getServiceName(){
 			return "RuntimeService";
 		}
-		~RuntimeService(){
-		}
+		~RuntimeService();
 		bool init();
+		void set_siren_state(const int&);
+		int get_siren_state();
 
 		pthread_mutex_t *siren_mutex;
 		pthread_cond_t *siren_cond;

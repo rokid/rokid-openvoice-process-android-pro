@@ -4,7 +4,8 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := \
 		src/IRuntimeService.cpp \
 		src/RuntimeService.cpp \
-		src/SirenService.cpp \
+		src/VoiceEngine.cpp \
+		src/ASRTaker.cpp \
 		src/runtime_main.cpp
 
 LOCAL_SHARED_LIBRARIES := \

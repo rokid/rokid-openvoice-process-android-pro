@@ -2,15 +2,18 @@
 #define LOG_NDEBUG 0
 
 #include "include/RuntimeService.h"
-#include "include/SirenService.h"
+#include "include/VoiceEngine.h"
+//#include "include/asr.h"
 
 using namespace android;
 using namespace std;
 using namespace siren;
 
+VoiceEngine *voice_engine;
+
 bool RuntimeService::init(){
-	SirenService* siren_service = new SirenService();
-	if(!siren_service->init(this)){
+	voice_engine = new VoiceEngine();
+	if(!voice_engine->init(this)){
 		ALOGE("init siren failed.");
 		return false;
 	}
@@ -21,15 +24,58 @@ bool RuntimeService::init(){
 	return true;
 }
 
+void RuntimeService::set_siren_state(const int &state){
+	current_status = state;
+	voice_engine->set_siren_state_change(state);
+}
+
+int RuntimeService::get_siren_state(){
+	return current_status;
+}
+
+RuntimeService::~RuntimeService(){
+	free(voice_engine);
+}
+
 void* siren_thread_loop(void* arg){
 	RuntimeService *runtime_service = (RuntimeService*)arg;
+	int id = -1;
 	for(;;){
 		pthread_mutex_lock(runtime_service->siren_mutex);
 		if(runtime_service->voice_queue.empty()){
 			pthread_cond_wait(runtime_service->siren_cond, runtime_service->siren_mutex);
 		}
-		RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
+		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
+		ALOGV("event   >>>   %d", voice_msg->event);
 		//send to speech
+		switch(voice_msg->event){
+			case SIREN_EVENT_WAKE_CMD:
+				runtime_service->current_status = SIREN_STATE_AWAKE;
+				break;
+			case SIREN_EVENT_WAKE_NOCMD:
+			case SIREN_EVENT_SLEEP:
+				runtime_service->current_status = SIREN_STATE_SLEEP;
+				break;
+			case SIREN_EVENT_VAD_START:
+			case SIREN_EVENT_WAKE_VAD_START:
+				//id = start(NULL);
+				break;
+			case SIREN_EVENT_VAD_DATA:
+			case SIREN_EVENT_WAKE_VAD_DATA:
+				//voice(id, voice_msg->buff, voice_msg->length);
+				break;
+			case SIREN_EVENT_VAD_END:
+			case SIREN_EVENT_WAKE_VAD_END:
+				//end(id);
+				break;
+			case SIREN_EVENT_VAD_CANCEL:
+			case SIREN_EVENT_WAKE_CANCEL:
+				//cancel(id);
+				break;
+			case SIREN_EVENT_WAKE_PRE:
+				//prepare();
+				break;
+		}
 		pthread_mutex_unlock(runtime_service->siren_mutex);
 	}
 

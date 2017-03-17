@@ -1,0 +1,6 @@
+#ifndef SPEECH_SERVICE_H
+#define SPEECH_SERVICE_H
+
+
+
+#endif // SPEECH_SERVICE_H

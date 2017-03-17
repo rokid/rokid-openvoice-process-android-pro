@@ -7,13 +7,15 @@
 using namespace android;
 
 enum{
-	TRANSACTION_SPEECH_NLP = 0,
-	TRANSACTION_SIREN_NLP = 1
+	TRANSACTION_SET_SIREN_STATUS = 0x00,
+	TRANSACTION_GET_SIREN_STATUS,
 };
 
 class IRuntimeService : public IInterface {
 	public:	
 		DECLARE_META_INTERFACE(RuntimeService);
+		virtual void set_siren_state(const int&) = 0;
+		virtual int get_siren_state() = 0;
 };
 
 class BnRuntimeService : public BnInterface<IRuntimeService> {
