@@ -3,7 +3,6 @@
 
 #include "include/RuntimeService.h"
 #include "include/VoiceEngine.h"
-//#include "include/asr.h"
 
 using namespace android;
 using namespace std;
@@ -20,16 +19,17 @@ bool RuntimeService::init(){
 
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
 	pthread_join(siren_thread, NULL);
-
 	return true;
 }
 
 void RuntimeService::set_siren_state(const int &state){
 	current_status = state;
 	voice_engine->set_siren_state_change(state);
+	ALOGV("current_status   >>>   %d", current_status);
 }
 
 int RuntimeService::get_siren_state(){
+	ALOGV("current_status   >>>   %d", current_status);
 	return current_status;
 }
 
@@ -38,6 +38,7 @@ RuntimeService::~RuntimeService(){
 }
 
 void* siren_thread_loop(void* arg){
+	ALOGV("thread join  ");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	int id = -1;
 	for(;;){
@@ -58,24 +59,21 @@ void* siren_thread_loop(void* arg){
 				break;
 			case SIREN_EVENT_VAD_START:
 			case SIREN_EVENT_WAKE_VAD_START:
-				//id = start(NULL);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				//voice(id, voice_msg->buff, voice_msg->length);
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
-				//end(id);
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
-				//cancel(id);
 				break;
 			case SIREN_EVENT_WAKE_PRE:
-				//prepare();
 				break;
 		}
+//		runtime_service->voice_queue.remove(*voice_msg);
+//		delete voice_msg;
 		pthread_mutex_unlock(runtime_service->siren_mutex);
 	}
 

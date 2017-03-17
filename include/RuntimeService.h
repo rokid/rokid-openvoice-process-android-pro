@@ -24,7 +24,9 @@ class RuntimeService : public BnRuntimeService{
 				int has_sl;
 				double sl_degree;
 
-				int id = -1;
+				~VoiceMessage(){
+					free(buff);
+				}
 		};
 
 		enum{
@@ -35,7 +37,7 @@ class RuntimeService : public BnRuntimeService{
 		int current_status = SIREN_STATE_UNKNOW;
 
 		static char const* getServiceName(){
-			return "RuntimeService";
+			return "runtime_service";
 		}
 		~RuntimeService();
 		bool init();

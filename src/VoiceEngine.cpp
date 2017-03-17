@@ -104,7 +104,9 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 //	if(has_voice && length > 0){
 		//add to siren_queue
 		RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
-		memcpy(voice_msg->buff, buff, length);	
+		char *cache = new char[length + 1];
+		memcpy(cache, buff, length);	
+		voice_msg->buff = cache;
 		voice_msg->length = length;
 		voice_msg->event = event;
 		voice_msg->has_voice = has_voice;
