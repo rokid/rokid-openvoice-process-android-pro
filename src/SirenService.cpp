@@ -41,44 +41,50 @@ bool SirenService::init(RuntimeService *runtime){
 		return false;
 	}	
 	ALOGI ("open mic array done");
-	
 	//2. init siren
-	//init_siren(runtime, NULL, &siren_input);	
+	_siren = init_siren(runtime, NULL, &siren_input);	
 	//3. set siren callback	
-	//start_siren_process_stream(&siren_callback);
+	start_siren_process_stream(_siren, &siren_callback);
+	//4 set siren state
+	siren_state_change.state_changed_callback = state_changed_callback;
+	set_siren_state(_siren, SIREN_STATE_SLEEP, &siren_state_change);
 	return true;
 }
 
-int init_input(void *token){
+int siren::init_input(void *token){
 	ALOGV("init input ..");
 	return 0;
 }
 
-void release_input(void *token){
+void siren::release_input(void *token){
 	mic_array_device->finish_stream(mic_array_device);
 	ALOGV("release input ..");
 }
 
-void start_input(void *token){
+void siren::start_input(void *token){
 	mic_array_device->start_stream(mic_array_device);
 	ALOGV("start input ..");
 }
 
-void stop_input(void *token){
+void siren::stop_input(void *token){
 	mic_array_device->stop_stream(mic_array_device);
 	ALOGV("stop input ..");
 }
 
-int read_input(void *token, char *buff, int	frame_cnt){
+int siren::read_input(void *token, char *buff, int	frame_cnt){
 	ALOGV("read input ..");
 	return mic_array_device->read_stream(mic_array_device, buff, (uint64_t *)&frame_cnt);
 }
 
-void on_err_input(void *token){
+void siren::on_err_input(void *token){
 	ALOGE("on_err_input ");
 }
 
-void voice_event_callback(void *token, int length, siren_event_t event, 
+void siren::state_changed_callback(void *token, int state){
+	ALOGV("siren state is : %d", state);
+}
+
+void siren::voice_event_callback(void *token, int length, siren_event_t event, 
 		void* buff, int has_sl,
 		int has_voice, double sl_degree,
 		int has_voiceprint){

@@ -10,6 +10,8 @@ LOCAL_SRC_FILES := \
 LOCAL_SHARED_LIBRARIES := \
 		libbinder \
 		liblog \
+		libhardware \
+		libbsiren \
 		libutils 
 
 THIRD_INCLUDES += \
