@@ -93,7 +93,7 @@ void siren::state_changed_callback(void *token, int state){
 
 void siren::voice_event_callback(void *token, int length, siren_event_t event, 
 		void* buff, int has_sl,
-		int has_voice, double sl_degree,
+		int has_voice, double sl_degree, double energy, double threshold,
 		int has_voiceprint){
 
 	ALOGV("voice_event_callback length %d, has_voice %d , event %d, has_sl %d", 

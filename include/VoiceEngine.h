@@ -30,9 +30,9 @@ void on_err_input(void*);
 void state_changed_callback(void*, int);
 
 void voice_event_callback(void* token, int length, siren_event_t event, 
-			void* buff, int has_sl,
-			int has_voice, double sl_degree,
-			int has_voiceprint);
+		void* buff, int has_sl,
+		int has_voice, double sl_degree, double energy, double threshold,
+		int has_voiceprint);
 
 } // namespace siren
 

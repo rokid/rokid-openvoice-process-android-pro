@@ -72,8 +72,8 @@ void* siren_thread_loop(void* arg){
 			case SIREN_EVENT_WAKE_PRE:
 				break;
 		}
-//		runtime_service->voice_queue.remove(*voice_msg);
-//		delete voice_msg;
+		runtime_service->voice_queue.pop_front();
+		delete voice_msg;
 		pthread_mutex_unlock(runtime_service->siren_mutex);
 	}
 

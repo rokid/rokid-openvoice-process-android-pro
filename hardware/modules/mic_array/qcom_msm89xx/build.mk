@@ -9,7 +9,7 @@ LOCAL_MODULE := mic_array.$(TARGET_DEVICE)
 LOCAL_MODULE_TAGS := optional
 LOCAL_C_INCLUDES += \
 	hardware/libhardware \
-	robot/rokid-openvoice-sample-android/hardware/include \
+	rokid-openvoice-sample-android/hardware/include \
 	external/tinyalsa/include
 
 LOCAL_SHARED_LIBRARIES := liblog libcutils libtinyalsa
