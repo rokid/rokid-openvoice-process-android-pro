@@ -44,8 +44,8 @@ class RuntimeService : public BnRuntimeService{
 		void set_siren_state(const int&);
 		int get_siren_state();
 
-		pthread_mutex_t *siren_mutex;
-		pthread_cond_t *siren_cond;
+		pthread_mutex_t siren_mutex;
+		pthread_cond_t siren_cond;
 		pthread_t siren_thread;
 
 		list<VoiceMessage*> voice_queue;
