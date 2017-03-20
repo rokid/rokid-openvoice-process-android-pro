@@ -47,8 +47,10 @@ bool VoiceEngine::init(RuntimeService *runtime){
 	ALOGI ("open mic array done");
 	//2. init siren
 	_siren = init_siren(runtime, NULL, &siren_input);	
+	ALOGI ("INIT SIREN   ============");
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
+	ALOGI ("start_siren_process_stream   ");
 	//4 set siren state
 	set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
@@ -100,7 +102,7 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 			length, has_voice, event, has_sl);
 	RuntimeService *runtime_service = (RuntimeService*)token;
 	
-	pthread_mutex_lock(runtime_service->siren_mutex);
+	pthread_mutex_lock(&runtime_service->siren_mutex);
 //	if(has_voice && length > 0){
 		//add to siren_queue
 		RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
@@ -115,8 +117,8 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 		voice_msg->has_voiceprint = has_voiceprint;
 
 		runtime_service->voice_queue.push_front(voice_msg);
-		pthread_cond_signal(runtime_service->siren_cond);
+		pthread_cond_signal(&runtime_service->siren_cond);
 //	}
-	pthread_mutex_unlock(runtime_service->siren_mutex);
+	pthread_mutex_unlock(&runtime_service->siren_mutex);
 }
 

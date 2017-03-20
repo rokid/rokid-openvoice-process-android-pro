@@ -16,7 +16,6 @@ bool RuntimeService::init(){
 		ALOGE("init siren failed.");
 		return false;
 	}
-
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
 	pthread_join(siren_thread, NULL);
 	return true;
@@ -38,13 +37,13 @@ RuntimeService::~RuntimeService(){
 }
 
 void* siren_thread_loop(void* arg){
-	ALOGV("thread join  ");
+	ALOGV("thread join =========================================== ");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	int id = -1;
 	for(;;){
-		pthread_mutex_lock(runtime_service->siren_mutex);
+		pthread_mutex_lock(&runtime_service->siren_mutex);
 		if(runtime_service->voice_queue.empty()){
-			pthread_cond_wait(runtime_service->siren_cond, runtime_service->siren_mutex);
+			pthread_cond_wait(&runtime_service->siren_cond, &runtime_service->siren_mutex);
 		}
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
 		ALOGV("event   >>>   %d", voice_msg->event);
@@ -74,7 +73,7 @@ void* siren_thread_loop(void* arg){
 		}
 		runtime_service->voice_queue.pop_front();
 		delete voice_msg;
-		pthread_mutex_unlock(runtime_service->siren_mutex);
+		pthread_mutex_unlock(&runtime_service->siren_mutex);
 	}
 
 	ALOGV("thread quit!");
