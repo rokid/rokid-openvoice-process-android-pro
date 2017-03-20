@@ -14,10 +14,8 @@ LOCAL_SHARED_LIBRARIES := \
 		libbsiren \
 		libutils 
 
-THIRD_INCLUDES += \
-		$(LOCAL_PATH)/include
-
 LOCAL_C_INCLUDES += \
+		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include
 
 LOCAL_MODULE := runtime
