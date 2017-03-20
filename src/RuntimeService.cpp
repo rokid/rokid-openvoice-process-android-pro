@@ -7,6 +7,8 @@
 using namespace android;
 using namespace std;
 using namespace siren;
+using namespace rokid;
+using namespace speech;
 
 VoiceEngine *voice_engine;
 
@@ -37,7 +39,7 @@ RuntimeService::~RuntimeService(){
 }
 
 void* siren_thread_loop(void* arg){
-	ALOGV("thread join =========================================== ");
+	ALOGV("thread join !!");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	int id = -1;
 	for(;;){
@@ -46,6 +48,7 @@ void* siren_thread_loop(void* arg){
 			pthread_cond_wait(&runtime_service->siren_cond, &runtime_service->siren_mutex);
 		}
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
+		RuntimeService::MyNlpCallback *callback = new RuntimeService::MyNlpCallback();
 		ALOGV("event   >>>   %d", voice_msg->event);
 		//send to speech
 		switch(voice_msg->event){
@@ -71,6 +74,7 @@ void* siren_thread_loop(void* arg){
 			case SIREN_EVENT_WAKE_PRE:
 				break;
 		}
+		runtime_service->mNlpCallback.insert(pair<int, RuntimeService::MyNlpCallback*>(id, callback));
 		runtime_service->voice_queue.pop_front();
 		delete voice_msg;
 		pthread_mutex_unlock(&runtime_service->siren_mutex);
@@ -78,4 +82,13 @@ void* siren_thread_loop(void* arg){
 
 	ALOGV("thread quit!");
 	return NULL;
+}
+
+void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
+	ALOGI("%d", nlp);
+	//mNlpCallback.find(id);
+}
+
+void RuntimeService::MyNlpCallback::onError(int id, int err){
+	ALOGE("callback  error :  %d,   id  :  %d", err, id);
 }

@@ -5,12 +5,16 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <list>
+#include <map>
 
 #include "siren.h"
+#include "nlp.h"
 #include "IRuntimeService.h"
 
 using namespace android;
 using namespace std;
+using namespace rokid;
+using namespace speech;
 
 class RuntimeService : public BnRuntimeService{
 	public:
@@ -22,11 +26,20 @@ class RuntimeService : public BnRuntimeService{
 				int has_voice;
 				int has_voiceprint;
 				int has_sl;
+				double energy;
+				double threshold;
 				double sl_degree;
 
 				~VoiceMessage(){
 					free(buff);
 				}
+		};
+
+		class MyNlpCallback : public NlpCallback{
+			public:
+				void onNlp(int id, const char* nlp);
+
+				void onError(int id, int err);
 		};
 
 		enum{
@@ -49,9 +62,11 @@ class RuntimeService : public BnRuntimeService{
 		pthread_t siren_thread;
 
 		list<VoiceMessage*> voice_queue;
+		map<int, MyNlpCallback*> mNlpCallback;
 
 	private:
 };
+
 
 void* siren_thread_loop(void*);
 

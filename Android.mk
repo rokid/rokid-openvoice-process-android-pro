@@ -14,9 +14,16 @@ LOCAL_SHARED_LIBRARIES := \
 		libbsiren \
 		libutils 
 
+SPEECH_DIR = speech/src
+
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
-		$(LOCAL_PATH)/hardware/include
+		$(LOCAL_PATH)/hardware/include \
+#		$(SPEECH_DIR)/nlp \
+#		$(SPEECH_DIR)/asr \
+#		$(SPEECH_DIR)/common \
+#		speech/external/protobuf/src \
+#		speech/external/grpc/include 
 
 LOCAL_MODULE := runtime
 LOCAL_ARM_MODE := arm

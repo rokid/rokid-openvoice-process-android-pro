@@ -47,12 +47,11 @@ bool VoiceEngine::init(RuntimeService *runtime){
 	ALOGI ("open mic array done");
 	//2. init siren
 	_siren = init_siren(runtime, NULL, &siren_input);	
-	ALOGI ("INIT SIREN   ============");
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
-	ALOGI ("start_siren_process_stream   ");
 	//4 set siren state
-	set_siren_state_change(SIREN_STATE_SLEEP);
+	set_siren_state_change(SIREN_STATE_AWAKE);
+	//set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
 }
 
@@ -114,6 +113,9 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 		voice_msg->has_voice = has_voice;
 		voice_msg->has_sl = has_sl;
 		voice_msg->sl_degree = sl_degree;
+		voice_msg->sl_degree = sl_degree;
+		voice_msg->energy = energy;
+		voice_msg->threshold = threshold;
 		voice_msg->has_voiceprint = has_voiceprint;
 
 		runtime_service->voice_queue.push_front(voice_msg);
