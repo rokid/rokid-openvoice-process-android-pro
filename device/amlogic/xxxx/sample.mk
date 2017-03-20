@@ -8,4 +8,13 @@ PRODUCT_PACKAGES += \
 					libr2audio \
 					libr2vt \
 					libjsonc \
+					libgpr \
+					libgrpc \
+					libgrpc++ \
+					libprotobuf-rokid-cpp-lite \
+					libspeech_asr \
+					libspeech_common \
+					libspeech_nlp \
+					libspeech_siren \
+					libspeech_tts \
 					runtime_cmd
