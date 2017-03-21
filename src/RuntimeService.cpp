@@ -3,6 +3,7 @@
 
 #include "include/RuntimeService.h"
 #include "include/VoiceEngine.h"
+#include <binder/IServiceManager.h>
 
 using namespace android;
 using namespace std;
@@ -87,6 +88,16 @@ void* siren_thread_loop(void* arg){
 void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
 	ALOGI("%d", nlp);
 	//mNlpCallback.find(id);
+	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
+	if(binder == NULL){
+		ALOGI("java runtime is null , Waiting for it to initialize");
+		return ;
+	}
+	Parcel data, reply;
+	data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+	data.writeString16(String16(nlp));
+	binder->transact(0, data, &reply);
+
 }
 
 void RuntimeService::MyNlpCallback::onError(int id, int err){
