@@ -4,6 +4,8 @@
 #include "include/RuntimeService.h"
 #include "include/VoiceEngine.h"
 #include <binder/IServiceManager.h>
+#include <cutils/log.h>
+#include <unistd.h>
 
 using namespace android;
 using namespace std;
@@ -15,10 +17,10 @@ VoiceEngine *voice_engine;
 
 bool RuntimeService::init(){
 	voice_engine = new VoiceEngine();
-	if(!voice_engine->init(this)){
-		ALOGE("init siren failed.");
-		return false;
-	}
+//	if(!voice_engine->init(this)){
+//		ALOGE("init siren failed.");
+//		return false;
+//	}
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
 	pthread_join(siren_thread, NULL);
 	return true;
@@ -88,9 +90,8 @@ void* siren_thread_loop(void* arg){
 void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
 	ALOGI("%d", nlp);
 	if(!runtime_service->mNlpCallback.empty()){
-
+		//list<RuntimeService::MyNlpCallback>::iterator it = mNlpCallback.begin();
 	}
-	//list<RuntimeService::MyNlpCallback>::iterator it = mNlpCallback.begin();
 	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	if(binder == NULL){
 		ALOGI("java runtime is null , Waiting for it to initialize");
@@ -99,8 +100,8 @@ void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
 	Parcel data, reply;
 	data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
 	data.writeString16(String16(nlp));
-	binder->transact(0, data, &reply);
-
+	binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+	reply.readExceptionCode();
 }
 
 void RuntimeService::MyNlpCallback::onError(int id, int err){

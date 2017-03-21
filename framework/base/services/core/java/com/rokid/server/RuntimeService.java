@@ -22,7 +22,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	@Override
 	public void setSirenState(int state){
 		Log.e(TAG, "set siren state   >>>   " + state);
-		android.os.IBinder binder = android.os.ServiceManager.getService("runtime");
+		android.os.IBinder binder = android.os.ServiceManager.getService("runtime_native");
 		if(binder == null){
 			Log.e(TAG, "Permission denied in (RuntimeService setSirenState)");
 			return;
@@ -30,8 +30,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken("runtime_service");
-			binder.transact(0, data, reply, 0);
+			data.writeInterfaceToken("com.rokid.server.RuntimeService");
+			binder.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 0, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){
 			e.printStackTrace();
@@ -44,7 +44,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	@Override
 	public int getSirenState(){
 		Log.e(TAG, "get siren state");
-		android.os.IBinder binder = android.os.ServiceManager.getService("runtime");
+		android.os.IBinder binder = android.os.ServiceManager.getService("runtime_native");
 		if(binder == null){
 			Log.e(TAG, "Permission denied in (RuntimeService getSirenState)");
 			return -1;
@@ -52,8 +52,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken("runtime_service");
-			binder.transact(1, data, reply, 0);
+			data.writeInterfaceToken("com.rokid.server.RuntimeService");
+			binder.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 1, data, reply, 0);
 			reply.readException();
 			return reply.readInt();
 		}catch(RemoteException e){

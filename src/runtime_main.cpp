@@ -10,9 +10,9 @@ int main(void){
 	ALOGV("-----------runtime service launch----------------");
 	sp<ProcessState> proc(ProcessState::self());
 	sp<RuntimeService> mRuntimeService = new RuntimeService();
-	mRuntimeService->init();
+	String16 s(mRuntimeService->getInterfaceDescriptor());
 	sp<IServiceManager> sm(defaultServiceManager());
-	sm->addService(String16(RuntimeService::getServiceName()), mRuntimeService, false);
-
+	status_t state = sm->addService(String16(RuntimeService::getServiceName()), mRuntimeService, false);
+	mRuntimeService->init();
 	return 0;
 }

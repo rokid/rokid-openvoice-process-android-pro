@@ -53,7 +53,7 @@ class RuntimeService : public BnRuntimeService{
 		int current_status = SIREN_STATE_UNKNOW;
 
 		static char const* getServiceName(){
-			return "runtime";
+			return "runtime_native";
 		}
 		~RuntimeService();
 		bool init();
