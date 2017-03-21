@@ -19,15 +19,16 @@ bool RuntimeService::init(){
 		ALOGE("init siren failed.");
 		return false;
 	}
+	set_siren_state(SIREN_STATE_SLEEP);
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
-	pthread_join(siren_thread, NULL);
+//	pthread_join(siren_thread, NULL);
 	return true;
 }
 
 void RuntimeService::set_siren_state(const int &state){
 	current_status = state;
 	voice_engine->set_siren_state_change(state);
-	ALOGV("current_status   >>>   %d", current_status);
+	ALOGV("current_status     >>   %d,   %d", current_status , state);
 }
 
 int RuntimeService::get_siren_state(){

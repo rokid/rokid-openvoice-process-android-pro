@@ -13,9 +13,10 @@ int main(void){
 	sp<IServiceManager> sm(defaultServiceManager());
 	status_t state = sm->addService(String16(RuntimeService::getServiceName()), mRuntimeService, false);
 
+	mRuntimeService->init();
+
 	ProcessState::self()->startThreadPool();
 	IPCThreadState::self()->joinThreadPool();
 
-	mRuntimeService->init();
 	return 0;
 }
