@@ -103,7 +103,7 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 	RuntimeService *runtime_service = (RuntimeService*)token;
 	
 	ALOGI("=============------------=====%x", runtime_service);
-	if(runtime_service) return;
+	if(runtime_service == 0) return;
 	pthread_mutex_lock(&runtime_service->siren_mutex);
 //	if(has_voice && length > 0){
 		//add to siren_queue

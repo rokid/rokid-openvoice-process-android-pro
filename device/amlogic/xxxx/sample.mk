@@ -8,7 +8,7 @@ PRODUCT_PACKAGES += \
 					libr2audio \
 					libr2vt \
 					libjsonc \
-					libgpr \
+#					libgpr \
 					libgrpc \
 					libgrpc++ \
 					libprotobuf-rokid-cpp-lite \

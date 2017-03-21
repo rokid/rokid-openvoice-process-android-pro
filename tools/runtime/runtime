@@ -4,5 +4,5 @@
 # shell.
 #
 base=/system
-export CLASSPATH=$base/framework/runtime.jar
+export CLASSPATH=$base/framework/runtime_cmd.jar
 exec app_process $base/bin com.android.commands.runtime.Runtime "$@"
