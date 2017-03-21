@@ -1,6 +1,7 @@
 package com.android.commands.runtime;
 
 import android.os.Parcel;
+import rokid.os.IRuntimeService;
 
 public class Runtime{
 
@@ -11,23 +12,15 @@ public class Runtime{
 		}
 		System.out.println(_s);
 		String common = args[0];
-		android.os.IBinder binder = android.os.ServiceManager.getService("runtime_service");
-		Parcel data = Parcel.obtain();
-		Parcel reply = Parcel.obtain();
-		if(common.equals("state")){
-			try{
-				data.writeInterfaceToken(null);
-				data.writeInt(Integer.parseInt(args[1]));
-				binder.transact(0, data, reply, 0);
-				reply.readException();
-			}catch(android.os.RemoteException e){
-				e.printStackTrace();
-			}finally{
-				data.recycle();
-				reply.recycle();
-			}
-		}else if(common.equals("")){
-
-		}
+		IRuntimeService runtime_service = IRuntimeService.Stub.asInterface(android.os.ServiceManager.getService("runtime_service"));
+//		try{
+//			if(common.equals("setState")){
+//				runtime_service.setSirenState(Integer.parseInt(args[1]));
+//			}else if(common.equals("getState")){
+//				System.out.printf("current state   >>>   " + runtime_service.getSirenState());
+//			}
+//		}catch(android.os.RemoteException e){
+//			e.printStackTrace();
+//		}
 	}
 }

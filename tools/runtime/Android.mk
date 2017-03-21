@@ -3,7 +3,7 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_JAVA_LIBRARIES := framework
+LOCAL_JAVA_LIBRARIES := rokid_framework
 
 LOCAL_SRC_FILES := $(call all-subdir-java-files)
 LOCAL_MODULE := runtime_cmd
