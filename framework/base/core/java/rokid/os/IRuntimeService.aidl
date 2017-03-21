@@ -1,5 +1,7 @@
 package rokid.os;
 
 interface IRuntimeService{
-	void sendNlpMessage(String nlp);
+	void nlpMessage(String nlp);
+	void setSirenState(int state);
+	int getSirenState();
 }
