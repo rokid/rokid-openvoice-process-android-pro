@@ -18,11 +18,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Log.e(TAG, "RuntimeService  created");
 		this.mContext = mContext;
 	}
-/*
-	public void sendNlpMessage(String nlp){
-		
-	}
-*/
+
+	@Override
 	public void setSirenState(int state){
 		Log.e(TAG, "set siren state   >>>   " + state);
 		android.os.IBinder binder = android.os.ServiceManager.getService("runtime");
@@ -44,6 +41,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		}
 	}
 
+	@Override
 	public int getSirenState(){
 		Log.e(TAG, "get siren state");
 		android.os.IBinder binder = android.os.ServiceManager.getService("runtime");
