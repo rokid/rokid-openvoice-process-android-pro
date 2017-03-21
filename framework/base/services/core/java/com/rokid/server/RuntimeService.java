@@ -30,7 +30,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken("com.rokid.server.RuntimeService");
+			data.writeInterfaceToken(binder.getInterfaceDescriptor());
 			binder.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 0, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){

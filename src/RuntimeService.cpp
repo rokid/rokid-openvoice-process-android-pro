@@ -4,8 +4,6 @@
 #include "include/RuntimeService.h"
 #include "include/VoiceEngine.h"
 #include <binder/IServiceManager.h>
-#include <cutils/log.h>
-#include <unistd.h>
 
 using namespace android;
 using namespace std;
@@ -17,10 +15,10 @@ VoiceEngine *voice_engine;
 
 bool RuntimeService::init(){
 	voice_engine = new VoiceEngine();
-//	if(!voice_engine->init(this)){
-//		ALOGE("init siren failed.");
-//		return false;
-//	}
+	if(!voice_engine->init(this)){
+		ALOGE("init siren failed.");
+		return false;
+	}
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
 	pthread_join(siren_thread, NULL);
 	return true;
