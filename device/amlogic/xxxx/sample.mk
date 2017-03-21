@@ -16,5 +16,9 @@ PRODUCT_PACKAGES += \
 					libspeech_common \
 					libspeech_nlp \
 					libspeech_siren \
-					libspeech_tts \
+					libspeech_tts
+
+PRODUCT_PACKAGES += \
+					rokid_framework \
+					rokid_services \
 					runtime_cmd

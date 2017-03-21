@@ -37,6 +37,9 @@ class RuntimeService : public BnRuntimeService{
 
 		class MyNlpCallback : public NlpCallback{
 			public:
+				MyNlpCallback(RuntimeService *runtime):runtime_service(runtime){
+				}
+				RuntimeService *runtime_service;
 				void onNlp(int id, const char* nlp);
 
 				void onError(int id, int err);

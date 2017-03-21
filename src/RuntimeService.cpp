@@ -49,7 +49,7 @@ void* siren_thread_loop(void* arg){
 			pthread_cond_wait(&runtime_service->siren_cond, &runtime_service->siren_mutex);
 		}
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
-		RuntimeService::MyNlpCallback *callback = new RuntimeService::MyNlpCallback();
+		RuntimeService::MyNlpCallback *callback = new RuntimeService::MyNlpCallback(runtime_service);
 		ALOGV("event   >>>   %d", voice_msg->event);
 		//send to speech
 		switch(voice_msg->event){
@@ -87,7 +87,10 @@ void* siren_thread_loop(void* arg){
 
 void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
 	ALOGI("%d", nlp);
-	//mNlpCallback.find(id);
+	if(!runtime_service->mNlpCallback.empty()){
+
+	}
+	//list<RuntimeService::MyNlpCallback>::iterator it = mNlpCallback.begin();
 	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	if(binder == NULL){
 		ALOGI("java runtime is null , Waiting for it to initialize");

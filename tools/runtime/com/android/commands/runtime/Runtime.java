@@ -13,14 +13,14 @@ public class Runtime{
 		System.out.println(_s);
 		String common = args[0];
 		IRuntimeService runtime_service = IRuntimeService.Stub.asInterface(android.os.ServiceManager.getService("runtime_service"));
-//		try{
-//			if(common.equals("setState")){
-//				runtime_service.setSirenState(Integer.parseInt(args[1]));
-//			}else if(common.equals("getState")){
-//				System.out.printf("current state   >>>   " + runtime_service.getSirenState());
-//			}
-//		}catch(android.os.RemoteException e){
-//			e.printStackTrace();
-//		}
+		try{
+			if(common.equals("setState")){
+				runtime_service.setSirenState(Integer.parseInt(args[1]));
+			}else if(common.equals("getState")){
+				System.out.printf("current state   >>>   " + runtime_service.getSirenState());
+			}
+		}catch(android.os.RemoteException e){
+			e.printStackTrace();
+		}
 	}
 }

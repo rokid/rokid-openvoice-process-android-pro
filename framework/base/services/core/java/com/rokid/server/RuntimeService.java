@@ -15,13 +15,14 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	Context mContext;
 
 	public RuntimeService(Context mContext){
+		Log.e(TAG, "RuntimeService  created");
 		this.mContext = mContext;
 	}
-
+/*
 	public void sendNlpMessage(String nlp){
 		
 	}
-
+*/
 	public void setSirenState(int state){
 		Log.e(TAG, "set siren state   >>>   " + state);
 		android.os.IBinder binder = android.os.ServiceManager.getService("runtime");
@@ -54,7 +55,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel reply = Parcel.obtain();
 		try{
 			data.writeInterfaceToken("runtime_service");
-			binder.transact(0, data, reply, 0);
+			binder.transact(1, data, reply, 0);
 			reply.readException();
 			return reply.readInt();
 		}catch(RemoteException e){
@@ -66,7 +67,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		return -1;
 	}
 	
-//	@Override
+	@Override
 	public void nlpMessage(String nlp){
 		android.util.Log.e(TAG, nlp);
 		JSONObject json = null;
@@ -86,6 +87,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		if(mContext != null){
 			Intent intent = new Intent(action);
 			mContext.startServiceAsUser(intent, android.os.UserHandle.OWNER);
+		}else{
+			Log.e(TAG, "context is null ");
 		}
 	}
 
@@ -93,6 +96,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		if(mContext != null){
 			Intent intent = new Intent(action);
 			mContext.startActivityAsUser(intent, android.os.UserHandle.OWNER);
+		}else{
+			Log.e(TAG, "context is null ");
 		}
 	}
 }
