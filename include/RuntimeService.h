@@ -31,7 +31,7 @@ class RuntimeService : public BnRuntimeService{
 				double sl_degree;
 
 				~VoiceMessage(){
-					free(buff);
+					delete buff;
 				}
 		};
 
@@ -46,9 +46,11 @@ class RuntimeService : public BnRuntimeService{
 						delete _nlp;
 					}
 				}
+				//Just used to delete
 				Nlp *_nlp;
-				RuntimeService *runtime_service;
 				int event = VOICE_STATE_UNKNOW;
+				RuntimeService *runtime_service;
+
 				void onNlp(int id, const char* nlp);
 
 				void onError(int id, int err);

@@ -81,9 +81,9 @@ void* siren_thread_loop(void* arg){
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
-				ALOGV("voice event   >>>   end");
+				ALOGV("voice event   >>>   end        %x", callback);
 				if(callback != NULL){
-					//Modify the last callback of the event
+					//Modify the last callback of the state
 					callback->event = RuntimeService::VOICE_STATE_END;
 					callback = NULL;
 					nlp = NULL;
@@ -91,13 +91,13 @@ void* siren_thread_loop(void* arg){
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
+				ALOGI("voice event  >>>   cancel    %x", callback);
 				if(callback != NULL){
-					//Modify the last callback of the event
+					//Modify the last callback of the state
 					callback->event = RuntimeService::VOICE_STATE_CANCEL;
 					callback = NULL;
 					nlp = NULL;
 				}
-				ALOGI("voice event  >>>   cancel");
 				break;
 			case SIREN_EVENT_WAKE_PRE:
 				ALOGV("vicee event  >>>   prepare");
@@ -116,8 +116,9 @@ void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
 	if(!runtime_service->mNlpCallback.empty()){
 		map<int, RuntimeService::MyNlpCallback*>::iterator it = runtime_service->mNlpCallback.find(id);
 		runtime_service->mNlpCallback.erase(it);
-		//TODO release callback;
+		//TODO delete the callback;
 	}
+
 	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	if(binder == NULL){
 		ALOGI("java runtime is null , Waiting for it to initialize");
