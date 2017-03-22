@@ -92,35 +92,35 @@ void siren::state_changed_callback(void *token, int state){
 
 void siren::voice_event_callback(void *token, int length, siren_event_t event, 
 		void* buff, int has_sl,
-		int has_voice, double sl_degree, double energy, double threshold,
+		int has_voice, double sl_degree, 
+		double energy, double threshold,
 		int has_voiceprint){
 
 	ALOGV("voice_event_callback length %d, has_voice %d , event %d, has_sl %d", 
 			length, has_voice, event, has_sl);
 	RuntimeService *runtime_service = (RuntimeService*)token;
-	
 	ALOGI("=============------------=====%x", runtime_service);
-	if(runtime_service == 0) return;
-//	pthread_mutex_lock(&runtime_service->siren_mutex);
-////	if(has_voice && length > 0){
-//		//add to siren_queue
-//		RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
-//		char *cache = new char[length + 1];
-//		memcpy(cache, buff, length);	
-//		voice_msg->buff = cache;
-//		voice_msg->length = length;
-//		voice_msg->event = event;
-//		voice_msg->has_voice = has_voice;
-//		voice_msg->has_sl = has_sl;
-//		voice_msg->sl_degree = sl_degree;
-//		voice_msg->sl_degree = sl_degree;
-//		voice_msg->energy = energy;
-//		voice_msg->threshold = threshold;
-//		voice_msg->has_voiceprint = has_voiceprint;
-//
-//		runtime_service->voice_queue.push_front(voice_msg);
-//		pthread_cond_signal(&runtime_service->siren_cond);
-////	}
-//	pthread_mutex_unlock(&runtime_service->siren_mutex);
+	if(runtime_service) return;
+
+	pthread_mutex_lock(&runtime_service->siren_mutex);
+	//add to siren_queue
+	RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
+	char *cache = new char[length];
+	memcpy(cache, buff, length);	
+	voice_msg->buff = cache;
+	voice_msg->length = length;
+	voice_msg->event = event;
+	voice_msg->has_voice = has_voice;
+	voice_msg->has_sl = has_sl;
+	voice_msg->sl_degree = sl_degree;
+	voice_msg->sl_degree = sl_degree;
+	voice_msg->energy = energy;
+	voice_msg->threshold = threshold;
+	voice_msg->has_voiceprint = has_voiceprint;
+
+	runtime_service->voice_queue.push_back(voice_msg);
+
+	pthread_cond_signal(&runtime_service->siren_cond);
+	pthread_mutex_unlock(&runtime_service->siren_mutex);
 }
 
