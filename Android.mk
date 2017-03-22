@@ -1,3 +1,4 @@
+
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -44,10 +45,11 @@ LOCAL_C_INCLUDES += \
 		$(SPEECH_DIR_DEP)/grpc/include \
 		$(PROTOC_OUT_DIR)/gen
 
+IGNORED_WARNINGS := -Wno-sign-compare -Wno-unused-parameter -Wno-sign-promo -Wno-error=return-type -Wno-error=non-virtual-dtor
 LOCAL_RTTI_FLAG := -frtti
 LOCAL_MODULE := runtime
 LOCAL_ARM_MODE := arm
-LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
+LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) $(IGNORED_WARNINGS)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_TARGET_ARCH := arm
 
