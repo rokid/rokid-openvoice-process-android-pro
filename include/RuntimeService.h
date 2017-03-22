@@ -20,7 +20,7 @@ class RuntimeService : public BnRuntimeService{
 	public:
 		class VoiceMessage{
 			public:
-				void* buff;
+				void* buff = NULL;
 				int length;
 				siren_event_t event;
 				int has_voice;
@@ -31,7 +31,8 @@ class RuntimeService : public BnRuntimeService{
 				double sl_degree;
 
 				~VoiceMessage(){
-					delete buff;
+					if(buff != NULL)
+						delete buff;
 				}
 		};
 

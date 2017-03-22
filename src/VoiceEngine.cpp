@@ -105,9 +105,12 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 	pthread_mutex_lock(&runtime_service->siren_mutex);
 	//add to siren_queue
 	RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
-	char *cache = new char[length];
-	memcpy(cache, buff, length);	
-	voice_msg->buff = cache;
+	char *_cache = NULL;
+	if(has_voice){
+		_cache = new char[length];
+		memcpy(_cache, buff, length);	
+		voice_msg->buff = _cache;
+	}
 	voice_msg->length = length;
 	voice_msg->event = event;
 	voice_msg->has_voice = has_voice;
