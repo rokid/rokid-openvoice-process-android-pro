@@ -50,9 +50,6 @@ bool VoiceEngine::init(RuntimeService *runtime){
 	_siren = init_siren(runtime, NULL, &siren_input);	
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
-	//4 set siren state
-	set_siren_state_change(SIREN_STATE_AWAKE);
-	//set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
 }
 
@@ -81,7 +78,7 @@ void siren::stop_input(void *token){
 }
 
 int siren::read_input(void *token, char *buff, int	frame_cnt){
-	ALOGV("read input ..");
+//	ALOGV("read input ..");
 	return mic_array_device->read_stream(mic_array_device, buff, (uint64_t *)&frame_cnt);
 }
 

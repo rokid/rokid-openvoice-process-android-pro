@@ -89,7 +89,8 @@ void* siren_thread_loop(void* arg){
 void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
 	ALOGI("%d", nlp);
 	if(!runtime_service->mNlpCallback.empty()){
-		//list<RuntimeService::MyNlpCallback>::iterator it = mNlpCallback.begin();
+		map<int, RuntimeService::MyNlpCallback*>::iterator it = runtime_service->mNlpCallback.find(id);
+		runtime_service->mNlpCallback.erase(it);
 	}
 	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	if(binder == NULL){
