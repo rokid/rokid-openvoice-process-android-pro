@@ -51,21 +51,24 @@ void* siren_thread_loop(void* arg){
 		}
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
 		RuntimeService::MyNlpCallback *callback = new RuntimeService::MyNlpCallback(runtime_service);
+		Nlp nlp;
 		ALOGV("event   >>>   %d", voice_msg->event);
 		//send to speech
 		switch(voice_msg->event){
-			case SIREN_EVENT_WAKE_CMD:
-				runtime_service->current_status = SIREN_STATE_AWAKE;
-				break;
-			case SIREN_EVENT_WAKE_NOCMD:
-			case SIREN_EVENT_SLEEP:
-				runtime_service->current_status = SIREN_STATE_SLEEP;
-				break;
+//			case SIREN_EVENT_WAKE_CMD:
+//				runtime_service->current_status = SIREN_STATE_AWAKE;
+//				break;
+//			case SIREN_EVENT_WAKE_NOCMD:
+//			case SIREN_EVENT_SLEEP:
+//				runtime_service->current_status = SIREN_STATE_SLEEP;
+//				break;
 			case SIREN_EVENT_VAD_START:
 			case SIREN_EVENT_WAKE_VAD_START:
+				runtime_service->current_status = SIREN_STATE_AWAKE;
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
+				id = nlp.request((char *)voice_msg->buff, callback);
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
