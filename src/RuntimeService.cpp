@@ -41,8 +41,11 @@ RuntimeService::~RuntimeService(){
 }
 
 void* siren_thread_loop(void* arg){
+
 	ALOGV("thread join !!");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
+	RuntimeService::MyNlpCallback *callback = NULL;
+	Nlp *nlp = NULL;
 	int id = -1;
 	for(;;){
 		pthread_mutex_lock(&runtime_service->siren_mutex);
@@ -50,41 +53,62 @@ void* siren_thread_loop(void* arg){
 			pthread_cond_wait(&runtime_service->siren_cond, &runtime_service->siren_mutex);
 		}
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
-		RuntimeService::MyNlpCallback *callback = new RuntimeService::MyNlpCallback(runtime_service);
-		Nlp nlp;
-		ALOGV("event   >>>   %d", voice_msg->event);
-		//send to speech
 		switch(voice_msg->event){
-//			case SIREN_EVENT_WAKE_CMD:
-//				runtime_service->current_status = SIREN_STATE_AWAKE;
-//				break;
-//			case SIREN_EVENT_WAKE_NOCMD:
-//			case SIREN_EVENT_SLEEP:
-//				runtime_service->current_status = SIREN_STATE_SLEEP;
-//				break;
+			case SIREN_EVENT_WAKE_CMD:
+				ALOGV("voice event   >>>   wake_cmd");
+				runtime_service->current_status = SIREN_STATE_AWAKE;
+				break;
+			case SIREN_EVENT_WAKE_NOCMD:
+			case SIREN_EVENT_SLEEP:
+				ALOGV("voice event   >>>   wake_nocmd or sleep");
+				runtime_service->current_status = SIREN_STATE_SLEEP;
+				break;
 			case SIREN_EVENT_VAD_START:
 			case SIREN_EVENT_WAKE_VAD_START:
+				ALOGV("voice event   >>>   start");
 				runtime_service->current_status = SIREN_STATE_AWAKE;
+				nlp = new Nlp();
+				nlp->prepare();
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				id = nlp.request((char *)voice_msg->buff, callback);
+				callback = NULL;
+				callback = new RuntimeService::MyNlpCallback(runtime_service, nlp);
+				callback->event = RuntimeService::VOICE_STATE_DATA;
+				id = nlp->request((char *)voice_msg->buff, callback);
+				runtime_service->mNlpCallback.insert(pair<int, 
+						RuntimeService::MyNlpCallback*>(id, callback));
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
+				ALOGV("voice event   >>>   end");
+				if(callback != NULL){
+					callback->event = RuntimeService::VOICE_STATE_END;
+					runtime_service->mNlpCallback.insert(pair<int, 
+							RuntimeService::MyNlpCallback*>(id, callback));
+					callback = NULL;
+					nlp = NULL;
+				}
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
+				if(callback != NULL){
+					callback->event = RuntimeService::VOICE_STATE_CANCEL;
+					runtime_service->mNlpCallback.insert(pair<int, 
+							RuntimeService::MyNlpCallback*>(id, callback));
+					callback = NULL;
+					nlp = NULL;
+				}
+				ALOGI("voice event  >>>   cancel");
 				break;
 			case SIREN_EVENT_WAKE_PRE:
+				ALOGV("vicee event  >>>   prepare");
 				break;
 		}
-		runtime_service->mNlpCallback.insert(pair<int, RuntimeService::MyNlpCallback*>(id, callback));
 		runtime_service->voice_queue.pop_front();
 		delete voice_msg;
 		pthread_mutex_unlock(&runtime_service->siren_mutex);
 	}
-
 	ALOGV("thread quit!");
 	return NULL;
 }

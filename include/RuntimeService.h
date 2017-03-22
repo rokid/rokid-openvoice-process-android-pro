@@ -37,12 +37,28 @@ class RuntimeService : public BnRuntimeService{
 
 		class MyNlpCallback : public NlpCallback{
 			public:
-				MyNlpCallback(RuntimeService *runtime):runtime_service(runtime){
+
+				MyNlpCallback(RuntimeService *runtime, Nlp *nlp):runtime_service(runtime), _nlp(nlp){
 				}
+				~MyNlpCallback(){
+					if(event == VOICE_STATE_END || event == VOICE_STATE_CANCEL){
+						_nlp->release();
+						delete _nlp;
+					}
+				}
+				Nlp *_nlp;
 				RuntimeService *runtime_service;
+				int event = VOICE_STATE_UNKNOW;
 				void onNlp(int id, const char* nlp);
 
 				void onError(int id, int err);
+		};
+
+		enum{
+			VOICE_STATE_UNKNOW = 100,
+			VOICE_STATE_DATA,
+			VOICE_STATE_END,
+			VOICE_STATE_CANCEL,
 		};
 
 		enum{
