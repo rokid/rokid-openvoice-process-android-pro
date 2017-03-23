@@ -21,7 +21,6 @@ bool RuntimeService::init(){
 	}
 	set_siren_state(SIREN_STATE_SLEEP);
 	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
-//	pthread_join(siren_thread, NULL);
 	return true;
 }
 
@@ -44,8 +43,8 @@ void* siren_thread_loop(void* arg){
 
 	ALOGV("thread join !!");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
-	RuntimeService::MyNlpCallback *callback = NULL;
-	Nlp *nlp = NULL;
+	RuntimeService::MyAsrCallback *callback = NULL;
+	Asr *asr = NULL;
 	int id = -1;
 	for(;;){
 		pthread_mutex_lock(&runtime_service->siren_mutex);
@@ -65,39 +64,31 @@ void* siren_thread_loop(void* arg){
 				break;
 			case SIREN_EVENT_VAD_START:
 			case SIREN_EVENT_WAKE_VAD_START:
-				ALOGV("voice event   >>>   start");
 				runtime_service->current_status = SIREN_STATE_AWAKE;
-				nlp = new Nlp();
-				nlp->prepare();
+				id = -1;
+				asr = NULL;
+				callback = NULL;
+				asr = new Asr();
+				callback = new RuntimeService::MyAsrCallback(runtime_service, asr);
+				asr->prepare();
+				id = asr->start(callback);
+				ALOGV("voice event : start   id   >>>   %d   callback   >>>   %x", id, callback);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				callback = NULL;
-				callback = new RuntimeService::MyNlpCallback(runtime_service, nlp);
-				callback->event = RuntimeService::VOICE_STATE_DATA;
-				id = nlp->request((char *)voice_msg->buff, callback);
-				runtime_service->mNlpCallback.insert(pair<int, 
-						RuntimeService::MyNlpCallback*>(id, callback));
+				asr->voice(id, (unsigned char *)voice_msg->buff, voice_msg->length);
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
-				ALOGV("voice event   >>>   end        %x", callback);
-				if(callback != NULL){
-					//Modify the last callback of the state
-					callback->event = RuntimeService::VOICE_STATE_END;
-					callback = NULL;
-					nlp = NULL;
-				}
+				ALOGV("voice event : end   id    >>>   %d   callback  >>   %x",id,  callback);
+				if(asr && id > 0)
+					asr->end(id);
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
-				ALOGI("voice event  >>>   cancel    %x", callback);
-				if(callback != NULL){
-					//Modify the last callback of the state
-					callback->event = RuntimeService::VOICE_STATE_CANCEL;
-					callback = NULL;
-					nlp = NULL;
-				}
+				if(asr && id > 0)
+					asr->cancel(id);
+				ALOGI("voice event : cancel   id    >>>    %d    callback   >>   %x", id,  callback);
 				break;
 			case SIREN_EVENT_WAKE_PRE:
 				ALOGV("vicee event  >>>   prepare");
@@ -111,28 +102,43 @@ void* siren_thread_loop(void* arg){
 	return NULL;
 }
 
-void RuntimeService::MyNlpCallback::onNlp(int id, const char *nlp){
-	ALOGI("native    >>>   %d", nlp);
-	if(!runtime_service->mNlpCallback.empty()){
-		map<int, RuntimeService::MyNlpCallback*>::iterator it = runtime_service->mNlpCallback.find(id);
-		runtime_service->mNlpCallback.erase(it);
-		//TODO delete the callback;
-		RuntimeService::MyNlpCallback* callback = it->second;
-		delete callback;
-	}
+void RuntimeService::MyAsrCallback::onData(int id, const char *text){
+	ALOGI("native    >>>   %d", text);
 
 	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
-	if(binder == NULL){
+	if(binder != NULL){
+		Parcel data, reply;
+		data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+		data.writeString16(String16(text));
+		binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+		reply.readExceptionCode();
+	}else{
 		ALOGI("java runtime is null , Waiting for it to initialize");
-		return ;
 	}
-	Parcel data, reply;
-	data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
-	data.writeString16(String16(nlp));
-	binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
-	reply.readExceptionCode();
+	if(!runtime_service->mAsrCallback.empty()){
+		map<int, RuntimeService::MyAsrCallback*>::iterator it = runtime_service->mAsrCallback.find(id);
+		runtime_service->mAsrCallback.erase(id);
+		//TODO delete the callback;
+		RuntimeService::MyAsrCallback* callback = it->second;
+		delete callback;
+	}
 }
 
-void RuntimeService::MyNlpCallback::onError(int id, int err){
+void RuntimeService::MyAsrCallback::onComplete(int id){
+	ALOGV("callback onComplete   >>>    %d    >>>   this    >>>    %x", id, this);
+	runtime_service->mAsrCallback.insert(pair<int, RuntimeService::MyAsrCallback*>(id, this));
+}
+
+void RuntimeService::MyAsrCallback::onStart(int id){
+	ALOGI("callback onStart    >>>   %d    this   >>>    %x", id, this);	
+}
+
+void RuntimeService::MyAsrCallback::onStop(int id){
+	ALOGE("callback onStop    >>>   %d    this   >>>   %x", id, this);
+	delete this;
+}
+
+void RuntimeService::MyAsrCallback::onError(int id, int err){
 	ALOGE("callback  error :  %d,   id  :  %d", err, id);
+	delete this;
 }

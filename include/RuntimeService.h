@@ -8,7 +8,7 @@
 #include <map>
 
 #include "siren.h"
-#include "nlp.h"
+#include "asr.h"
 #include "IRuntimeService.h"
 
 using namespace android;
@@ -36,32 +36,24 @@ class RuntimeService : public BnRuntimeService{
 				}
 		};
 
-		class MyNlpCallback : public NlpCallback{
+		class MyAsrCallback : public AsrCallback{
 			public:
 
-				MyNlpCallback(RuntimeService *runtime, Nlp *nlp):runtime_service(runtime), _nlp(nlp){
+				MyAsrCallback(RuntimeService *runtime, Asr *asr):runtime_service(runtime), _asr(asr){
 				}
-				~MyNlpCallback(){
-					if(event == VOICE_STATE_END || event == VOICE_STATE_CANCEL){
-						_nlp->release();
-						delete _nlp;
-					}
+				~MyAsrCallback(){
+					_asr->release();
+					delete _asr;
 				}
 				//Just used to delete
-				Nlp *_nlp;
-				int event = VOICE_STATE_UNKNOW;
+				Asr *_asr;
 				RuntimeService *runtime_service;
 
-				void onNlp(int id, const char* nlp);
-
+				void onStart(int id);
+				void onData(int id, const char* text);
+				void onStop(int id);
+				void onComplete(int id);
 				void onError(int id, int err);
-		};
-
-		enum{
-			VOICE_STATE_UNKNOW = 100,
-			VOICE_STATE_DATA,
-			VOICE_STATE_END,
-			VOICE_STATE_CANCEL,
 		};
 
 		enum{
@@ -84,7 +76,7 @@ class RuntimeService : public BnRuntimeService{
 		pthread_t siren_thread;
 
 		list<VoiceMessage*> voice_queue;
-		map<int, MyNlpCallback*> mNlpCallback;
+		map<int, MyAsrCallback*> mAsrCallback;
 
 	private:
 };
