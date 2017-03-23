@@ -60,9 +60,6 @@ static struct pcm_config pcm_config_xmos = {
     .format = PCM_FORMAT_S32_LE,
 };
 
-static struct pcm* pcm = NULL;
-FILE *file = NULL;
-
 static int mic_array_device_open (const struct hw_module_t *module, const
         char *name, struct hw_device_t **device);
 
@@ -74,7 +71,7 @@ static int mic_array_device_stop_stream (struct mic_array_device_t *dev);
 
 static int mic_array_device_finish_stream (struct mic_array_device_t *dev);
 
-static int mic_array_device_read_stream (struct mic_array_device_t *dev, char *buff, uint64_t *frame_cnt);
+static int mic_array_device_read_stream (struct mic_array_device_t *dev, char *buff, unsigned int frame_cnt);
 
 static int mic_array_device_config_stream (struct mic_array_device_t *dev, int cmd, char *cmd_buff);
 
@@ -87,15 +84,7 @@ static struct hw_module_methods_t mic_array_module_methods = {
     .open = mic_array_device_open,
 };
 
-static int debug_fd = 0;
 
-static int mic_timeout_count = 0;
-
-#ifdef LATENCY_DEBUG
-static char *raw_buffer = 0;
-#endif
-
-static pthread_t log_th;
 struct mic_array_module_t HAL_MODULE_INFO_SYM = {
     .common = {
         .tag = HARDWARE_MODULE_TAG,
@@ -108,19 +97,6 @@ struct mic_array_module_t HAL_MODULE_INFO_SYM = {
     },
 };
 
-static void setCurrentThreadAffinityMask(cpu_set_t mask)
-{
-    int err, syscallres;
-    pid_t pid = gettid();
-    syscallres = syscall(__NR_sched_setaffinity, pid, sizeof(mask), &mask);
-    if (syscallres)
-    {
-        err = errno;
-        ALOGI ("set  affinity failed");
-    } else {
-        ALOGI ("set affinity done");
-    }
-}
 
 int find_snd(const char *snd)
 {
@@ -243,34 +219,14 @@ static int mic_array_device_open (const struct hw_module_t *module, const
     dev->config_stream = mic_array_device_config_stream;
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
     
-    dev->record_pid = 0;
-    memset ((char *)dev->fd, 0, sizeof (int) * 2);
-
     //use pcm_config_in instead
     dev->channels = MIC_CHANNEL;
     //10ms
     dev->sample_rate = MIC_SAMPLE_RATE;
     dev->bit = 32;
 	dev->frame_cnt = FRAME_COUNT;
-#ifdef LATENCY_DEBUG
-    raw_buffer = malloc (dev->sample_rate/100 * dev->channels * dev->bit / 8 + sizeof (struct timespec));
-#endif
     ALOGI ("alloc tmp_frames with size %d", dev->sample_rate/100 * dev->channels * dev->bit / 8);
-
-    dev->timeout.tv_sec = 1;
-    //500ms
-    dev->timeout.tv_usec = 0;
-    FD_ZERO (&dev->fdr);
-#if 0
-    cpu_set_t mask;
-    CPU_ZERO (&mask);
-    CPU_SET (2, &mask);
-    setCurrentThreadAffinityMask (mask);
-#endif
-    pcm = NULL;
-
-    //init ok
-    dev->ready = DEVICE_STAT_INIT;
+    
     *device = &(dev->common);
     return 0;
 }
@@ -293,21 +249,14 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 {
 	char value[PROPERTY_VALUE_MAX];
 	struct mixer *mixer;
-	char **values = "1";
+	struct pcm *pcm;
+    char **values = "1";
 	int card;  
     struct mic_array_device_t *mic_array_device = (struct mic_array_device_t *)dev;
-#if 0
-    cpu_set_t mask;
-    CPU_ZERO (&mask);
-    CPU_SET (2, &mask);
-    setCurrentThreadAffinityMask (mask);
-#endif
-
 	//use qualcomm sound card as default
 	property_get("ro.boardinfo.usbaudio", value, "1");
-
-    //file = fopen ("/data/record8ch.pcm", "wb");
-	
+    pcm = mic_array_device->pcm;
+    
     if (strcmp(value, "0") == 0) {
 		//iis direct link cpu
 	    card = find_snd ("msm8974-taiko-m");
@@ -343,6 +292,8 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
         return -1;
     }
 
+    mic_array_device->frame_cnt = FRAME_COUNT;
+    ALOGI ("frame count set to %d", mic_array_device->frame_cnt);
     return 0;
 }
 
@@ -363,7 +314,7 @@ static int mic_array_device_finish_stream (struct mic_array_device_t *dev) {
 
 //Note, the read buffer size is deriverd form dev structer, frame_cnt is a parameter that denote the actual read size
 static int mic_array_device_read_stream (struct mic_array_device_t *dev,
-        char *buff, uint64_t *frame_cnt) {
+        char *buff, unsigned int len) {
     int c = 0;
     int ret = 0;
     int size = dev->frame_cnt;
@@ -372,8 +323,6 @@ static int mic_array_device_read_stream (struct mic_array_device_t *dev,
     if (ret != 0) {
         *frame_cnt = 0;
         ALOGE ("pcm_read error: %s", strerror(errno));
-		//pcm_close(pcm);
-		//pcm = NULL;
 	} else {
         *frame_cnt = size;
     }
