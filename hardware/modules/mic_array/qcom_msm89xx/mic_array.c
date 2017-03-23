@@ -19,7 +19,7 @@
 #include <tinyalsa/asoundlib.h>
 #include <cutils/properties.h>
 
-#include "mic/mic_array.h"
+#include "r2hw/mic_array.h"
 
 #define MODULE_NAME "mic_array"
 #define MODULE_AUTHOR "shichaoge@rokid.com"
@@ -241,7 +241,7 @@ static int mic_array_device_close (struct hw_device_t *device) {
         mic_array_device = NULL;
     }
     
-    pcm = NULL;  
+    mic_array_device->pcm = NULL;  
     return 0;
 }
 
@@ -255,7 +255,6 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
     struct mic_array_device_t *mic_array_device = (struct mic_array_device_t *)dev;
 	//use qualcomm sound card as default
 	property_get("ro.boardinfo.usbaudio", value, "1");
-    pcm = mic_array_device->pcm;
     
     if (strcmp(value, "0") == 0) {
 		//iis direct link cpu
@@ -293,11 +292,13 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
     }
 
     mic_array_device->frame_cnt = FRAME_COUNT;
-    ALOGI ("frame count set to %d", mic_array_device->frame_cnt);
+    mic_array_device->pcm = pcm;
     return 0;
 }
 
 static int mic_array_device_stop_stream (struct mic_array_device_t *dev) {  
+    struct pcm *pcm = dev->pcm;
+    
     if (pcm != NULL) {
         pcm_close (pcm);
         //dev->frame_cnt = 0;
@@ -318,14 +319,15 @@ static int mic_array_device_read_stream (struct mic_array_device_t *dev,
     int c = 0;
     int ret = 0;
     int size = dev->frame_cnt;
-	
+    struct pcm *pcm = dev->pcm;
+    if (pcm == NULL) {
+        return -1;
+    }
+
     ret = pcm_read(pcm, buff, size);
     if (ret != 0) {
-        *frame_cnt = 0;
         ALOGE ("pcm_read error: %s", strerror(errno));
-	} else {
-        *frame_cnt = size;
-    }
+	} 
 
     return ret;
 }
