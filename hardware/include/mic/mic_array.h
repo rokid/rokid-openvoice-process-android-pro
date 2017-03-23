@@ -21,26 +21,20 @@ struct mic_array_module_t {
 
 struct mic_array_device_t {
     struct hw_device_t common;
-    
-    int fd[2];
-    fd_set fdr;
-    struct timeval timeout;
-    int mics_mapping[8];
-    int record_pid;
-    int ready;
     int channels;
     int sample_rate;
     int bit;
-    uint64_t frame_cnt;
+    unsigned int frame_cnt;
+    struct pcm *pcm;
+
 
     int (*get_stream_buff_size) (struct mic_array_device_t *dev);
     int (*start_stream) (struct mic_array_device_t *dev);
     int (*stop_stream) (struct mic_array_device_t *dev);
     int (*finish_stream) (struct mic_array_device_t * dev);
     int (*resume_stream) (struct mic_array_device_t *dev);
-    int (*read_stream) (struct mic_array_device_t *dev, char *buff, uint64_t *frame_cnt);
+    int (*read_stream) (struct mic_array_device_t *dev, char *buff, unsigned int frame_cnt);
     int (*config_stream) (struct mic_array_device_t *dev, int cmd, char *cmd_buff);
 };
 __END_DECLS
-
 #endif
