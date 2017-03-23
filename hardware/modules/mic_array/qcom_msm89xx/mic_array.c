@@ -19,7 +19,7 @@
 #include <tinyalsa/asoundlib.h>
 #include <cutils/properties.h>
 
-#include "r2hw/mic_array.h"
+#include "mic/mic_array.h"
 
 #define MODULE_NAME "mic_array"
 #define MODULE_AUTHOR "shichaoge@rokid.com"
