@@ -1,7 +1,7 @@
 #native runtime
 PRODUCT_PACKAGES += \
-					runtime \
-					mic_array.p230 
+					mic_array.p230 \
+					runtime 
 
 #siren
 PRODUCT_PACKAGES += \

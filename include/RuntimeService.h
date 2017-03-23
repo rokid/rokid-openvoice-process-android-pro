@@ -43,7 +43,6 @@ class RuntimeService : public BnRuntimeService{
 				}
 				~MyAsrCallback(){
 					_asr->release();
-					delete _asr;
 				}
 				//Just used to delete
 				Asr *_asr;

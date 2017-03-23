@@ -44,8 +44,8 @@ void* siren_thread_loop(void* arg){
 	ALOGV("thread join !!");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	RuntimeService::MyAsrCallback *callback = NULL;
-	Asr *asr = NULL;
 	int id = -1;
+	Asr asr;
 	for(;;){
 		pthread_mutex_lock(&runtime_service->siren_mutex);
 		if(runtime_service->voice_queue.empty()){
@@ -66,28 +66,26 @@ void* siren_thread_loop(void* arg){
 			case SIREN_EVENT_WAKE_VAD_START:
 				runtime_service->current_status = SIREN_STATE_AWAKE;
 				id = -1;
-				asr = NULL;
 				callback = NULL;
-				asr = new Asr();
-				callback = new RuntimeService::MyAsrCallback(runtime_service, asr);
-				asr->prepare();
-				id = asr->start(callback);
+				callback = new RuntimeService::MyAsrCallback(runtime_service, &asr);
+				asr.prepare();
+				id = asr.start(callback);
 				ALOGV("voice event : start   id   >>>   %d   callback   >>>   %x", id, callback);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				asr->voice(id, (unsigned char *)voice_msg->buff, voice_msg->length);
+				asr.voice(id, (unsigned char *)voice_msg->buff, voice_msg->length);
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
 				ALOGV("voice event : end   id    >>>   %d   callback  >>   %x",id,  callback);
-				if(asr && id > 0)
-					asr->end(id);
+				if(id > 0)
+					asr.end(id);
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
-				if(asr && id > 0)
-					asr->cancel(id);
+				if(id > 0)
+					asr.cancel(id);
 				ALOGI("voice event : cancel   id    >>>    %d    callback   >>   %x", id,  callback);
 				break;
 			case SIREN_EVENT_WAKE_PRE:

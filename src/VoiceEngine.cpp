@@ -45,9 +45,9 @@ bool VoiceEngine::init(RuntimeService *runtime){
 		return false;
 	}	
 	ALOGI ("open mic array done");
-	ALOGI("==================%x", runtime);
 	//2. init siren
 	_siren = init_siren(runtime, NULL, &siren_input);	
+	ALOGI("=====-------------=============%x", runtime);
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
 	return true;
@@ -69,7 +69,7 @@ void siren::release_input(void *token){
 
 void siren::start_input(void *token){
 	mic_array_device->start_stream(mic_array_device);
-	ALOGV("start input ..");
+//	ALOGV("start input ..");
 }
 
 void siren::stop_input(void *token){
@@ -78,8 +78,8 @@ void siren::stop_input(void *token){
 }
 
 int siren::read_input(void *token, char *buff, int	frame_cnt){
-//	ALOGV("read input ..");
-	return mic_array_device->read_stream(mic_array_device, buff, (uint64_t *)&frame_cnt);
+	//ALOGV("read input ..");
+	return mic_array_device->read_stream(mic_array_device, buff, frame_cnt);
 }
 
 void siren::on_err_input(void *token){
