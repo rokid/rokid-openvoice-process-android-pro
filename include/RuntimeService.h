@@ -8,7 +8,7 @@
 #include <map>
 
 #include "siren.h"
-#include "nlp.h"
+#include "asr.h"
 #include "IRuntimeService.h"
 
 using namespace android;
@@ -20,7 +20,7 @@ class RuntimeService : public BnRuntimeService{
 	public:
 		class VoiceMessage{
 			public:
-				void* buff;
+				void* buff = NULL;
 				int length;
 				siren_event_t event;
 				int has_voice;
@@ -31,17 +31,28 @@ class RuntimeService : public BnRuntimeService{
 				double sl_degree;
 
 				~VoiceMessage(){
-					free(buff);
+					if(buff != NULL)
+						delete buff;
 				}
 		};
 
-		class MyNlpCallback : public NlpCallback{
+		class MyAsrCallback : public AsrCallback{
 			public:
-				MyNlpCallback(RuntimeService *runtime):runtime_service(runtime){
-				}
-				RuntimeService *runtime_service;
-				void onNlp(int id, const char* nlp);
 
+				MyAsrCallback(RuntimeService *runtime, Asr *asr):runtime_service(runtime), _asr(asr){
+				}
+				~MyAsrCallback(){
+					_asr->release();
+					delete _asr;
+				}
+				//Just used to delete
+				Asr *_asr;
+				RuntimeService *runtime_service;
+
+				void onStart(int id);
+				void onData(int id, const char* text);
+				void onStop(int id);
+				void onComplete(int id);
 				void onError(int id, int err);
 		};
 
@@ -65,7 +76,7 @@ class RuntimeService : public BnRuntimeService{
 		pthread_t siren_thread;
 
 		list<VoiceMessage*> voice_queue;
-		map<int, MyNlpCallback*> mNlpCallback;
+		map<int, MyAsrCallback*> mAsrCallback;
 
 	private:
 };
