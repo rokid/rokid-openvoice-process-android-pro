@@ -20,15 +20,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	IBinder _thiz = null;
 
 	public RuntimeService(Context mContext){
-		Log.e(TAG, "RuntimeService  created");
+		Log.e(TAG, "RuntimeService  created " + mContext);
 		this.mContext = mContext;
-		_thiz = android.os.ServiceManager.getService("runtime_navive");
-		if(mContext != null){
-			ComponentName cn = new ComponentName("com.rokid.system.cloudappclient", 
-					"com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-			Intent intent = new Intent().setComponent(cn);
-			mContext.bindServiceAsUser(intent, connect, Context.BIND_AUTO_CREATE, android.os.UserHandle.OWNER);
-		}
 	}
 
 	ServiceConnection connect = new ServiceConnection(){	
@@ -38,6 +31,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Parcel reply = Parcel.obtain();
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
+				_thiz = android.os.ServiceManager.getService("runtime_native");
 				Log.e(TAG, "_thiz    >>>   " + _thiz);
 				data.writeStrongBinder(_thiz);
 				_service.transact(999, data, reply, 0);
@@ -57,6 +51,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 
 	@Override
 	public void setSirenState(int state){
+		_thiz = android.os.ServiceManager.getService("runtime_native");
 		Log.e(TAG, "set siren state   >>>   " + state + "    " + _thiz);
 		if(_thiz == null){
 			Log.e(TAG, "Permission denied in (RuntimeService setSirenState)");
@@ -79,6 +74,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 
 	@Override
 	public int getSirenState(){
+		_thiz = android.os.ServiceManager.getService("runtime_native");
 		Log.e(TAG, "get siren state  " + _thiz);
 		if(_thiz == null){
 			Log.e(TAG, "Permission denied in (RuntimeService getSirenState)");
@@ -98,6 +94,17 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			reply.recycle();
 		}
 		return -1;
+	}
+
+	@Override
+	public void bindService(){
+		Log.e(TAG, "mContext   " + mContext);
+		if(mContext != null){
+			ComponentName cn = new ComponentName("com.rokid.system.cloudappclient", 
+					"com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
+			Intent intent = new Intent().setComponent(cn);
+			mContext.bindServiceAsUser(intent, connect, Context.BIND_AUTO_CREATE, android.os.UserHandle.OWNER);
+		}
 	}
 	
 	@Override

@@ -5,4 +5,5 @@ interface IRuntimeService{
 	void setSirenState(int state);
 	int getSirenState();
 	void receiveRemoteMessage(String s);
+	void bindService();
 }
