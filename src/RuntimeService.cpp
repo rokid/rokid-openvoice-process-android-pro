@@ -45,6 +45,7 @@ void* siren_thread_loop(void* arg){
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	RuntimeService::MyAsrCallback *callback = NULL;
 	int id = -1;
+	int err = -1;
 	Asr asr;
 	for(;;){
 		pthread_mutex_lock(&runtime_service->siren_mutex);
@@ -70,13 +71,17 @@ void* siren_thread_loop(void* arg){
 				id = -1;
 				callback = NULL;
 				callback = new RuntimeService::MyAsrCallback(runtime_service, &asr);
-				asr.prepare();
+				err = asr.prepare();
 				id = asr.start(callback);
-				ALOGV("voice event : start   id   >>>   %d   callback   >>>   %x ----------------------", id, callback);
+				ALOGV("voice event : start   id   >>>   %d     err : %d ----------------------", id,  err);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				asr.voice(id, (unsigned char *)voice_msg->buff, voice_msg->length);
+				if(id || err){
+					asr.voice(id, (unsigned char *)voice_msg->buff, voice_msg->length);
+				}else if(callback != NULL){
+					delete callback;
+				}
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
