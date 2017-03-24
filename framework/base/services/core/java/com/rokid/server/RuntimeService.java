@@ -10,6 +10,9 @@ import android.os.Parcel;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import android.util.Pair;
+import java.util.Map;
+import java.util.HashMap;
 
 public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 
@@ -18,23 +21,29 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	Context mContext;
 	IBinder _service = null;
 	IBinder _thiz = null;
+	
+	Map<String, Pair<String, String>> domains = new HashMap<String, Pair<String, String>>();
 
 	public RuntimeService(Context mContext){
 		Log.e(TAG, "RuntimeService  created " + mContext);
 		this.mContext = mContext;
+
+		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.activity.RKCloudAppSceneActivity"));
+		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.activity.RKCloudAppCutActivity"));
+		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService"));
 	}
 
 	ServiceConnection connect = new ServiceConnection(){	
+		@Override
 		public void onServiceConnected(ComponentName name, IBinder service){
 			_service = service;
 			Parcel data = Parcel.obtain();
 			Parcel reply = Parcel.obtain();
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-				_thiz = android.os.ServiceManager.getService("runtime_native");
-				Log.e(TAG, "_thiz    >>>   " + _thiz);
-				data.writeStrongBinder(_thiz);
-				_service.transact(999, data, reply, 0);
+				data.writeStrongBinder(getNativeService());
+				Log.e(TAG, "service conneted   _thiz : " + _thiz);
+				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 999, data, reply, 0);
 				reply.readException();
 			}catch(RemoteException e){
 				e.printStackTrace();
@@ -43,6 +52,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 				reply.recycle();
 			}
 		}
+		@Override
 		public void onServiceDisconnected(ComponentName name){
 			Log.e(TAG, "service disconnected");
 			_service = null;
@@ -51,12 +61,12 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 
 	@Override
 	public void setSirenState(int state){
-		_thiz = android.os.ServiceManager.getService("runtime_native");
 		Log.e(TAG, "set siren state   >>>   " + state + "    " + _thiz);
 		if(_thiz == null){
 			Log.e(TAG, "Permission denied in (RuntimeService setSirenState)");
 			return;
 		}
+		getNativeService();
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
@@ -80,6 +90,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Log.e(TAG, "Permission denied in (RuntimeService getSirenState)");
 			return -1;
 		}
+		getNativeService();
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
@@ -108,26 +119,18 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 	
 	@Override
-	public void nlpMessage(String nlp){
+	public void nativeNlpMessage(String nlp){
 		android.util.Log.e(TAG, nlp);
-		JSONObject json = null;
-		try{
-			json = new JSONObject(nlp);
-			String domain = json.getString("domain");
-			//TODO
-
-		}catch(Exception e){
-			e.printStackTrace();
-			return ;
-		}
+		if(nlp == null) return;
+		getNativeService();
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
 			data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
 			Log.e(TAG, "_thiz    >>>   " + _thiz);
 			//TODO
-			data.writeString("");
-			_service.transact(666, data, reply, 0);
+			data.writeString(nlp);
+			_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 666, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){
 			e.printStackTrace();
@@ -138,22 +141,52 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 
 	@Override
-	public void receiveRemoteMessage(String intent){
-		//startService();
+	public void receiveNlpMessage(String nlp){
+		Log.e(TAG, nlp);
+		if(nlp == null || nlp.length() == 0){
+			return;
+		}
+		JSONObject json = null;
+		try{
+			json = new JSONObject(nlp);
+			String domain = json.getString("domain");
+			String _nlp = json.getString("nlp");
+			if(domain != null){
+				Pair pair = domains.get(domain);
+				if(pair != null){
+					if("activity".equals(pair.first)){
+						startActivity((String)pair.second, _nlp);
+					}else if("service".equals(pair.first)){
+						startService((String)pair.second, _nlp);
+					}
+				}else Log.e(TAG, "Connot find domain  :  " + domain);
+			}else Log.e(TAG, "domain is null");
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
-	private void startService(String action){
+	private IBinder getNativeService(){
+		if(_thiz == null) {
+			_thiz = android.os.ServiceManager.getService("runtime_native");
+		}	
+		return _thiz;
+	}
+
+	private void startService(String action, String nlp){
 		if(mContext != null){
 			Intent intent = new Intent(action);
+			intent.putExtra("nlp", nlp);
 			mContext.startServiceAsUser(intent, android.os.UserHandle.OWNER);
 		}else{
 			Log.e(TAG, "context is null ");
 		}
 	}
 
-	private void startActivity(String action){
+	private void startActivity(String action, String nlp){
 		if(mContext != null){
 			Intent intent = new Intent(action);
+			intent.putExtra("nlp", nlp);
 			mContext.startActivityAsUser(intent, android.os.UserHandle.OWNER);
 		}else{
 			Log.e(TAG, "context is null ");
