@@ -96,17 +96,15 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 		double energy, double threshold,
 		int has_voiceprint){
 
-	ALOGV("voice_event_callback length %d, has_voice %d , event %d, has_sl %d", 
-			length, has_voice, event, has_sl);
+	ALOGV("voice_event_callback    >>>    has_voice %d     len    >>>   %d", has_voice, length);
 	RuntimeService *runtime_service = (RuntimeService*)token;
-	ALOGI("=============------------=====%x", runtime_service);
-	if(runtime_service) return;
-
+	ALOGI("----------%x---------------%d---------------", runtime_service, event);
+	if(runtime_service == NULL) return;
 	pthread_mutex_lock(&runtime_service->siren_mutex);
 	//add to siren_queue
 	RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
 	char *_cache = NULL;
-	if(has_voice){
+	if(has_voice > 0){
 		_cache = new char[length];
 		memcpy(_cache, buff, length);	
 		voice_msg->buff = _cache;
@@ -120,7 +118,6 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 	voice_msg->energy = energy;
 	voice_msg->threshold = threshold;
 	voice_msg->has_voiceprint = has_voiceprint;
-
 	runtime_service->voice_queue.push_back(voice_msg);
 
 	pthread_cond_signal(&runtime_service->siren_cond);

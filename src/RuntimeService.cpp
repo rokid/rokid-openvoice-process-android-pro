@@ -48,10 +48,12 @@ void* siren_thread_loop(void* arg){
 	Asr asr;
 	for(;;){
 		pthread_mutex_lock(&runtime_service->siren_mutex);
-		if(runtime_service->voice_queue.empty()){
+		while(runtime_service->voice_queue.empty()){
 			pthread_cond_wait(&runtime_service->siren_cond, &runtime_service->siren_mutex);
 		}
+
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
+		ALOGV("========start========================%d====", voice_msg->event);
 		switch(voice_msg->event){
 			case SIREN_EVENT_WAKE_CMD:
 				ALOGV("voice event   >>>   wake_cmd");
@@ -70,7 +72,7 @@ void* siren_thread_loop(void* arg){
 				callback = new RuntimeService::MyAsrCallback(runtime_service, &asr);
 				asr.prepare();
 				id = asr.start(callback);
-				ALOGV("voice event : start   id   >>>   %d   callback   >>>   %x", id, callback);
+				ALOGV("voice event : start   id   >>>   %d   callback   >>>   %x ----------------------", id, callback);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
