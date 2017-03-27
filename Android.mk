@@ -13,6 +13,7 @@ LOCAL_SHARED_LIBRARIES := \
 		liblog \
 		libhardware \
 		libbsiren \
+		libjsonc \
 		libutils \
 		libgpr \
 		libgrpc \
@@ -39,6 +40,7 @@ $(warning $(PROTOC_OUT_DIR))
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
+		rokid-blacksiren/thirdparty/libjsonc/include \
 		speech/include \
 #		$(SPEECH_DIR)/nlp \
 		$(SPEECH_DIR)/asr \

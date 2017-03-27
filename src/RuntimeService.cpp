@@ -4,6 +4,8 @@
 #include "include/RuntimeService.h"
 #include "include/VoiceEngine.h"
 #include <binder/IServiceManager.h>
+#include <stdio.h>
+#include "json.h"
 
 using namespace android;
 using namespace std;
@@ -46,6 +48,7 @@ void* siren_thread_loop(void* arg){
 	int id = -1;
 
 	bool err = false;;
+	//FILE *fd = fopen("/data/voice.pcm", "w");
 	runtime_service->_speech = new_speech();
 	if (!runtime_service->_speech->prepare()) {
 		ALOGE("=========prepare failed===============");
@@ -79,16 +82,18 @@ void* siren_thread_loop(void* arg){
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				if (id <= 0) {
-					// TODO: log
-				} else
+				if (id > 0) {
 					runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
+					//fwrite(voice_msg->buff, voice_msg->length, 1, fd);
+				}
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
 				ALOGV("voice event : end   id    >>>   %d ",id);
-				if(id > 0)
+				if(id > 0) {
 					runtime_service->_speech->end_voice(id);
+					//fclose(fd);
+				}
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
@@ -104,6 +109,7 @@ void* siren_thread_loop(void* arg){
 		delete voice_msg;
 		pthread_mutex_unlock(&runtime_service->siren_mutex);
 	}
+	runtime_service->_speech->release();
 	delete runtime_service->_speech;
 	ALOGV("thread quit!");
 	return NULL;
@@ -111,29 +117,37 @@ void* siren_thread_loop(void* arg){
 
 void* speech_thread_loop(void* arg){
 	RuntimeService *runtime_service = (RuntimeService*)arg;
+	json_object *_json_obj = NULL;
 	for(;;){
 		SpeechResult sr;
 		int32_t flag = runtime_service->_speech->poll(sr);
 		if (flag < 0)
-			continue;
+			break;
 
-		ALOGV("result : asr  >>  %s    %d", sr.asr.c_str(), flag);
+//		ALOGV("result : asr  >>  %s    %d", sr.asr.c_str(), flag);
 		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
-		ALOGV("result : action >>  %s", sr.action.c_str());
-		switch(flag){
-			case 0:
-				break;
+//		ALOGV("result : action >>  %s", sr.action.c_str());
+
+		if(flag == 0 && sr.nlp != ""){
+			_json_obj = json_tokener_parse(sr.nlp.c_str());
+			json_object_object_add(_json_obj, "asr", json_object_new_string(sr.asr.c_str()));
+			json_object_object_add(_json_obj, "action", json_object_new_string(sr.action.c_str()));
+			ALOGV("-------------------------------------------------------------------------");
+			ALOGV("%s", json_object_to_json_string(_json_obj));
+			ALOGV("-------------------------------------------------------------------------");
+			sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
+			if(binder != NULL){
+				Parcel data, reply;
+				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+				data.writeString16(String16(json_object_to_json_string(_json_obj)));
+				binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+				reply.readExceptionCode();
+			}else{
+				ALOGI("java runtime is null , Waiting for it to initialize");
+			}
+			delete _json_obj;
+			_json_obj = NULL;
 		}
-//		sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
-//		if(binder != NULL){
-//			Parcel data, reply;
-//			data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
-//			data.writeString16(String16(text));
-//			binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
-//			reply.readExceptionCode();
-//		}else{
-//			ALOGI("java runtime is null , Waiting for it to initialize");
-//		}
 	}
 	// todo: log
 	return NULL;
