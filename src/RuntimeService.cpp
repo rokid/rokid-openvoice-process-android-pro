@@ -118,6 +118,7 @@ void* siren_thread_loop(void* arg){
 void* speech_thread_loop(void* arg){
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	json_object *_json_obj = NULL;
+	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	for(;;){
 		SpeechResult sr;
 		int32_t flag = runtime_service->_speech->poll(sr);
@@ -135,7 +136,6 @@ void* speech_thread_loop(void* arg){
 			ALOGV("-------------------------------------------------------------------------");
 			ALOGV("%s", json_object_to_json_string(_json_obj));
 			ALOGV("-------------------------------------------------------------------------");
-			sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 			if(binder != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
