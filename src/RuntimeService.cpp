@@ -124,9 +124,9 @@ void* speech_thread_loop(void* arg){
 		if (flag < 0)
 			break;
 
-//		ALOGV("result : asr  >>  %s    %d", sr.asr.c_str(), flag);
+		ALOGV("result : asr  >>  %s    %d", sr.asr.c_str(), flag);
 		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
-//		ALOGV("result : action >>  %s", sr.action.c_str());
+		ALOGV("result : action >>  %s", sr.action.c_str());
 
 		if(flag == 0 && sr.nlp != ""){
 			_json_obj = json_tokener_parse(sr.nlp.c_str());
@@ -149,23 +149,11 @@ void* speech_thread_loop(void* arg){
 			_json_obj = NULL;
 		}
 	}
-	// todo: log
 	return NULL;
 }
 
 //void RuntimeService::MyAsrCallback::onData(int id, const char *text){
 //	ALOGI("native    >>>   %d", text);
-//
-//	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
-//	if(binder != NULL){
-//		Parcel data, reply;
-//		data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
-//		data.writeString16(String16(text));
-//		binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
-//		reply.readExceptionCode();
-//	}else{
-//		ALOGI("java runtime is null , Waiting for it to initialize");
-//	}
 //	if(!runtime_service->mAsrCallback.empty()){
 //		map<int, RuntimeService::MyAsrCallback*>::iterator it = runtime_service->mAsrCallback.find(id);
 //		runtime_service->mAsrCallback.erase(id);

@@ -74,8 +74,6 @@ class RuntimeService : public BnRuntimeService{
 		pthread_cond_t siren_cond;
 		pthread_t siren_thread;
 
-		pthread_mutex_t speech_mutex;
-		pthread_cond_t speech_cond;
 		pthread_t speech_thread;
 
 		Speech *_speech = NULL;

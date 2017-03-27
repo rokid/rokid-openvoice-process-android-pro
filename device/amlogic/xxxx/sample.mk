@@ -16,11 +16,13 @@ PRODUCT_PACKAGES += \
 
 #speech
 PRODUCT_PACKAGES += \
+					libspeech \
 					libgpr \
 					libgrpc \
 					libgrpc++ \
 					libprotobuf-rokid-cpp-lite \
 					libprotobuf-rokid-cpp-full \
+					librokid_speech_util \
 					libspeech_asr \
 					libspeech_common \
 					libspeech_nlp \
