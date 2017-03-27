@@ -40,8 +40,8 @@ $(warning $(PROTOC_OUT_DIR))
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		rokid-blacksiren/thirdparty/libjsonc/include \
-		speech/include \
+		$(LOCAL_PATH)/../BlackSiren/thirdparty/libjsonc/include \
+		$(LOCAL_PATH)/../speech/include 
 #		$(SPEECH_DIR)/nlp \
 		$(SPEECH_DIR)/asr \
 		$(SPEECH_DIR)/common \

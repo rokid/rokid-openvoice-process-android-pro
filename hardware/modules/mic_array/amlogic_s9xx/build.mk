@@ -7,10 +7,12 @@ LOCAL_SRC_FILES := mic_array.c
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE := mic_array.$(TARGET_DEVICE)
 
+$(info ---->>$(LOCAL_PATH))
+
 LOCAL_MODULE_TAGS := optional
 LOCAL_C_INCLUDES += \
 	hardware/libhardware \
-	rokid-openvoice-sample-android/hardware/include \
+	$(LOCAL_PATH)/../../../hardware\include \
 	external/tinyalsa/include
 
 LOCAL_SHARED_LIBRARIES := liblog libcutils libtinyalsa
