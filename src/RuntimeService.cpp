@@ -43,10 +43,16 @@ void* siren_thread_loop(void* arg){
 
 	ALOGV("thread join !!");
 	RuntimeService *runtime_service = (RuntimeService*)arg;
-	RuntimeService::MyAsrCallback *callback = NULL;
 	int id = -1;
-	int err = -1;
-	Asr asr;
+
+	bool err = false;;
+	runtime_service->_speech = new_speech();
+	if (!runtime_service->_speech->prepare()) {
+		ALOGE("=========prepare failed===============");
+		return NULL;
+	}
+	runtime_service->_speech->config("codec", "opu");
+	pthread_create(&runtime_service->speech_thread, NULL, speech_thread_loop, runtime_service);
 	for(;;){
 		pthread_mutex_lock(&runtime_service->siren_mutex);
 		while(runtime_service->voice_queue.empty()){
@@ -68,32 +74,27 @@ void* siren_thread_loop(void* arg){
 			case SIREN_EVENT_VAD_START:
 			case SIREN_EVENT_WAKE_VAD_START:
 				runtime_service->current_status = SIREN_STATE_AWAKE;
-				id = -1;
-				callback = NULL;
-				callback = new RuntimeService::MyAsrCallback(runtime_service, &asr);
-				err = asr.prepare();
-				id = asr.start(callback);
+				id = runtime_service->_speech->start_voice();
 				ALOGV("voice event : start   id   >>>   %d     err : %d ----------------------", id,  err);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				if(id || err){
-					asr.voice(id, (unsigned char *)voice_msg->buff, voice_msg->length);
-				}else if(callback != NULL){
-					delete callback;
-				}
+				if (id <= 0) {
+					// TODO: log
+				} else
+					runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
-				ALOGV("voice event : end   id    >>>   %d   callback  >>   %x",id,  callback);
+				ALOGV("voice event : end   id    >>>   %d ",id);
 				if(id > 0)
-					asr.end(id);
+					runtime_service->_speech->end_voice(id);
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
 				if(id > 0)
-					asr.cancel(id);
-				ALOGI("voice event : cancel   id    >>>    %d    callback   >>   %x", id,  callback);
+					runtime_service->_speech->cancel(id);
+				ALOGI("voice event : cancel   id    >>>    %d", id);
 				break;
 			case SIREN_EVENT_WAKE_PRE:
 				ALOGV("vicee event  >>>   prepare");
@@ -103,47 +104,64 @@ void* siren_thread_loop(void* arg){
 		delete voice_msg;
 		pthread_mutex_unlock(&runtime_service->siren_mutex);
 	}
+	delete runtime_service->_speech;
 	ALOGV("thread quit!");
 	return NULL;
 }
 
-void RuntimeService::MyAsrCallback::onData(int id, const char *text){
-	ALOGI("native    >>>   %d", text);
+void* speech_thread_loop(void* arg){
+	RuntimeService *runtime_service = (RuntimeService*)arg;
+	for(;;){
+		SpeechResult sr;
+		int32_t flag = runtime_service->_speech->poll(sr);
+		if (flag < 0)
+			continue;
 
-	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
-	if(binder != NULL){
-		Parcel data, reply;
-		data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
-		data.writeString16(String16(text));
-		binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
-		reply.readExceptionCode();
-	}else{
-		ALOGI("java runtime is null , Waiting for it to initialize");
+		ALOGV("result : asr  >>  %s    %d", sr.asr.c_str(), flag);
+		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
+		ALOGV("result : action >>  %s", sr.action.c_str());
+		switch(flag){
+			case 0:
+				break;
+		}
+//		sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
+//		if(binder != NULL){
+//			Parcel data, reply;
+//			data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+//			data.writeString16(String16(text));
+//			binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+//			reply.readExceptionCode();
+//		}else{
+//			ALOGI("java runtime is null , Waiting for it to initialize");
+//		}
 	}
-	if(!runtime_service->mAsrCallback.empty()){
-		map<int, RuntimeService::MyAsrCallback*>::iterator it = runtime_service->mAsrCallback.find(id);
-		runtime_service->mAsrCallback.erase(id);
-		//TODO delete the callback;
-		RuntimeService::MyAsrCallback* callback = it->second;
-		delete callback;
-	}
+	// todo: log
+	return NULL;
 }
 
-void RuntimeService::MyAsrCallback::onComplete(int id){
-	ALOGV("callback onComplete   >>>    %d    >>>   this    >>>    %x", id, this);
-	runtime_service->mAsrCallback.insert(pair<int, RuntimeService::MyAsrCallback*>(id, this));
-}
-
-void RuntimeService::MyAsrCallback::onStart(int id){
-	ALOGI("callback onStart    >>>   %d    this   >>>    %x", id, this);	
-}
-
-void RuntimeService::MyAsrCallback::onStop(int id){
-	ALOGE("callback onStop    >>>   %d    this   >>>   %x", id, this);
-	delete this;
-}
-
-void RuntimeService::MyAsrCallback::onError(int id, int err){
-	ALOGE("callback  error :  %d,   id  :  %d", err, id);
-	delete this;
-}
+//void RuntimeService::MyAsrCallback::onData(int id, const char *text){
+//	ALOGI("native    >>>   %d", text);
+//
+//	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
+//	if(binder != NULL){
+//		Parcel data, reply;
+//		data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+//		data.writeString16(String16(text));
+//		binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+//		reply.readExceptionCode();
+//	}else{
+//		ALOGI("java runtime is null , Waiting for it to initialize");
+//	}
+//	if(!runtime_service->mAsrCallback.empty()){
+//		map<int, RuntimeService::MyAsrCallback*>::iterator it = runtime_service->mAsrCallback.find(id);
+//		runtime_service->mAsrCallback.erase(id);
+//		//TODO delete the callback;
+//		RuntimeService::MyAsrCallback* callback = it->second;
+//		delete callback;
+//	}
+//}
+//
+//void RuntimeService::MyAsrCallback::onComplete(int id){
+//	ALOGV("callback onComplete   >>>    %d    >>>   this    >>>    %x", id, this);
+//	runtime_service->mAsrCallback.insert(pair<int, RuntimeService::MyAsrCallback*>(id, this));
+//}

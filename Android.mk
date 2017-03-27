@@ -20,6 +20,7 @@ LOCAL_SHARED_LIBRARIES := \
 		libprotobuf-rokid-cpp-lite \
 		libprotobuf-rokid-cpp-full \
 		libspeech_common \
+		libspeech \
 		libspeech_nlp \
 		libspeech_tts \
 		libspeech_asr
@@ -38,12 +39,13 @@ $(warning $(PROTOC_OUT_DIR))
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		$(SPEECH_DIR)/nlp \
+		speech/include \
+#		$(SPEECH_DIR)/nlp \
 		$(SPEECH_DIR)/asr \
 		$(SPEECH_DIR)/common \
 		$(SPEECH_DIR_DEP)/protobuf/src \
 		$(SPEECH_DIR_DEP)/grpc/include \
-		$(PROTOC_OUT_DIR)/gen
+		$(PROTOC_OUT_DIR)/gen \
 
 IGNORED_WARNINGS := -Wno-sign-compare -Wno-unused-parameter -Wno-sign-promo -Wno-error=return-type -Wno-error=non-virtual-dtor
 #LOCAL_RTTI_FLAG := -frtti

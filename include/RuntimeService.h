@@ -8,7 +8,8 @@
 #include <map>
 
 #include "siren.h"
-#include "asr.h"
+//#include "asr.h"
+#include "speech.h"
 #include "IRuntimeService.h"
 
 using namespace android;
@@ -32,28 +33,28 @@ class RuntimeService : public BnRuntimeService{
 
 				~VoiceMessage(){
 					if(buff != NULL)
-						delete buff;
+						delete []buff;
 				}
 		};
 
-		class MyAsrCallback : public AsrCallback{
-			public:
-
-				MyAsrCallback(RuntimeService *runtime, Asr *asr):runtime_service(runtime), _asr(asr){
-				}
-				~MyAsrCallback(){
-					_asr->release();
-				}
-				//Just used to delete
-				Asr *_asr;
-				RuntimeService *runtime_service;
-
-				void onStart(int id);
-				void onData(int id, const char* text);
-				void onStop(int id);
-				void onComplete(int id);
-				void onError(int id, int err);
-		};
+//		class MyAsrCallback : public AsrCallback{
+//			public:
+//
+//				MyAsrCallback(RuntimeService *runtime, Asr *asr):runtime_service(runtime), _asr(asr){
+//				}
+//				~MyAsrCallback(){
+//					_asr->release();
+//				}
+//				//Just used to delete
+//				Asr *_asr;
+//				RuntimeService *runtime_service;
+//
+//				void onStart(int id);
+//				void onData(int id, const char* text);
+//				void onStop(int id);
+//				void onComplete(int id);
+//				void onError(int id, int err);
+//		};
 
 		enum{
 			SIREN_STATE_UNKNOW = 0,
@@ -74,13 +75,19 @@ class RuntimeService : public BnRuntimeService{
 		pthread_cond_t siren_cond;
 		pthread_t siren_thread;
 
+		pthread_mutex_t speech_mutex;
+		pthread_cond_t speech_cond;
+		pthread_t speech_thread;
+
+		Speech *_speech = NULL;
 		list<VoiceMessage*> voice_queue;
-		map<int, MyAsrCallback*> mAsrCallback;
+		//map<int, MyAsrCallback*> mAsrCallback;
 
 	private:
 };
 
 
 void* siren_thread_loop(void*);
+void* speech_thread_loop(void*);
 
 #endif // RUNTIME_SERVICE_H
