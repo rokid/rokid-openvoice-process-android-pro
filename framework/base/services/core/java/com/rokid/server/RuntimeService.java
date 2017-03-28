@@ -137,15 +137,17 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 	
 	@Override
-	public void nativeNlpMessage(String nlp){
-		android.util.Log.e(TAG, nlp);
-		if(nlp == null) return;
+	public void nativeNlpMessage(String msg){
+		if(msg == null) return;
 		JSONObject json = null;
 		boolean cloud = false;
 		try{
+			json = new JSONObject(msg);
+			String nlp = json.getString("nlp");
+			Log.e(TAG, nlp);
 			json = new JSONObject(nlp);
-			if(json.has("cloud")){
-				cloud = json.getBoolean("cloud");	
+			if(json != null && json.has("cloud")){
+				cloud = json.getBoolean("cloud");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -157,10 +159,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
 				Log.e(TAG, "_thiz    >>>   " + _thiz);
-				data.writeString(nlp);
-				Log.e(TAG, "---------"+nlp);
+				data.writeString(msg);
 				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 665, data, reply, 0);
-				Log.e(TAG, "---------");
 				reply.readException();
 			}catch(RemoteException e){
 				e.printStackTrace();
@@ -169,7 +169,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 				reply.recycle();
 			}
 		}else{
-			Log.e(TAG, "nativeNlpMessage    " + nlp);
+			Log.e(TAG, "nativeNlpMessage    " + msg);
 		}
 	}
 
