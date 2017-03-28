@@ -29,9 +29,9 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Log.e(TAG, "RuntimeService  created " + mContext);
 		this.mContext = mContext;
 
-		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.activity.RKCloudAppSceneActivity"));
-		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.activity.RKCloudAppCutActivity"));
-		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService"));
+		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.scene"));
+		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.cut"));
+		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine"));
 	}
 
 	ServiceConnection connect = new ServiceConnection(){	
@@ -184,14 +184,13 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		try{
 			json = new JSONObject(nlp);
 			String domain = json.getString("domain");
-			String _nlp = json.getString("nlp");
 			if(domain != null){
 				Pair pair = domains.get(domain);
 				if(pair != null){
 					if("activity".equals(pair.first)){
-						startActivity((String)pair.second, _nlp);
+						startActivity((String)pair.second, nlp);
 					}else if("service".equals(pair.first)){
-						startService((String)pair.second, _nlp);
+						startService((String)pair.second, nlp);
 					}
 				}else Log.e(TAG, "Connot find domain  :  " + domain);
 			}else Log.e(TAG, "domain is null");
