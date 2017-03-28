@@ -29,9 +29,9 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Log.e(TAG, "RuntimeService  created " + mContext);
 		this.mContext = mContext;
 
-		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.activity.RKCloudAppSceneActivity"));
-		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.activity.RKCloudAppCutActivity"));
-		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService"));
+		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.scene"));
+		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.cut"));
+		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine"));
 	}
 
 	ServiceConnection connect = new ServiceConnection(){	
@@ -41,10 +41,11 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Parcel data = Parcel.obtain();
 			Parcel reply = Parcel.obtain();
 			try{
-				data.writeInterfaceToken("com.rokid.server.RuntimeService");
-				Log.e(TAG, "service conneted   _thiz : " + _thiz);
-				data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
-				_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 999, data, reply, 0);
+				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
+				IBinder binder = android.os.ServiceManager.getService("runtime_java");
+				Log.e(TAG, "service conneted   _binder : " + binder);
+				data.writeStrongBinder(binder);
+				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 998, data, reply, 0);
 				reply.readException();
 			}catch(RemoteException e){
 				e.printStackTrace();
@@ -136,15 +137,17 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 	
 	@Override
-	public void nativeNlpMessage(String nlp){
-		android.util.Log.e(TAG, nlp);
-		if(nlp == null) return;
+	public void nativeNlpMessage(String msg){
+		if(msg == null) return;
 		JSONObject json = null;
 		boolean cloud = false;
 		try{
+			json = new JSONObject(msg);
+			String nlp = json.getString("nlp");
+			Log.e(TAG, nlp);
 			json = new JSONObject(nlp);
-			if(json.has("cloud")){
-				cloud = json.getBoolean("cloud");	
+			if(json != null && json.has("cloud")){
+				cloud = json.getBoolean("cloud");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -156,8 +159,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
 				Log.e(TAG, "_thiz    >>>   " + _thiz);
-				data.writeString(nlp);
-				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 666, data, reply, 0);
+				data.writeString(msg);
+				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 665, data, reply, 0);
 				reply.readException();
 			}catch(RemoteException e){
 				e.printStackTrace();
@@ -166,7 +169,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 				reply.recycle();
 			}
 		}else{
-			Log.e(TAG, "nativeNlpMessage    " + nlp);
+			Log.e(TAG, "nativeNlpMessage    " + msg);
 		}
 	}
 
@@ -181,14 +184,13 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		try{
 			json = new JSONObject(nlp);
 			String domain = json.getString("domain");
-			String _nlp = json.getString("nlp");
 			if(domain != null){
 				Pair pair = domains.get(domain);
 				if(pair != null){
 					if("activity".equals(pair.first)){
-						startActivity((String)pair.second, _nlp);
+						startActivity((String)pair.second, nlp);
 					}else if("service".equals(pair.first)){
-						startService((String)pair.second, _nlp);
+						startService((String)pair.second, nlp);
 					}
 				}else Log.e(TAG, "Connot find domain  :  " + domain);
 			}else Log.e(TAG, "domain is null");
@@ -198,9 +200,10 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 
 	private IBinder getNativeService(){
-		if(_thiz == null) {
-			_thiz = android.os.ServiceManager.getService("runtime_native");
+		if(_thiz != null && _thiz.isBinderAlive()) {
+			return _thiz;
 		}	
+		_thiz = android.os.ServiceManager.getService("runtime_native");
 		return _thiz;
 	}
 
