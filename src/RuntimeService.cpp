@@ -37,6 +37,11 @@ int RuntimeService::get_siren_state(){
 	return current_status;
 }
 
+void RuntimeService::add_binder(sp<IBinder> binder){
+	_binder = binder;	
+	ALOGV("add_binder success");
+}
+
 RuntimeService::~RuntimeService(){
 	free(voice_engine);
 }
@@ -83,7 +88,7 @@ void* siren_thread_loop(void* arg){
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
 				if (id > 0) {
-					runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
+					//runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
 					//fwrite(voice_msg->buff, voice_msg->length, 1, fd);
 				}
 				break;
@@ -118,7 +123,7 @@ void* siren_thread_loop(void* arg){
 void* speech_thread_loop(void* arg){
 	RuntimeService *runtime_service = (RuntimeService*)arg;
 	json_object *_json_obj = NULL;
-	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
+	//sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	for(;;){
 		SpeechResult sr;
 		int32_t flag = runtime_service->_speech->poll(sr);
@@ -136,11 +141,11 @@ void* speech_thread_loop(void* arg){
 			ALOGV("-------------------------------------------------------------------------");
 			ALOGV("%s", json_object_to_json_string(_json_obj));
 			ALOGV("-------------------------------------------------------------------------");
-			if(binder != NULL){
+			if(runtime_service->_binder != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
 				data.writeString16(String16(json_object_to_json_string(_json_obj)));
-				binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+				runtime_service->_binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
 				reply.readExceptionCode();
 			}else{
 				ALOGI("java runtime is null , Waiting for it to initialize");

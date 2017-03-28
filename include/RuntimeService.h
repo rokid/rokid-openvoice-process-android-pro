@@ -69,6 +69,7 @@ class RuntimeService : public BnRuntimeService{
 		bool init();
 		void set_siren_state(const int&);
 		int get_siren_state();
+		void add_binder(sp<IBinder> binder);
 
 		pthread_mutex_t siren_mutex;
 		pthread_cond_t siren_cond;
@@ -78,6 +79,7 @@ class RuntimeService : public BnRuntimeService{
 
 		Speech *_speech = NULL;
 		list<VoiceMessage*> voice_queue;
+		sp<IBinder> _binder = NULL;
 		//map<int, MyAsrCallback*> mAsrCallback;
 
 	private:

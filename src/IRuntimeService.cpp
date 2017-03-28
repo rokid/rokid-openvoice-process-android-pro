@@ -7,6 +7,7 @@ class BpRuntimeService : public BpInterface<IRuntimeService>{
 		BpRuntimeService(const sp<IBinder> &impl):BpInterface<IRuntimeService>(impl) {}
 		virtual void set_siren_state(const int &state);
 		virtual int get_siren_state();
+		virtual void add_binder(sp<IBinder> binder);
 };
 
 IMPLEMENT_META_INTERFACE (RuntimeService, "com.rokid.server.RuntimeService");
@@ -25,6 +26,13 @@ status_t BnRuntimeService::onTransact(uint32_t code, const Parcel &data, Parcel 
 			int state = get_siren_state();
 			reply->writeNoException();
 			reply->writeInt32(state);		
+			return NO_ERROR;
+		}
+		case TRANSACTION_ADD_BINDER:{
+			CHECK_INTERFACE(IRuntimeService, data, reply);
+			sp<IBinder> binder = data.readStrongBinder();
+			add_binder(binder);
+			reply->writeNoException();
 			return NO_ERROR;
 		}
 	}

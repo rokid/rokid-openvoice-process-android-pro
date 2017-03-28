@@ -41,10 +41,10 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Parcel data = Parcel.obtain();
 			Parcel reply = Parcel.obtain();
 			try{
-				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-				data.writeStrongBinder(getNativeService());
+				data.writeInterfaceToken("com.rokid.server.RuntimeService");
 				Log.e(TAG, "service conneted   _thiz : " + _thiz);
-				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 999, data, reply, 0);
+				data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
+				_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 999, data, reply, 0);
 				reply.readException();
 			}catch(RemoteException e){
 				e.printStackTrace();
@@ -116,6 +116,22 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 					"com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
 			Intent intent = new Intent().setComponent(cn);
 			mContext.bindServiceAsUser(intent, connect, Context.BIND_AUTO_CREATE, android.os.UserHandle.OWNER);
+		}
+
+		Parcel data = Parcel.obtain();
+		Parcel reply = Parcel.obtain();
+		try{
+			data.writeInterfaceToken("com.rokid.server.RuntimeService");
+			data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
+			getNativeService();
+			Log.e(TAG, "service conneted   _thiz : " + _thiz);
+			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
+			reply.readException();
+		}catch(RemoteException e){
+			e.printStackTrace();
+		}finally{
+			data.recycle();
+			reply.recycle();
 		}
 	}
 	
