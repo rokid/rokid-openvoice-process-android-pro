@@ -68,7 +68,7 @@ void* siren_thread_loop(void* arg){
 		}
 
 		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
-		ALOGV("========start========================%d====", voice_msg->event);
+		ALOGV("event : -------------------------%d----", voice_msg->event);
 		switch(voice_msg->event){
 			case SIREN_EVENT_WAKE_CMD:
 				ALOGV("voice event   >>>   wake_cmd");
@@ -83,12 +83,12 @@ void* siren_thread_loop(void* arg){
 			case SIREN_EVENT_WAKE_VAD_START:
 				runtime_service->current_status = SIREN_STATE_AWAKE;
 				id = runtime_service->_speech->start_voice();
-				ALOGV("voice event : start   id   >>>   %d     err : %d ----------------------", id,  err);
+				ALOGV("voice event   >>   start   id   :  <<%d>>     err : <<%d>>", id,  err);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				if (id > 0) {
-					//runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
+				if (id > 0 && voice_msg->has_voice > 0) {
+					runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
 					//fwrite(voice_msg->buff, voice_msg->length, 1, fd);
 				}
 				break;
@@ -135,7 +135,9 @@ void* speech_thread_loop(void* arg){
 		ALOGV("result : action >>  %s", sr.action.c_str());
 
 		if(flag == 0 && sr.nlp != ""){
-			_json_obj = json_tokener_parse(sr.nlp.c_str());
+			_json_obj = json_tokener_parse("{}");
+			json_object_object_add(_json_obj, "nlp", json_object_new_string(sr.nlp.c_str()));
+			//_json_obj = json_tokener_parse(sr.nlp.c_str());
 			json_object_object_add(_json_obj, "asr", json_object_new_string(sr.asr.c_str()));
 			json_object_object_add(_json_obj, "action", json_object_new_string(sr.action.c_str()));
 			ALOGV("-------------------------------------------------------------------------");

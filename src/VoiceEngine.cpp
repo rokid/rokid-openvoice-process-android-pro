@@ -96,9 +96,8 @@ void siren::voice_event_callback(void *token, int length, siren_event_t event,
 		double energy, double threshold,
 		int has_voiceprint){
 
-	ALOGV("voice_event_callback    >>>    has_voice %d     len    >>>   %d", has_voice, length);
+	ALOGV("voice_event_callback    >>>  token : %x, has_voice : %d, len : %d",token, has_voice, length);
 	RuntimeService *runtime_service = (RuntimeService*)token;
-	ALOGI("----------%x---------------%d---------------", runtime_service, event);
 	if(runtime_service == NULL) return;
 	pthread_mutex_lock(&runtime_service->siren_mutex);
 	//add to siren_queue

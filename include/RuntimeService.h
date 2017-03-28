@@ -33,6 +33,7 @@ class RuntimeService : public BnRuntimeService{
 				~VoiceMessage(){
 					if(buff != NULL)
 						delete []buff;
+					buff = NULL;
 				}
 		};
 
