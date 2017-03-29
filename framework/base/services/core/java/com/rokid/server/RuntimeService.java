@@ -221,6 +221,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		if(mContext != null){
 			Intent intent = new Intent(action);
 			intent.putExtra("nlp", nlp);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			mContext.startActivityAsUser(intent, android.os.UserHandle.OWNER);
 		}else{
 			Log.e(TAG, "context is null ");
