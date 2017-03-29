@@ -39,7 +39,7 @@ int RuntimeService::get_siren_state(){
 
 void RuntimeService::add_binder(sp<IBinder> binder){
 	_binder = binder;	
-	ALOGV("add_binder success");
+	ALOGV("add_binder success %x", _binder.get());
 }
 
 RuntimeService::~RuntimeService(){

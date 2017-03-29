@@ -32,6 +32,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.scene"));
 		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.cut"));
 		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine"));
+
+		bindService();
 	}
 
 	ServiceConnection connect = new ServiceConnection(){	
@@ -42,9 +44,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Parcel reply = Parcel.obtain();
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-				IBinder binder = android.os.ServiceManager.getService("runtime_java");
-				Log.e(TAG, "service conneted   _binder : " + binder);
-				data.writeStrongBinder(binder);
+				Log.e(TAG, "service conneted   _binder : " + android.os.ServiceManager.getService("runtime_java") + "    " + RuntimeService.this);
+				data.writeStrongBinder(RuntimeService.this);
 				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 998, data, reply, 0);
 				reply.readException();
 			}catch(RemoteException e){
@@ -123,7 +124,8 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel reply = Parcel.obtain();
 		try{
 			data.writeInterfaceToken("com.rokid.server.RuntimeService");
-			data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
+			data.writeStrongBinder(this);
+			//data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
 			getNativeService();
 			Log.e(TAG, "service conneted   _thiz : " + _thiz);
 			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
