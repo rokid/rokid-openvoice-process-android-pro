@@ -264,7 +264,7 @@ static int mic_array_device_read_stream(
         int i;
         left = frame_cnt % size;
         for (i = 0; i < cnt; i++) {
-            if ((ret = read_frame(dev, buff + i * frame_cnt)) != 0) {
+            if ((ret = read_frame(dev, buff + i * size)) != 0) {
                 ALOGE("read frame return %d, pcm read error", ret);
                 resetBuffer(am_dev);
                 return ret;
@@ -279,13 +279,13 @@ static int mic_array_device_read_stream(
             }
         }
 
-        target = buff + cnt * frame_cnt;
+        target = buff + cnt * size;
     } else {
         target = buff;
         left = frame_cnt;
     }
 
-    if ((ret = read_left_frame(am_dev, buff, left)) != 0) {
+    if ((ret = read_left_frame(am_dev, target, left)) != 0) {
         ALOGE("read frame return %d, pcm read error", ret);
         resetBuffer(am_dev);
         return ret;
