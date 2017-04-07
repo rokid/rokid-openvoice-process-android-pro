@@ -26,8 +26,8 @@ LOCAL_SHARED_LIBRARIES := \
 		libspeech_tts \
 		libspeech_asr
 
-SPEECH_DIR = speech/src
 SPEECH_DIR_DEP = speech/external
+SPEECH_DIR = speech/src
 
 LOCAL_MODULE := libspeech_common
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
@@ -40,8 +40,8 @@ $(warning $(PROTOC_OUT_DIR))
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		$(LOCAL_PATH)/../BlackSiren/thirdparty/libjsonc/include \
-		$(LOCAL_PATH)/../speech/include 
+		rokid-blacksiren/thirdparty/libjsonc/include \
+		speech/include 
 #		$(SPEECH_DIR)/nlp \
 		$(SPEECH_DIR)/asr \
 		$(SPEECH_DIR)/common \
