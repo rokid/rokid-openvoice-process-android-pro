@@ -1,132 +1,189 @@
 #define LOG_TAG "RuntimeService"
 #define LOG_NDEBUG 0
 
-#include "include/RuntimeService.h"
-#include "include/VoiceEngine.h"
-#include <binder/IServiceManager.h>
 #include <stdio.h>
+#include <binder/IServiceManager.h>
+
+#include "RuntimeService.h"
+#include "voice_engine.h"
 #include "json.h"
 
 using namespace android;
 using namespace std;
-using namespace siren;
 using namespace rokid;
 using namespace speech;
 
-VoiceEngine *voice_engine;
-
 bool RuntimeService::init(){
-	voice_engine = new VoiceEngine();
-	if(!voice_engine->init(this)){
+	if(!_init(this)){
 		ALOGE("init siren failed.");
 		return false;
 	}
-	set_siren_state(SIREN_STATE_SLEEP);
-	pthread_create(&siren_thread, NULL, siren_thread_loop, this);
+	pthread_create(&event_thread, NULL, onEvent, this);
 	return true;
 }
 
+void RuntimeService::start_siren(bool flag){
+	this->flag = flag;
+	set_siren_state_change((flag ? SIREN_STATE_AWAKE : SIREN_STATE_SLEEP));
+}
+
 void RuntimeService::set_siren_state(const int &state){
-	current_status = state;
-	voice_engine->set_siren_state_change(state);
-	ALOGV("current_status     >>   %d,   %d", current_status , state);
+	set_siren_state_change(state);
+	ALOGV("current_status     >>   %d", state);
 }
 
-int RuntimeService::get_siren_state(){
-	ALOGV("current_status   >>>   %d", current_status);
-	return current_status;
+void RuntimeService::config(){
+	json_object *json_obj = json_object_from_file(SPEECH_CONFIG_FILE);
+	
+	if(json_obj == NULL) {
+		ALOGE("%s not find", SPEECH_CONFIG_FILE);
+	}
+
+	json_object *server_address = NULL;
+	json_object *ssl_roots_pem = NULL;
+	json_object *auth_key = NULL;
+	json_object *device_type = NULL;
+	json_object *device_id = NULL;
+	json_object *secret = NULL;
+	json_object *api_version = NULL;
+	json_object *codec = NULL;
+
+	if(TRUE == json_object_object_get_ex(json_obj, "server_address", &server_address)){
+		_speech->config("server_address", json_object_get_string(server_address));
+		ALOGE("%s", json_object_get_string(server_address));
+		json_object_put(server_address);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "ssl_roots_pem", &ssl_roots_pem)){
+		_speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
+		ALOGE("%s", json_object_get_string(ssl_roots_pem));
+		json_object_put(ssl_roots_pem);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "auth_key", &auth_key)){
+		_speech->config("auth_key", json_object_get_string(auth_key));
+		ALOGE("%s", json_object_get_string(auth_key));
+		json_object_put(auth_key);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "device_type", &device_type)){
+		_speech->config("device_type", json_object_get_string(device_type));
+		ALOGE("%s", json_object_get_string(device_type));
+		json_object_put(device_type);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "device_id", &device_id)){
+		_speech->config("device_id", json_object_get_string(device_id));
+		ALOGE("%s", json_object_get_string(device_id));
+		json_object_put(device_id);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "api_version", &api_version)){
+		_speech->config("api_version", json_object_get_string(api_version));
+		ALOGE("%s", json_object_get_string(api_version));
+		json_object_put(api_version);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "secret", &secret)){
+		_speech->config("secret", json_object_get_string(secret));
+		ALOGE("%s", json_object_get_string(secret));
+		json_object_put(secret);
+	}
+	if(TRUE == json_object_object_get_ex(json_obj, "codec", &codec)){
+		_speech->config("codec", json_object_get_string(codec));
+		ALOGE("%s", json_object_get_string(codec));
+		json_object_put(codec);
+	}
+	_speech->config("vt", "若琪");
+	free(json_obj);
+//	json_object_put(json_obj);
 }
 
-void RuntimeService::add_binder(sp<IBinder> binder){
-	_binder = binder;	
-	ALOGV("add_binder success %x", _binder.get());
-}
-
-RuntimeService::~RuntimeService(){
-	free(voice_engine);
-}
-
-void* siren_thread_loop(void* arg){
-
+void* onEvent(void* arg){
 	ALOGV("thread join !!");
-	RuntimeService *runtime_service = (RuntimeService*)arg;
-	int id = -1;
+	RuntimeService *runtime = (RuntimeService*)arg;
+	sp<IBinder> binder = defaultServiceManager()->getService(String16("rk_power_manager")); 
 
+	int id = -1;
 	bool err = false;;
-	//FILE *fd = fopen("/data/voice.pcm", "w");
-	runtime_service->_speech = new_speech();
-	if (!runtime_service->_speech->prepare()) {
+	runtime->_speech = new_speech();
+	runtime->config();
+	if (!runtime->_speech->prepare()) {
 		ALOGE("=========prepare failed===============");
 		return NULL;
 	}
-	runtime_service->_speech->config("codec", "opu");
-	pthread_create(&runtime_service->speech_thread, NULL, speech_thread_loop, runtime_service);
+	//FILE *fd = fopen("/data/voice.pcm", "w");
+	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
 	for(;;){
-		pthread_mutex_lock(&runtime_service->siren_mutex);
-		while(runtime_service->voice_queue.empty()){
-			pthread_cond_wait(&runtime_service->siren_cond, &runtime_service->siren_mutex);
+		pthread_mutex_lock(&runtime->event_mutex);
+		while(runtime->message_queue.empty()){
+			pthread_cond_wait(&runtime->event_cond, &runtime->event_mutex);
 		}
-
-		const RuntimeService::VoiceMessage *voice_msg = runtime_service->voice_queue.front();
-		ALOGV("event : -------------------------%d----", voice_msg->event);
-		switch(voice_msg->event){
+		const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
+		ALOGV("event : -------------------------%d----", message->event);
+		switch(message->event){
 			case SIREN_EVENT_WAKE_CMD:
+				set_siren_state_change(1);
 				ALOGV("voice event   >>>   wake_cmd");
-				runtime_service->current_status = SIREN_STATE_AWAKE;
 				break;
 			case SIREN_EVENT_WAKE_NOCMD:
+				ALOGV("voice event   >>>   wake_nocmd");
+				break;
 			case SIREN_EVENT_SLEEP:
-				ALOGV("voice event   >>>   wake_nocmd or sleep");
-				runtime_service->current_status = SIREN_STATE_SLEEP;
+				set_siren_state_change(2);
+				ALOGV("voice event   >>>   sleep");
 				break;
 			case SIREN_EVENT_VAD_START:
 			case SIREN_EVENT_WAKE_VAD_START:
-				runtime_service->current_status = SIREN_STATE_AWAKE;
-				id = runtime_service->_speech->start_voice();
+				id = runtime->_speech->start_voice();
 				ALOGV("voice event   >>   start   id   :  <<%d>>     err : <<%d>>", id,  err);
 				break;
 			case SIREN_EVENT_VAD_DATA:
 			case SIREN_EVENT_WAKE_VAD_DATA:
-				if (id > 0 && voice_msg->has_voice > 0) {
-					runtime_service->_speech->put_voice(id, (uint8_t *)voice_msg->buff, voice_msg->length);
-					//fwrite(voice_msg->buff, voice_msg->length, 1, fd);
+				if (id > 0 && message->has_voice > 0) {
+					runtime->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
+					//fwrite(message->buff, message->length, 1, fd);
 				}
 				break;
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
 				ALOGV("voice event : end   id    >>>   %d ",id);
+				if(binder != NULL){
+					Parcel data, reply;
+					data.writeInterfaceToken(String16("com.rokid.server.RKPowerManager"));
+					data.writeInt32(0x1005);
+					data.writeInt32(0);
+					binder->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
+					reply.readExceptionCode();
+				}else{
+					ALOGI("power manager is null");
+				}
 				if(id > 0) {
-					runtime_service->_speech->end_voice(id);
+					runtime->_speech->end_voice(id);
 					//fclose(fd);
 				}
 				break;
 			case SIREN_EVENT_VAD_CANCEL:
 			case SIREN_EVENT_WAKE_CANCEL:
 				if(id > 0)
-					runtime_service->_speech->cancel(id);
+					runtime->_speech->cancel(id);
 				ALOGI("voice event : cancel   id    >>>    %d", id);
 				break;
 			case SIREN_EVENT_WAKE_PRE:
 				ALOGV("vicee event  >>>   prepare");
 				break;
 		}
-		runtime_service->voice_queue.pop_front();
-		delete voice_msg;
-		pthread_mutex_unlock(&runtime_service->siren_mutex);
+		runtime->message_queue.pop_front();
+		delete message;
+		pthread_mutex_unlock(&runtime->event_mutex);
 	}
-	runtime_service->_speech->release();
-	delete runtime_service->_speech;
+	runtime->_speech->release();
+	delete runtime->_speech;
 	ALOGV("thread quit!");
 	return NULL;
 }
 
-void* speech_thread_loop(void* arg){
-	RuntimeService *runtime_service = (RuntimeService*)arg;
+void* onResponse(void* arg){
+	RuntimeService *runtime= (RuntimeService*)arg;
 	json_object *_json_obj = NULL;
-	//sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
+	SpeechResult sr;
+	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	for(;;){
-		SpeechResult sr;
-		int32_t flag = runtime_service->_speech->poll(sr);
+		int32_t flag = runtime->_speech->poll(sr);
 		if (flag < 0)
 			break;
 
@@ -137,40 +194,37 @@ void* speech_thread_loop(void* arg){
 		if(flag == 0 && sr.nlp != ""){
 			_json_obj = json_tokener_parse("{}");
 			json_object_object_add(_json_obj, "nlp", json_object_new_string(sr.nlp.c_str()));
-			//_json_obj = json_tokener_parse(sr.nlp.c_str());
 			json_object_object_add(_json_obj, "asr", json_object_new_string(sr.asr.c_str()));
 			json_object_object_add(_json_obj, "action", json_object_new_string(sr.action.c_str()));
+
+			json_object *nlp_obj = json_tokener_parse(sr.nlp.c_str());
+			json_object *cdomain_obj = NULL;
+			if(TRUE == json_object_object_get_ex(nlp_obj, "domain", &cdomain_obj)){
+				const char *cdomain_str = json_object_get_string(cdomain_obj);
+				string s(const_cast<char *>(cdomain_str));
+				if(s.find("ROKID.EXCEPTION") == std::string::npos){
+					runtime->_speech->config("cdomain", cdomain_str);
+				}else{
+					runtime->_speech->config("cdomain", "");
+				}
+				json_object_put(cdomain_obj);
+				free(nlp_obj);
+			}
 			ALOGV("-------------------------------------------------------------------------");
 			ALOGV("%s", json_object_to_json_string(_json_obj));
 			ALOGV("-------------------------------------------------------------------------");
-			if(runtime_service->_binder != NULL){
+			if(binder != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
 				data.writeString16(String16(json_object_to_json_string(_json_obj)));
-				runtime_service->_binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+				binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
 				reply.readExceptionCode();
 			}else{
 				ALOGI("java runtime is null , Waiting for it to initialize");
 			}
-			delete _json_obj;
+			free(_json_obj);
 			_json_obj = NULL;
 		}
 	}
 	return NULL;
 }
-
-//void RuntimeService::MyAsrCallback::onData(int id, const char *text){
-//	ALOGI("native    >>>   %d", text);
-//	if(!runtime_service->mAsrCallback.empty()){
-//		map<int, RuntimeService::MyAsrCallback*>::iterator it = runtime_service->mAsrCallback.find(id);
-//		runtime_service->mAsrCallback.erase(id);
-//		//TODO delete the callback;
-//		RuntimeService::MyAsrCallback* callback = it->second;
-//		delete callback;
-//	}
-//}
-//
-//void RuntimeService::MyAsrCallback::onComplete(int id){
-//	ALOGV("callback onComplete   >>>    %d    >>>   this    >>>    %x", id, this);
-//	runtime_service->mAsrCallback.insert(pair<int, RuntimeService::MyAsrCallback*>(id, this));
-//}

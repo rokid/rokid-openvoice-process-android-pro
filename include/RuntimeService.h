@@ -1,11 +1,12 @@
 #ifndef RUNTIME_SERVICE_H
 #define RUNTIME_SERVICE_H
 
+#define SPEECH_CONFIG_FILE "/system/etc/speech_sdk.json"
+
 #include <cutils/log.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <list>
-#include <map>
 
 #include "siren.h"
 #include "speech.h"
@@ -37,57 +38,26 @@ class RuntimeService : public BnRuntimeService{
 				}
 		};
 
-//		class MyAsrCallback : public AsrCallback{
-//			public:
-//
-//				MyAsrCallback(RuntimeService *runtime, Asr *asr):runtime_service(runtime), _asr(asr){
-//				}
-//				~MyAsrCallback(){
-//					_asr->release();
-//				}
-//				//Just used to delete
-//				Asr *_asr;
-//				RuntimeService *runtime_service;
-//
-//				void onStart(int id);
-//				void onData(int id, const char* text);
-//				void onStop(int id);
-//				void onComplete(int id);
-//				void onError(int id, int err);
-//		};
-
-		enum{
-			SIREN_STATE_UNKNOW = 0,
-			SIREN_STATE_AWAKE,
-			SIREN_STATE_SLEEP,
-		};
-		int current_status = SIREN_STATE_UNKNOW;
-
 		static char const* getServiceName(){
 			return "runtime_native";
 		}
-		~RuntimeService();
+
 		bool init();
+		void config();
+		void start_siren(bool);
 		void set_siren_state(const int&);
-		int get_siren_state();
-		void add_binder(sp<IBinder> binder);
 
-		pthread_mutex_t siren_mutex;
-		pthread_cond_t siren_cond;
-		pthread_t siren_thread;
+		pthread_mutex_t event_mutex;
+		pthread_cond_t event_cond;
+		pthread_t event_thread;
+		pthread_t response_thread;
 
-		pthread_t speech_thread;
-
+		bool flag = true;
 		Speech *_speech = NULL;
-		list<VoiceMessage*> voice_queue;
-		sp<IBinder> _binder = NULL;
-		//map<int, MyAsrCallback*> mAsrCallback;
-
-	private:
+		list<VoiceMessage*> message_queue;
 };
 
-
-void* siren_thread_loop(void*);
-void* speech_thread_loop(void*);
+void* onEvent(void *);
+void* onResponse(void *);
 
 #endif // RUNTIME_SERVICE_H

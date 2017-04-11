@@ -7,13 +7,9 @@
 using namespace android;
 
 int main(void){
-	ALOGV("-----------runtime service launch----------------");
 	sp<ProcessState> proc(ProcessState::self());
-	sp<RuntimeService> mRuntimeService = new RuntimeService();
-	sp<IServiceManager> sm(defaultServiceManager());
-	status_t state = sm->addService(String16(RuntimeService::getServiceName()), mRuntimeService, false);
-
-	mRuntimeService->init();
+	sp<RuntimeService> runtime = new RuntimeService();
+	defaultServiceManager()->addService(String16(RuntimeService::getServiceName()), runtime, false);
 
 	ProcessState::self()->startThreadPool();
 	IPCThreadState::self()->joinThreadPool();

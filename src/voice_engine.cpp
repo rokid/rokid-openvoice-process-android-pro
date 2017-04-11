@@ -3,12 +3,11 @@
 
 #include <string.h>
 #include <hardware/hardware.h>
-#include "include/VoiceEngine.h"
+#include "voice_engine.h"
 
-using namespace siren;
-using namespace android;
-
-struct mic_array_device_t *mic_array_device;
+struct mic_array_device_t *mic_array_device = NULL;
+RuntimeService* runtime_service = NULL;
+siren_t _siren;
 
 siren_input_if_t siren_input = {
 	init_input,
@@ -31,9 +30,8 @@ static inline int mic_array_device_open(const hw_module_t *module, struct mic_ar
 	return module->methods->open(module, MIC_ARRAY_HARDWARE_MODULE_ID, (struct hw_device_t **)device);
 }
 
-bool VoiceEngine::init(RuntimeService *runtime){
-	this->runtime_service = runtime;
-
+bool _init(RuntimeService *runtime){
+	runtime_service = runtime;
 	//1. open mic driver.
 	mic_array_module_t *module;
 	if(hw_get_module(MIC_ARRAY_HARDWARE_MODULE_ID, (const struct hw_module_t **)&module) != 0){
@@ -50,77 +48,78 @@ bool VoiceEngine::init(RuntimeService *runtime){
 	ALOGI("=====-------------=============%x", runtime);
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
+	//set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
 }
 
-void VoiceEngine::set_siren_state_change(int state){
+void set_siren_state_change(int state){
 	set_siren_state(_siren, state, &siren_state_change);
 }
 
-int siren::init_input(void *token){
+int init_input(void *token){
 	ALOGV("init input ..");
 	return 0;
 }
 
-void siren::release_input(void *token){
+void release_input(void *token){
 	mic_array_device->finish_stream(mic_array_device);
 	ALOGV("release input ..");
 }
 
-void siren::start_input(void *token){
+void start_input(void *token){
 	mic_array_device->start_stream(mic_array_device);
 //	ALOGV("start input ..");
 }
 
-void siren::stop_input(void *token){
+void stop_input(void *token){
 	mic_array_device->stop_stream(mic_array_device);
 	ALOGV("stop input ..");
 }
 
-int siren::read_input(void *token, char *buff, int	frame_cnt){
+int read_input(void *token, char *buff, int	frame_cnt){
 	//ALOGV("read input ..");
 	return mic_array_device->read_stream(mic_array_device, buff, frame_cnt);
 }
 
-void siren::on_err_input(void *token){
+void on_err_input(void *token){
 	ALOGE("on_err_input ");
 }
 
-void siren::state_changed_callback(void *token, int state){
+void state_changed_callback(void *token, int state){
 	ALOGV("siren state is : %d", state);
 }
 
-void siren::voice_event_callback(void *token, int length, siren_event_t event, 
+void voice_event_callback(void *token, int length, siren_event_t event, 
 		void* buff, int has_sl,
 		int has_voice, double sl_degree, 
 		double energy, double threshold,
 		int has_voiceprint){
 
 	ALOGV("voice_event_callback    >>>  token : %x, has_voice : %d, len : %d",token, has_voice, length);
-	RuntimeService *runtime_service = (RuntimeService*)token;
-	if(runtime_service == NULL) return;
-	pthread_mutex_lock(&runtime_service->siren_mutex);
+	RuntimeService *runtime = (RuntimeService*)token;
+	if(runtime == NULL) return;
+	pthread_mutex_lock(&runtime->event_mutex);
 	//add to siren_queue
-	RuntimeService::VoiceMessage *voice_msg = new RuntimeService::VoiceMessage();
+	RuntimeService::VoiceMessage *message = new RuntimeService::VoiceMessage();
 	char *_cache = NULL;
 	if(has_voice > 0){
 		assert(length >= 0);
 		_cache = new char[length];
 		memcpy(_cache, buff, length);	
-		voice_msg->buff = _cache;
+		message->buff = _cache;
 	}
-	voice_msg->length = length;
-	voice_msg->event = event;
-	voice_msg->has_voice = has_voice;
-	voice_msg->has_sl = has_sl;
-	voice_msg->sl_degree = sl_degree;
-	voice_msg->sl_degree = sl_degree;
-	voice_msg->energy = energy;
-	voice_msg->threshold = threshold;
-	voice_msg->has_voiceprint = has_voiceprint;
-	runtime_service->voice_queue.push_back(voice_msg);
+	message->length = length;
+	message->event = event;
+	message->has_voice = has_voice;
+	message->has_sl = has_sl;
+	message->sl_degree = sl_degree;
+	message->sl_degree = sl_degree;
+	message->energy = energy;
+	message->threshold = threshold;
+	message->has_voiceprint = has_voiceprint;
+	runtime->message_queue.push_back(message);
 
-	pthread_cond_signal(&runtime_service->siren_cond);
-	pthread_mutex_unlock(&runtime_service->siren_mutex);
+	pthread_cond_signal(&runtime->event_cond);
+	pthread_mutex_unlock(&runtime->event_mutex);
 }
 

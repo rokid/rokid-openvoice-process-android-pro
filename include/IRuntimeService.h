@@ -7,17 +7,17 @@
 using namespace android;
 
 enum{
-	TRANSACTION_SET_SIREN_STATUS = IBinder::FIRST_CALL_TRANSACTION + 0,
-	TRANSACTION_GET_SIREN_STATUS = IBinder::FIRST_CALL_TRANSACTION + 1,
-	TRANSACTION_ADD_BINDER = IBinder::FIRST_CALL_TRANSACTION +2,
+	TRANSACTION_INIT = IBinder::FIRST_CALL_TRANSACTION + 0,
+	TRANSACTION_START_SIREN,
+	TRANSACTION_SET_SIREN_STATUS,
 };
 
 class IRuntimeService : public IInterface {
 	public:	
 		DECLARE_META_INTERFACE(RuntimeService);
+		virtual bool init() = 0;
+		virtual void start_siren(bool) = 0;
 		virtual void set_siren_state(const int&) = 0;
-		virtual int get_siren_state() = 0;
-		virtual void add_binder(sp<IBinder> binder) = 0;
 };
 
 class BnRuntimeService : public BnInterface<IRuntimeService> {
