@@ -39,3 +39,5 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_TARGET_ARCH := arm
 
 include $(BUILD_EXECUTABLE)
+
+include $(call first-makefiles-under,$(LOCAL_PATH))
