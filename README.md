@@ -5,5 +5,6 @@
 ## 内容
 请修改如下位置：
 
-	 OPENVOICE_DIR_DEP = robot/openvoice			修改为自己的存放路径
+	rokid-openvoice-sample-android/Android.mk
+	OPENVOICE_DIR_DEP = robot/openvoice			修改为自己的存放路径
 

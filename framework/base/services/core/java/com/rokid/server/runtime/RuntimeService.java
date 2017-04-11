@@ -1,4 +1,4 @@
-package com.rokid.server;
+package com.rokid.server.runtime;
 
 import android.content.Context;
 import android.content.Intent;
@@ -97,7 +97,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken("com.rokid.server.RuntimeService");
+			data.writeInterfaceToken("com.rokid.native.RuntimeService");
 			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 1, data, reply, 0);
 			reply.readException();
 			return reply.readInt();
@@ -123,7 +123,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel data = Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken("com.rokid.server.RuntimeService");
+			data.writeInterfaceToken("com.rokid.native.RuntimeService");
 			data.writeStrongBinder(this);
 			//data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
 			getNativeService();
