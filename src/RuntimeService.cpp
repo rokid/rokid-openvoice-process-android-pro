@@ -51,46 +51,38 @@ void RuntimeService::config(){
 	if(TRUE == json_object_object_get_ex(json_obj, "server_address", &server_address)){
 		_speech->config("server_address", json_object_get_string(server_address));
 		ALOGE("%s", json_object_get_string(server_address));
-		json_object_put(server_address);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "ssl_roots_pem", &ssl_roots_pem)){
 		_speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
 		ALOGE("%s", json_object_get_string(ssl_roots_pem));
-		json_object_put(ssl_roots_pem);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "auth_key", &auth_key)){
 		_speech->config("auth_key", json_object_get_string(auth_key));
 		ALOGE("%s", json_object_get_string(auth_key));
-		json_object_put(auth_key);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "device_type", &device_type)){
 		_speech->config("device_type", json_object_get_string(device_type));
 		ALOGE("%s", json_object_get_string(device_type));
-		json_object_put(device_type);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "device_id", &device_id)){
 		_speech->config("device_id", json_object_get_string(device_id));
 		ALOGE("%s", json_object_get_string(device_id));
-		json_object_put(device_id);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "api_version", &api_version)){
 		_speech->config("api_version", json_object_get_string(api_version));
 		ALOGE("%s", json_object_get_string(api_version));
-		json_object_put(api_version);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "secret", &secret)){
 		_speech->config("secret", json_object_get_string(secret));
 		ALOGE("%s", json_object_get_string(secret));
-		json_object_put(secret);
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "codec", &codec)){
 		_speech->config("codec", json_object_get_string(codec));
 		ALOGE("%s", json_object_get_string(codec));
-		json_object_put(codec);
 	}
 	_speech->config("vt", "若琪");
-	free(json_obj);
-//	json_object_put(json_obj);
+	//free(json_obj);
+	json_object_put(json_obj);
 }
 
 void* onEvent(void* arg){
@@ -142,16 +134,6 @@ void* onEvent(void* arg){
 			case SIREN_EVENT_VAD_END:
 			case SIREN_EVENT_WAKE_VAD_END:
 				ALOGV("voice event : end   id    >>>   %d ",id);
-				if(binder != NULL){
-					Parcel data, reply;
-					data.writeInterfaceToken(String16("com.rokid.server.RKPowerManager"));
-					data.writeInt32(0x1005);
-					data.writeInt32(0);
-					binder->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
-					reply.readExceptionCode();
-				}else{
-					ALOGI("power manager is null");
-				}
 				if(id > 0) {
 					runtime->_speech->end_voice(id);
 					//fclose(fd);
@@ -207,8 +189,7 @@ void* onResponse(void* arg){
 				}else{
 					runtime->_speech->config("cdomain", "");
 				}
-				json_object_put(cdomain_obj);
-				free(nlp_obj);
+				json_object_put(nlp_obj);
 			}
 			ALOGV("-------------------------------------------------------------------------");
 			ALOGV("%s", json_object_to_json_string(_json_obj));
@@ -222,7 +203,7 @@ void* onResponse(void* arg){
 			}else{
 				ALOGI("java runtime is null , Waiting for it to initialize");
 			}
-			free(_json_obj);
+			json_object_put(_json_obj);
 			_json_obj = NULL;
 		}
 	}

@@ -6,7 +6,6 @@
 #include "voice_engine.h"
 
 struct mic_array_device_t *mic_array_device = NULL;
-RuntimeService* runtime_service = NULL;
 siren_t _siren;
 
 siren_input_if_t siren_input = {
@@ -31,7 +30,6 @@ static inline int mic_array_device_open(const hw_module_t *module, struct mic_ar
 }
 
 bool _init(RuntimeService *runtime){
-	runtime_service = runtime;
 	//1. open mic driver.
 	mic_array_module_t *module;
 	if(hw_get_module(MIC_ARRAY_HARDWARE_MODULE_ID, (const struct hw_module_t **)&module) != 0){

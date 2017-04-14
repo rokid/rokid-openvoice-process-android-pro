@@ -4,6 +4,17 @@
 ## 内容
 1.请编译speech的[配置](https://developer-forum.rokid.com/t/rokid/101)文件到/system/etc/speech_sdk.json
 
+	{
+		'server_address': 'apigw.open.rokid.com:443',
+		'ssl_roots_pem': '/system/etc/roots.pem',
+		'auth_key': 'your_auth_key',
+		'device_type': 'your_device_type',
+		'device_id': 'your_device_id',
+		'api_version': '1',
+		'secret': 'your_secret'
+		'codec': 'opu'
+	}
+
 2.请添加如下环境变量到system/core/rootdir/init.environ.rc.in
 
 	export GRPC_DEFAULT_SSL_ROOTS_FILE_PATH /system/etc/roots.pem
