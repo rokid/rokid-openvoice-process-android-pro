@@ -19,7 +19,6 @@
 
 	export GRPC_DEFAULT_SSL_ROOTS_FILE_PATH /system/etc/roots.pem
 
-3.请修改如下位置：
+3.请修改如下内容rokid-openvoice-sample-android/Android.mk
 
-	rokid-openvoice-sample-android/Android.mk
 	OPENVOICE_DIR_DEP = robot/openvoice			修改为自己的SDK路径

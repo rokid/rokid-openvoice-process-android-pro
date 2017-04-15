@@ -16,20 +16,20 @@ PRODUCT_PACKAGES += \
 
 #speech
 PRODUCT_PACKAGES += \
-				libprotobuf-rokid-cpp-lite \
-				libprotobuf-rokid-cpp-full \
-				libgpr \
-				libgrpc \
-				libgrpc++ \
-				libspeech_common \
-				libspeech \
-				libspeech_tts \
-				librokid_tts_jni \
-#				libspeech_asr \
-				libspeech_nlp \
-				librokid_speech_jni \
-				rokid_tts \
-				RKTtsService \
+					libprotobuf-rokid-cpp-lite \
+					libprotobuf-rokid-cpp-full \
+					libgpr \
+					libgrpc \
+					libgrpc++ \
+					libspeech_common \
+					libspeech \
+					libspeech_tts \
+					librokid_tts_jni \
+#					libspeech_asr \
+					libspeech_nlp \
+					librokid_speech_jni \
+					rokid_tts \
+					RKTtsService \
 
 #java runtime
 PRODUCT_PACKAGES += \
@@ -38,6 +38,6 @@ PRODUCT_PACKAGES += \
 					runtime_cmd
 
 PRODUCT_PACKAGES += \
-			roots.pem \
-			tts_sdk.json \
-			speech_sdk.json 
+					roots.pem \
+					tts_sdk.json \
+					speech_sdk.json 
