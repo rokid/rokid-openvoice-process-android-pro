@@ -6,58 +6,61 @@
  ************************************************************************/
 #define LOG_TAG "mic_array"
 
-#define _GNU_SOURCE
-#define __USE_GNU
-#include <sched.h>
-#undef _GNU_SOURCE
-#undef __USE_GNU
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <signal.h>
+#include <unistd.h>
+#include <stdint.h>
 #include <sys/syscall.h>
+#include <sys/resource.h>
 #include <hardware/hardware.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/select.h>
 #include <errno.h>
 #include <cutils/log.h>
-#include <tinyalsa/asoundlib.h>
+#include <cutils/atomic.h>
 #include <cutils/properties.h>
 
-#include "mic/mic_array.h"
+#include <time.h>
+#include <tinyalsa/asoundlib.h>
+#include <system/audio.h>
+#include <hardware/audio.h>
+
+#include "r2hw/mic_array.h"
 
 #define MODULE_NAME "mic_array"
-#define MODULE_AUTHOR "shichaoge@rokid.com"
+#define MODULE_AUTHOR "jiaqi@rokid.com"
 
-#define MIC_ARRAY_PATH "./data/mic_recorder"
-#define MIC_ARRAY_PATH_DEBUG "./data/mic_recorder_debug"
-#define MIC_ARRAY_BIN "mic_recorder"
-#define MIC_ARRAY_BIN_DEBUG "mic_recorder_debug"
-//#define LATENCY_DEBUG 0
+#define SAMPLE_RATE 48000
+#define CHANNEL 8
 
-#define DEVICE_STAT_ERR     0
-#define DEVICE_STAT_INIT    1
-#define DEVICE_STAT_START   2
-#define DEVICE_STAT_STOP    3
-#define DEVICE_STAT_FINISH  4
+#define PCM_CARD 0
+#define PCM_DEVICE 0 
 
-
-#define MIC_SAMPLE_RATE  48000
-#define MIC_CHANNEL 8 //AEC channel included
-//32 bit valid bit equals to 4 byte
-#define MIC_BYTE_PER_POINT 4//4       
-//10ms equals 480(frame) * 8(channel) * 4(32bit)
-#define FRAME_COUNT ((MIC_SAMPLE_RATE/100)*MIC_CHANNEL*MIC_BYTE_PER_POINT)
-
-static struct pcm_config pcm_config_iis = {
-    .channels = MIC_CHANNEL,
-    .rate = MIC_SAMPLE_RATE,
-    .period_size = 480,
-    .period_count = 8,
-    .format = PCM_FORMAT_S24_LE,
+static struct pcm_config pcm_config_in = {
+    .channels = CHANNEL,
+    .rate = SAMPLE_RATE,
+    .period_size = 1024,
+    .period_count = 4,
+    .format = PCM_FORMAT_S32_LE,
 };
 
 static struct pcm_config pcm_config_xmos = {
-    .channels = MIC_CHANNEL,
-    .rate = MIC_SAMPLE_RATE,
+    .channels = CHANNEL,
+    .rate = SAMPLE_RATE,
     .period_size = 8192,
     .period_count = 16,
     .format = PCM_FORMAT_S32_LE,
+};
+
+static struct mic_array_device_ex {
+    struct mic_array_device_t mic_array;
+
+    int pts;
+    char* buffer;
 };
 
 static int mic_array_device_open (const struct hw_module_t *module, const
@@ -79,12 +82,15 @@ static int mic_array_device_get_stream_buff_size (struct mic_array_device_t *dev
 
 static int mic_array_device_resume_stream (struct mic_array_device_t *dev);
 
-//****************************************************************************************************
 static struct hw_module_methods_t mic_array_module_methods = {
     .open = mic_array_device_open,
 };
 
+static int debug_fd = 0;
 
+static int mic_timeout_count = 0;
+
+static pthread_t log_th;
 struct mic_array_module_t HAL_MODULE_INFO_SYM = {
     .common = {
         .tag = HARDWARE_MODULE_TAG,
@@ -96,7 +102,6 @@ struct mic_array_module_t HAL_MODULE_INFO_SYM = {
         .methods = &mic_array_module_methods,
     },
 };
-
 
 int find_snd(const char *snd)
 {
@@ -116,7 +121,6 @@ int find_snd(const char *snd)
 	buf[len-1] = '\0';
 	fclose(fs);
 
-
 	b = buf;
 	while (e = strchr(b, '\n')) {
 		*e='\0';
@@ -126,7 +130,6 @@ int find_snd(const char *snd)
 		}
 		b = e+1;
 	}
-	
 	ALOGI ("find -> %d", card);
 	return card;
 }
@@ -192,21 +195,21 @@ static void tinymix_set_value(struct mixer *mixer, const char *control,
 }
 
 
-#define PCM_CARD 0
-#define PCM_DEVICE 0 
-
 static int mic_array_device_open (const struct hw_module_t *module, const
        									char *name, struct hw_device_t **device) {
     int i = 0;
+	char value[PROPERTY_VALUE_MAX];
+	struct mic_array_device_ex *dev_ex = NULL;
     struct mic_array_device_t *dev = NULL;
-    dev = (struct mic_array_device_t *)malloc(sizeof (struct mic_array_device_t));
+    dev_ex = (struct mic_array_device_ex*)malloc(sizeof(struct mic_array_device_ex));
+	dev = (struct mic_array_device_t *)dev_ex;
 
-    if (!dev) {
+    if (!dev_ex) {
         ALOGE ("MIC_ARRAY: FAILED TO ALLOC SPACE");
         return -1;
     }
 
-    memset (dev, 0, sizeof (struct mic_array_device_t));
+    memset (dev, 0, sizeof (struct mic_array_device_ex));
     dev->common.tag = HARDWARE_DEVICE_TAG;
     dev->common.version = 0;
     dev->common.module = (hw_module_t *)module;
@@ -219,29 +222,40 @@ static int mic_array_device_open (const struct hw_module_t *module, const
     dev->config_stream = mic_array_device_config_stream;
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
     
-    //use pcm_config_in instead
-    dev->channels = MIC_CHANNEL;
-    //10ms
-    dev->sample_rate = MIC_SAMPLE_RATE;
-    dev->bit = 32;
-	dev->frame_cnt = FRAME_COUNT;
-    ALOGI ("alloc tmp_frames with size %d", dev->sample_rate/100 * dev->channels * dev->bit / 8);
-    
+    dev->channels = CHANNEL;;
+    dev->sample_rate = SAMPLE_RATE;
+    dev->bit = pcm_format_to_bits(pcm_config_in.format);
+	dev->pcm = NULL;
+
+	property_get("ro.boardinfo.usbaudio", value, "1");
+	if(strcmp(value, "0")){
+		dev->frame_cnt = pcm_config_in.period_size * pcm_config_in.period_count
+		* CHANNEL * (pcm_format_to_bits(pcm_config_in.format) >> 3);	
+	}else{
+		dev->frame_cnt = pcm_config_xmos.period_size * pcm_config_xmos.period_count
+		* CHANNEL * (pcm_format_to_bits(pcm_config_xmos.format) >> 3);	
+	}
+	ALOGI("alloc frame buffer size %d", dev->frame_cnt);
+	dev_ex->buffer = (char*)malloc(dev->frame_cnt);
+
     *device = &(dev->common);
     return 0;
 }
+
+static void resetBuffer(struct mic_array_device_ex* dev) { dev->pts = 0; }
 
 static int mic_array_device_close (struct hw_device_t *device) {
     ALOGI ("pcm close");
     
     struct mic_array_device_t *mic_array_device = (struct mic_array_device_t *)device;
-    //free device
-    if (mic_array_device != NULL) {
-        free (mic_array_device);
+	struct mic_array_device_ex *dev_ex = (struct mic_array_device_ex*)mic_array_device;
+
+    if (dev_ex != NULL) {
+        free (dev_ex->buffer);
+		free (mic_array_device);
         mic_array_device = NULL;
+		dev_ex = NULL;
     }
-    
-    mic_array_device->pcm = NULL;  
     return 0;
 }
 
@@ -249,15 +263,13 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 {
 	char value[PROPERTY_VALUE_MAX];
 	struct mixer *mixer;
-	struct pcm *pcm;
-    char **values = "1";
+	char **values = "1";
 	int card;  
+	struct pcm *pcm = NULL;
     struct mic_array_device_t *mic_array_device = (struct mic_array_device_t *)dev;
-	//use qualcomm sound card as default
 	property_get("ro.boardinfo.usbaudio", value, "1");
-    
-    if (strcmp(value, "0") == 0) {
-		//iis direct link cpu
+
+   if (strcmp(value, "0") == 0) {
 	    card = find_snd ("msm8974-taiko-m");
 		if (card  < 0) {
 		   ALOGE("Can't find qualcomm sound card");
@@ -270,9 +282,8 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 		}
 		tinymix_set_value(mixer, "MultiMedia1 Mixer QUAT_MI2S_TX" , &values, 1);
 		mixer_close(mixer);
-		pcm = pcm_open (card, PCM_DEVICE, PCM_IN, &pcm_config_iis);
+		pcm = pcm_open (card, PCM_DEVICE, PCM_IN, &pcm_config_in);
 	 } else {
-    	//xmos version
     	ALOGE("xmos card");
 		card = find_snd ("xCORE");
 		if (card  < 0) {
@@ -280,8 +291,8 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 	       card = PCM_CARD;
 		}
 		pcm = pcm_open (card, PCM_DEVICE, PCM_IN, &pcm_config_xmos); 
-    }
-	 	  //  pcm = pcm_open (card, PCM_DEVICE, PCM_IN, &pcm_config_in); 
+	}
+	//pcm = pcm_open(PCM_CARD, PCM_DEVICE, PCM_IN, &pcm_config_in);
     if (pcm == NULL && !pcm_is_ready (pcm)) {
         ALOGE ("pcm open failed");
         if (pcm != NULL) { 
@@ -290,21 +301,15 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
         }
         return -1;
     }
-
-    mic_array_device->frame_cnt = FRAME_COUNT;
-    mic_array_device->pcm = pcm;
+	dev->pcm = pcm;
     return 0;
 }
 
 static int mic_array_device_stop_stream (struct mic_array_device_t *dev) {  
-    struct pcm *pcm = dev->pcm;
-    
-    if (pcm != NULL) {
-        pcm_close (pcm);
-        //dev->frame_cnt = 0;
-        pcm = NULL;
+    if (dev->pcm != NULL) {
+        pcm_close (dev->pcm);
+        dev->pcm = NULL;
     }
-    
     return 0;
 }
 
@@ -313,21 +318,96 @@ static int mic_array_device_finish_stream (struct mic_array_device_t *dev) {
     return -1;
 }
 
-//Note, the read buffer size is deriverd form dev structer, frame_cnt is a parameter that denote the actual read size
-static int mic_array_device_read_stream (struct mic_array_device_t *dev,
-        char *buff, unsigned int len) {
-    int c = 0;
+static int read_frame(struct mic_array_device_t* dev, char* buffer)
+{
+    return pcm_read(dev->pcm, buffer, dev->frame_cnt);
+}
+
+static int read_left_frame(struct mic_array_device_ex* dev, char* buff, int left)
+{
     int ret = 0;
+    if (dev->pts == 0) {
+        if ((ret = read_frame(dev, dev->buffer)) != 0) {
+            ALOGE("read frame return %d, pcm read error:%s", ret, strerror(errno));
+            resetBuffer(dev);
+            return ret;
+        }
+
+        memcpy(buff, dev->buffer, left);
+        memcpy(dev->buffer, dev->buffer + left, dev->mic_array.frame_cnt - left);
+        dev->pts = dev->mic_array.frame_cnt - left;
+    } else {
+        if (dev->pts >= left) {
+            memcpy(buff, dev->buffer, left);
+            dev->pts -= left;
+            if (dev->pts != 0) {
+                memcpy(dev->buffer, dev->buffer + left, dev->pts);
+            }
+        } else {
+            memcpy(buff, dev->buffer, dev->pts);
+            left -= dev->pts;
+            if ((ret = read_frame(dev, dev->buffer)) != 0) {
+                ALOGE("read frame return %d, pcm read error", ret);
+                resetBuffer(dev);
+                return ret;
+            }
+            memcpy(buff + dev->pts, dev->buffer, left);
+            memcpy(dev->buffer, dev->buffer + left, dev->mic_array.frame_cnt - left);
+            dev->pts = dev->mic_array.frame_cnt - left;
+        }
+    }
+    return 0;
+}
+
+static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* buff, unsigned int frame_cnt)
+{
+    struct pcm* pcm = dev->pcm;
+    struct mic_array_device_ex* dev_ex = (struct mic_array_device_ex*)dev;
+    char *target = NULL;
+
+    int ret = 0;
+    int left = 0;
     int size = dev->frame_cnt;
-    struct pcm *pcm = dev->pcm;
-    if (pcm == NULL) {
+    if (size <= 0) {
+        ALOGE("frame cnt lt 0");
         return -1;
     }
 
-    ret = pcm_read(pcm, buff, size);
-    if (ret != 0) {
-        ALOGE ("pcm_read error: %s", strerror(errno));
-	} 
+    if (buff == NULL) {
+        ALOGE("null buffer");
+        return -1;
+    }
+
+    if (frame_cnt >= size) {
+        int cnt = frame_cnt / size;
+        int i;
+        left = frame_cnt % size;
+        for (i = 0; i < cnt; i++) {
+            if ((ret = read_frame(dev, buff + i * size)) != 0) {
+                ALOGE("read frame return %d, pcm read error", ret);
+                resetBuffer(dev_ex);
+                return ret;
+            }
+        }
+        if (left != 0) {
+            if ((ret = read_frame(dev, dev_ex->buffer)) != 0) {
+                ALOGE("read frame return %d, pcm read error", ret);
+                resetBuffer(dev_ex);
+                return ret;
+            }
+        }
+
+        target = buff + cnt * size;
+    } else {
+        target = buff;
+        left = frame_cnt;
+    }
+
+    if ((ret = read_left_frame(dev_ex, target, left)) != 0) {
+        ALOGE("read frame return %d, pcm read error", ret);
+        resetBuffer(dev_ex);
+        return ret;
+    }
 
     return ret;
 }
@@ -338,10 +418,7 @@ static int mic_array_device_config_stream (struct mic_array_device_t *dev,
 }
 
 static int mic_array_device_get_stream_buff_size (struct mic_array_device_t *dev) {
-    int size = dev->frame_cnt; 
-    ALOGI ("alloc %d bytes", size);
-    
-    return size;
+    return dev->frame_cnt; 
 }
 
 static int mic_array_device_resume_stream (struct mic_array_device_t *dev) {

@@ -81,14 +81,13 @@ void RuntimeService::config(){
 		ALOGE("%s", json_object_get_string(codec));
 	}
 	_speech->config("vt", "若琪");
-	//free(json_obj);
 	json_object_put(json_obj);
 }
 
 void* onEvent(void* arg){
 	ALOGV("thread join !!");
 	RuntimeService *runtime = (RuntimeService*)arg;
-	sp<IBinder> binder = defaultServiceManager()->getService(String16("rk_power_manager")); 
+	runtime->power_poxy = defaultServiceManager()->getService(String16("rk_power_manager")); 
 
 	int id = -1;
 	bool err = false;;
@@ -106,17 +105,30 @@ void* onEvent(void* arg){
 			pthread_cond_wait(&runtime->event_cond, &runtime->event_mutex);
 		}
 		const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
+
 		ALOGV("event : -------------------------%d----", message->event);
+		if(!runtime->flag) goto outside;
+		if(runtime->power_poxy != NULL){
+			Parcel data, reply;
+			data.writeInterfaceToken(String16("com.rokid.server.RKPowerManager"));
+			data.writeInt32(message->event);
+			data.writeDouble(message->sl_degree);
+			data.writeDouble(message->has_sl);
+			runtime->power_poxy->transact(IBinder::FIRST_CALL_TRANSACTION + 205, data, &reply);
+			reply.readExceptionCode();
+		}else{
+			ALOGI("power manager is null");
+		}
 		switch(message->event){
 			case SIREN_EVENT_WAKE_CMD:
-				set_siren_state_change(1);
+				//set_siren_state_change(1);
 				ALOGV("voice event   >>>   wake_cmd");
 				break;
 			case SIREN_EVENT_WAKE_NOCMD:
 				ALOGV("voice event   >>>   wake_nocmd");
 				break;
 			case SIREN_EVENT_SLEEP:
-				set_siren_state_change(2);
+				//set_siren_state_change(2);
 				ALOGV("voice event   >>>   sleep");
 				break;
 			case SIREN_EVENT_VAD_START:
@@ -149,6 +161,7 @@ void* onEvent(void* arg){
 				ALOGV("vicee event  >>>   prepare");
 				break;
 		}
+outside:
 		runtime->message_queue.pop_front();
 		delete message;
 		pthread_mutex_unlock(&runtime->event_mutex);
@@ -165,20 +178,15 @@ void* onResponse(void* arg){
 	SpeechResult sr;
 	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	for(;;){
-		int32_t flag = runtime->_speech->poll(sr);
-		if (flag < 0)
+		bool res = runtime->_speech->poll(sr);
+		if (!res)
 			break;
 
-		ALOGV("result : asr  >>  %s    %d", sr.asr.c_str(), flag);
+		ALOGV("result : asr  >>  %s, type : %d, res : %d", sr.asr.c_str(), res);
 		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
 		ALOGV("result : action >>  %s", sr.action.c_str());
 
-		if(flag == 0 && sr.nlp != ""){
-			_json_obj = json_tokener_parse("{}");
-			json_object_object_add(_json_obj, "nlp", json_object_new_string(sr.nlp.c_str()));
-			json_object_object_add(_json_obj, "asr", json_object_new_string(sr.asr.c_str()));
-			json_object_object_add(_json_obj, "action", json_object_new_string(sr.action.c_str()));
-
+		if(sr.type == 0 && sr.nlp != ""){
 			json_object *nlp_obj = json_tokener_parse(sr.nlp.c_str());
 			json_object *cdomain_obj = NULL;
 			if(TRUE == json_object_object_get_ex(nlp_obj, "domain", &cdomain_obj)){
@@ -191,6 +199,12 @@ void* onResponse(void* arg){
 				}
 				json_object_put(nlp_obj);
 			}
+
+			_json_obj = json_object_new_object();
+			json_object_object_add(_json_obj, "nlp", json_object_new_string(sr.nlp.c_str()));
+			json_object_object_add(_json_obj, "asr", json_object_new_string(sr.asr.c_str()));
+			json_object_object_add(_json_obj, "action", json_object_new_string(sr.action.c_str()));
+
 			ALOGV("-------------------------------------------------------------------------");
 			ALOGV("%s", json_object_to_json_string(_json_obj));
 			ALOGV("-------------------------------------------------------------------------");
@@ -198,13 +212,16 @@ void* onResponse(void* arg){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
 				data.writeString16(String16(json_object_to_json_string(_json_obj)));
+				//data.writeInt32(sr.type);
 				binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
 				reply.readExceptionCode();
 			}else{
-				ALOGI("java runtime is null , Waiting for it to initialize");
+				ALOGI("Java runtime is null , Waiting for it to initialize");
 			}
 			json_object_put(_json_obj);
 			_json_obj = NULL;
+		}else if(sr.type == 4){
+			ALOGE("speech error : %d", sr.err);
 		}
 	}
 	return NULL;
