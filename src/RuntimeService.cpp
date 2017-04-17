@@ -60,8 +60,8 @@ void RuntimeService::config(){
 		_speech->config("auth_key", json_object_get_string(auth_key));
 		ALOGE("%s", json_object_get_string(auth_key));
 	}
-	if(TRUE == json_object_object_get_ex(json_obj, "device_type", &device_type)){
-		_speech->config("device_type", json_object_get_string(device_type));
+	if(TRUE == json_object_object_get_ex(json_obj, "device_type_id", &device_type)){
+		_speech->config("device_type_id", json_object_get_string(device_type));
 		ALOGE("%s", json_object_get_string(device_type));
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "device_id", &device_id)){
