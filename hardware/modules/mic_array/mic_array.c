@@ -29,28 +29,32 @@
 #include <system/audio.h>
 #include <hardware/audio.h>
 
-#include "r2hw/mic_array.h"
+#include "mic/mic_array.h"
 
 #define MODULE_NAME "mic_array"
 #define MODULE_AUTHOR "jiaqi@rokid.com"
 
-#define SAMPLE_RATE 48000
-#define CHANNEL 8
+#define MIC_SAMPLE_RATE 48000
+#define MIC_CHANNEL 8
+//32 bit valid bit equals to 4 byte
+#define MIC_BYTE_PER_POINT 4       
+//10ms equals 480(frame) * 8(channel) * 4(32bit)
+#define FRAME_COUNT ((MIC_SAMPLE_RATE / 100) * MIC_CHANNEL * MIC_BYTE_PER_POINT)
 
 #define PCM_CARD 0
 #define PCM_DEVICE 0 
 
 static struct pcm_config pcm_config_in = {
-    .channels = CHANNEL,
-    .rate = SAMPLE_RATE,
+    .channels = MIC_CHANNEL,
+    .rate = MIC_SAMPLE_RATE,
     .period_size = 1024,
     .period_count = 4,
     .format = PCM_FORMAT_S32_LE,
 };
 
 static struct pcm_config pcm_config_xmos = {
-    .channels = CHANNEL,
-    .rate = SAMPLE_RATE,
+    .channels = MIC_CHANNEL,
+    .rate = MIC_SAMPLE_RATE,
     .period_size = 8192,
     .period_count = 16,
     .format = PCM_FORMAT_S32_LE,
@@ -222,19 +226,12 @@ static int mic_array_device_open (const struct hw_module_t *module, const
     dev->config_stream = mic_array_device_config_stream;
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
     
-    dev->channels = CHANNEL;;
-    dev->sample_rate = SAMPLE_RATE;
+    dev->channels = MIC_CHANNEL;;
+    dev->sample_rate = MIC_SAMPLE_RATE;
     dev->bit = pcm_format_to_bits(pcm_config_in.format);
 	dev->pcm = NULL;
 
-	property_get("ro.boardinfo.usbaudio", value, "1");
-	if(strcmp(value, "0")){
-		dev->frame_cnt = pcm_config_in.period_size * pcm_config_in.period_count
-		* CHANNEL * (pcm_format_to_bits(pcm_config_in.format) >> 3);	
-	}else{
-		dev->frame_cnt = pcm_config_xmos.period_size * pcm_config_xmos.period_count
-		* CHANNEL * (pcm_format_to_bits(pcm_config_xmos.format) >> 3);	
-	}
+	dev->frame_cnt = 1024 * 4;
 	ALOGI("alloc frame buffer size %d", dev->frame_cnt);
 	dev_ex->buffer = (char*)malloc(dev->frame_cnt);
 
@@ -266,7 +263,7 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 	char **values = "1";
 	int card;  
 	struct pcm *pcm = NULL;
-    struct mic_array_device_t *mic_array_device = (struct mic_array_device_t *)dev;
+
 	property_get("ro.boardinfo.usbaudio", value, "1");
 
    if (strcmp(value, "0") == 0) {
@@ -332,7 +329,6 @@ static int read_left_frame(struct mic_array_device_ex* dev, char* buff, int left
             resetBuffer(dev);
             return ret;
         }
-
         memcpy(buff, dev->buffer, left);
         memcpy(dev->buffer, dev->buffer + left, dev->mic_array.frame_cnt - left);
         dev->pts = dev->mic_array.frame_cnt - left;
@@ -382,22 +378,29 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
         int cnt = frame_cnt / size;
         int i;
         left = frame_cnt % size;
-        for (i = 0; i < cnt; i++) {
-            if ((ret = read_frame(dev, buff + i * size)) != 0) {
-                ALOGE("read frame return %d, pcm read error", ret);
-                resetBuffer(dev_ex);
-                return ret;
-            }
-        }
-        if (left != 0) {
-            if ((ret = read_frame(dev, dev_ex->buffer)) != 0) {
-                ALOGE("read frame return %d, pcm read error", ret);
-                resetBuffer(dev_ex);
-                return ret;
-            }
-        }
 
-        target = buff + cnt * size;
+		if(dev_ex->pts > left){
+			--cnt;
+		}
+		if(dev_ex->pts > 0){
+			memcpy(buff, dev_ex->buffer, dev_ex->pts);
+		}
+
+        for (i = 0; i < cnt; i++) {
+            if ((ret = read_frame(dev, buff + dev_ex->pts + i * size)) != 0) {
+                ALOGE("read frame return %d, pcm read error", ret);
+                resetBuffer(dev_ex);
+                return ret;
+            }
+        }
+        if (frame_cnt - (dev_ex->pts + cnt * size) == 0) {
+			dev_ex->pts = 0;
+			return ret;
+		}	
+//		ALOGE("-------------------cnt : %d, left : %d, cache : %d, frame_cnt : %d", cnt, left, dev_ex->pts, frame_cnt);
+        target = buff + dev_ex->pts + cnt * size;
+		left = frame_cnt - (dev_ex->pts + cnt * size);
+		dev_ex->pts = 0;
     } else {
         target = buff;
         left = frame_cnt;
