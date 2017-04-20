@@ -12,7 +12,7 @@ $(info ---->>$(LOCAL_PATH))
 LOCAL_MODULE_TAGS := optional
 LOCAL_C_INCLUDES += \
 	hardware/libhardware \
-	$(LOCAL_PATH)/../../../hardware\include \
+	$(LOCAL_PATH)/../../../include \
 	external/tinyalsa/include
 
 LOCAL_SHARED_LIBRARIES := liblog libcutils libtinyalsa

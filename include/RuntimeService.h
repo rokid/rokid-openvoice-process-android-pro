@@ -54,6 +54,7 @@ class RuntimeService : public BnRuntimeService{
 
 		bool flag = true;
 		Speech *_speech = NULL;
+		sp<IBinder> power_poxy = NULL;
 		list<VoiceMessage*> message_queue;
 };
 
