@@ -120,9 +120,7 @@ static int mic_array_device_open(const struct hw_module_t* module,
     dev->channels = pcm_config_in.channels;
     dev->sample_rate = pcm_config_in.rate;
     dev->bit = pcm_format_to_bits(pcm_config_in.format);
-    dev->frame_cnt = pcm_config_in.period_size * pcm_config_in.period_count
-        * pcm_config_in.channels
-        * (pcm_format_to_bits(pcm_config_in.format) >> 3);
+    dev->frame_cnt = 1024 * 4; 
     ALOGI("alloc frame buffer size %d", dev->frame_cnt);
     dev->pcm = NULL;
     am_dev->pts = 0;
@@ -263,23 +261,29 @@ static int mic_array_device_read_stream(
         int cnt = frame_cnt / size;
         int i;
         left = frame_cnt % size;
+
+		if(dev_ex->pts > left){
+			--cnt;
+		}
+		if(dev_ex->pts > 0){
+			memcpy(buff, dev_ex->buffer, dev_ex->pts);
+		}
+
         for (i = 0; i < cnt; i++) {
-            if ((ret = read_frame(dev, buff + i * size)) != 0) {
+            if ((ret = read_frame(dev, buff + dev_ex->pts + i * size)) != 0) {
                 ALOGE("read frame return %d, pcm read error", ret);
-                resetBuffer(am_dev);
+                resetBuffer(dev_ex);
                 return ret;
             }
         }
-
-        if (left != 0) {
-            if ((ret = read_frame(dev, am_dev->buffer)) != 0) {
-                ALOGE("read frame return %d, pcm read error", ret);
-                resetBuffer(am_dev);
-                return ret;
-            }
-        }
-
-        target = buff + cnt * size;
+        if (frame_cnt - (dev_ex->pts + cnt * size) == 0) {
+			dev_ex->pts = 0;
+			return ret;
+		}	
+//		ALOGE("-------------------cnt : %d, left : %d, cache : %d, frame_cnt : %d", cnt, left, dev_ex->pts, frame_cnt);
+        target = buff + dev_ex->pts + cnt * size;
+		left = frame_cnt - (dev_ex->pts + cnt * size);
+		dev_ex->pts = 0;
     } else {
         target = buff;
         left = frame_cnt;
