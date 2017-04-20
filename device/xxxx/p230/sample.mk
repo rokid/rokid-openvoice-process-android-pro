@@ -11,7 +11,7 @@ PRODUCT_PACKAGES += \
 					libztcodec2 \
 					libr2audio \
 					libr2vt \
-					libjsonc_static
+#					libjsonc
 
 
 #speech
