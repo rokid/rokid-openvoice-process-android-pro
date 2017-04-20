@@ -11,7 +11,6 @@ LOCAL_SHARED_LIBRARIES := \
 		libbinder \
 		libhardware \
 		libbsiren \
-		libjsonc \
 		libutils \
 		libgpr \
 		liblog \
@@ -20,7 +19,9 @@ LOCAL_SHARED_LIBRARIES := \
 		libprotobuf-rokid-cpp-lite \
 		libprotobuf-rokid-cpp-full \
 		libspeech_common \
-		libspeech \
+		libspeech
+
+LOCAL_STATIC_LIBRARIES += libjsonc_static
 
 OPENVOICE_DIR_DEP = robot/openvoice
 
