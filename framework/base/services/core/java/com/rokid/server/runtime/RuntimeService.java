@@ -44,7 +44,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Parcel reply = Parcel.obtain();
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-				Log.e(TAG, "service conneted   _binder : " + android.os.ServiceManager.getService("runtime_java") + "    " + RuntimeService.this);
+				Log.e(TAG, "service conneted");
 				data.writeStrongBinder(RuntimeService.this);
 				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 998, data, reply, 0);
 				reply.readException();
@@ -124,11 +124,9 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		Parcel reply = Parcel.obtain();
 		try{
 			data.writeInterfaceToken("com.rokid.native.RuntimeService");
-			data.writeStrongBinder(this);
-			//data.writeStrongBinder(android.os.ServiceManager.getService("runtime_java"));
 			getNativeService();
 			Log.e(TAG, "service conneted   _thiz : " + _thiz);
-			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
+			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){
 			e.printStackTrace();
