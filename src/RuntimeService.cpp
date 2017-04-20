@@ -56,8 +56,8 @@ void RuntimeService::config(){
 		_speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
 		ALOGE("%s", json_object_get_string(ssl_roots_pem));
 	}
-	if(TRUE == json_object_object_get_ex(json_obj, "auth_key", &auth_key)){
-		_speech->config("auth_key", json_object_get_string(auth_key));
+	if(TRUE == json_object_object_get_ex(json_obj, "key", &auth_key)){
+		_speech->config("key", json_object_get_string(auth_key));
 		ALOGE("%s", json_object_get_string(auth_key));
 	}
 	if(TRUE == json_object_object_get_ex(json_obj, "device_type_id", &device_type)){
