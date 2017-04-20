@@ -6,6 +6,5 @@
 	'device_type_id': 'your_device_type_id',
 	'device_id': 'your_device_id',
 	'secret': 'your_secret',
-	'device_id': 'your_device_id',
 	'codec': 'opu'
 }
