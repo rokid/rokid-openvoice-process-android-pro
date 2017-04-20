@@ -266,7 +266,7 @@ static int mic_array_device_read_stream(
 			--cnt;
 		}
 		if(am_dev->pts > 0){
-			memcpy(buff, am_dev->buffer, dev_ex->pts);
+			memcpy(buff, am_dev->buffer, am_dev->pts);
 		}
 
         for (i = 0; i < cnt; i++) {
