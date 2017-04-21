@@ -38,6 +38,8 @@
 
 6.请添加如下内容到device/xxxx/p230/p230.mk
 	
-	rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
+	include rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
+
+7.
 
 7.请在联网下调试
