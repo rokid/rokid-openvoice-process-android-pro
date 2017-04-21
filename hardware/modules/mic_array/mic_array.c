@@ -49,7 +49,7 @@ static struct pcm_config pcm_config_in = {
     .rate = MIC_SAMPLE_RATE,
     .period_size = 1024,
     .period_count = 4,
-    .format = PCM_FORMAT_S32_LE,
+    .format = PCM_FORMAT_S24_LE,
 };
 
 static struct pcm_config pcm_config_xmos = {
