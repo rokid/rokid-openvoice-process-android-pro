@@ -15,11 +15,7 @@
 		'codec': 'opu'
 	}
 
-2.请添加如下环境变量到system/core/rootdir/init.environ.rc.in
-
-	export GRPC_DEFAULT_SSL_ROOTS_FILE_PATH /system/etc/roots.pem
-
-3.请到system/core/init/init.cpp修改selinux的工作模式
+2.请到system/core/init/init.cpp修改selinux的工作模式
 	
 	static selinux_enforcing_status selinux_status_from_cmdline() {
 		selinux_enforcing_status status = SELINUX_ENFORCING;
@@ -28,18 +24,16 @@
 		. . .	. . . 
 	}
 
-4.请修改如下内容rokid-openvoice-sample-android/Android.mk
+3.请修改如下内容rokid-openvoice-sample-android/Android.mk
 
 	OPENVOICE_DIR_DEP = robot/openvoice	//修改为自己的SDK路径
 
-5.请修改如下内容rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
+4.请修改如下内容rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
 
 	mic_array.p230 //修改为自己的平台名称(p230)
 
-6.请添加如下内容到device/xxxx/p230/p230.mk
+5.请添加如下内容到device/xxxx/p230/p230.mk
 	
 	include rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
 
-7.
-
-7.请在联网下调试
+6.请在联网下调试
