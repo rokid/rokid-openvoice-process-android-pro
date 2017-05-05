@@ -43,7 +43,6 @@ bool _init(RuntimeService *runtime){
 	ALOGI ("open mic array done");
 	//2. init siren
 	_siren = init_siren(runtime, NULL, &siren_input);	
-	ALOGI("=====-------------=============%x", runtime);
 	//3. set siren callback	
 	start_siren_process_stream(_siren, &siren_callback);
 	//set_siren_state_change(SIREN_STATE_SLEEP);
@@ -55,13 +54,11 @@ void set_siren_state_change(int state){
 }
 
 int init_input(void *token){
-	ALOGV("init input ..");
 	return 0;
 }
 
 void release_input(void *token){
 	mic_array_device->finish_stream(mic_array_device);
-	ALOGV("release input ..");
 }
 
 void start_input(void *token){
@@ -71,7 +68,7 @@ void start_input(void *token){
 
 void stop_input(void *token){
 	mic_array_device->stop_stream(mic_array_device);
-	ALOGV("stop input ..");
+	ALOGV("%s", __FUNCTION__);
 }
 
 int read_input(void *token, char *buff, int	frame_cnt){
@@ -80,11 +77,11 @@ int read_input(void *token, char *buff, int	frame_cnt){
 }
 
 void on_err_input(void *token){
-	ALOGE("on_err_input ");
+	ALOGV("%s", __FUNCTION__);
 }
 
 void state_changed_callback(void *token, int state){
-	ALOGV("siren state is : %d", state);
+	ALOGV("%s : %d", __FUNCTION__, state);
 }
 
 void voice_event_callback(void *token, int length, siren_event_t event, 
@@ -93,7 +90,7 @@ void voice_event_callback(void *token, int length, siren_event_t event,
 		double energy, double threshold,
 		int has_voiceprint){
 
-	ALOGV("voice_event_callback    >>>  token : %x, has_voice : %d, len : %d",token, has_voice, length);
+	ALOGV("voice_event_callback    >>>  has_voice : %d, len : %d", has_voice, length);
 	RuntimeService *runtime = (RuntimeService*)token;
 	if(runtime == NULL) return;
 	pthread_mutex_lock(&runtime->event_mutex);

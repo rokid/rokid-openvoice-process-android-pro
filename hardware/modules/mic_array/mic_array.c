@@ -90,11 +90,6 @@ static struct hw_module_methods_t mic_array_module_methods = {
     .open = mic_array_device_open,
 };
 
-static int debug_fd = 0;
-
-static int mic_timeout_count = 0;
-
-static pthread_t log_th;
 struct mic_array_module_t HAL_MODULE_INFO_SYM = {
     .common = {
         .tag = HARDWARE_MODULE_TAG,
@@ -264,7 +259,7 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 	int card;  
 	struct pcm *pcm = NULL;
 
-	property_get("ro.boardinfo.usbaudio", value, "1");
+	property_get("ro.boardinfo.usbaudio", value, "0");
 
    if (strcmp(value, "0") == 0) {
 	    card = find_snd ("msm8974-taiko-m");

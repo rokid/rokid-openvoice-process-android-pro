@@ -85,7 +85,6 @@ void RuntimeService::config(){
 }
 
 void* onEvent(void* arg){
-	ALOGV("thread join !!");
 	RuntimeService *runtime = (RuntimeService*)arg;
 	runtime->power_poxy = defaultServiceManager()->getService(String16("rk_power_manager")); 
 
@@ -94,7 +93,6 @@ void* onEvent(void* arg){
 	runtime->_speech = new_speech();
 	runtime->config();
 	if (!runtime->_speech->prepare()) {
-		ALOGE("=========prepare failed===============");
 		return NULL;
 	}
 	//FILE *fd = fopen("/data/voice.pcm", "w");
@@ -168,7 +166,6 @@ outside:
 	}
 	runtime->_speech->release();
 	delete runtime->_speech;
-	ALOGV("thread quit!");
 	return NULL;
 }
 
@@ -182,7 +179,7 @@ void* onResponse(void* arg){
 		if (!res)
 			break;
 
-		ALOGV("result : asr  >>  %s, type : %d, res : %d", sr.asr.c_str(), res);
+		ALOGV("result : asr  >>  %s, type : %d", sr.asr.c_str(), sr.type);
 		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
 		ALOGV("result : action >>  %s", sr.action.c_str());
 
@@ -224,5 +221,6 @@ void* onResponse(void* arg){
 			ALOGE("speech error : %d", sr.err);
 		}
 	}
+	ALOGE("exit !!");
 	return NULL;
 }
