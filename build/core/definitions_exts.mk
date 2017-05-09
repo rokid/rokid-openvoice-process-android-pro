@@ -4,5 +4,5 @@ $(patsubst ./%,%, \
   $(shell cd $(LOCAL_PATH) ; \
           find -L $(2) -name "$(1)" -and -not -name ".*") \
  )
-endif
+endef
 endif
