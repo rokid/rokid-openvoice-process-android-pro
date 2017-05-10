@@ -39,5 +39,6 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
 					roots.pem \
+					workdir_cn \
 					blacksiren.json \
 					openvoice_profile.json
