@@ -38,6 +38,6 @@
 
 6.请在build/core/definitions.mk最后一行添加如下内容
 
-	include rokid-openvoice-sample-android/build/core/definitions_exts.mk
+	include rokid-openvoice-sample-android/build/core/definition_exts.mk
 
 7.请在联网下调试
