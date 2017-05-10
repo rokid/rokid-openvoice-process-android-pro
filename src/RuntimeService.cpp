@@ -86,7 +86,6 @@ void RuntimeService::config(){
 
 void* onEvent(void* arg){
 	RuntimeService *runtime = (RuntimeService*)arg;
-	runtime->power_poxy = defaultServiceManager()->getService(String16("rk_power_manager")); 
 
 	int id = -1;
 	bool err = false;;
@@ -106,17 +105,6 @@ void* onEvent(void* arg){
 
 		ALOGV("event : -------------------------%d----", message->event);
 		if(!runtime->flag) goto outside;
-		if(runtime->power_poxy != NULL){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16("com.rokid.server.RKPowerManager"));
-			data.writeInt32(message->event);
-			data.writeDouble(message->sl_degree);
-			data.writeDouble(message->has_sl);
-			runtime->power_poxy->transact(IBinder::FIRST_CALL_TRANSACTION + 205, data, &reply);
-			reply.readExceptionCode();
-		}else{
-			ALOGI("power manager is null");
-		}
 		switch(message->event){
 			case SIREN_EVENT_WAKE_CMD:
 				//set_siren_state_change(1);
