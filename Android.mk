@@ -36,6 +36,7 @@ endif
 
 LOCAL_MODULE := runtime
 #LOCAL_CXX_STL := libc++
+#protostream_objectwriter.cc
 LOCAL_ARM_MODE := arm
 LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) -std=c++11
 LOCAL_MODULE_TAGS := optional
