@@ -104,56 +104,57 @@ void* onEvent(void* arg){
 		const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
 
 		ALOGV("event : -------------------------%d----", message->event);
-		if(!runtime->flag) goto outside;
-		switch(message->event){
-			case SIREN_EVENT_WAKE_CMD:
-				//set_siren_state_change(1);
-				ALOGV("voice event   >>>   wake_cmd");
-				break;
-			case SIREN_EVENT_WAKE_NOCMD:
-				ALOGV("voice event   >>>   wake_nocmd");
-				break;
-			case SIREN_EVENT_SLEEP:
-				//set_siren_state_change(2);
-				ALOGV("voice event   >>>   sleep");
-				break;
-			case SIREN_EVENT_VAD_START:
-			case SIREN_EVENT_WAKE_VAD_START:
-				id = runtime->_speech->start_voice();
-				ALOGV("voice event   >>   start   id   :  <<%d>>     err : <<%d>>", id,  err);
-				break;
-			case SIREN_EVENT_VAD_DATA:
-			case SIREN_EVENT_WAKE_VAD_DATA:
-				if (id > 0 && message->has_voice > 0) {
-					runtime->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
-					//fwrite(message->buff, message->length, 1, fd);
-				}
-				break;
-			case SIREN_EVENT_VAD_END:
-			case SIREN_EVENT_WAKE_VAD_END:
-				ALOGV("voice event : end   id    >>>   %d ",id);
-				if(id > 0) {
-					runtime->_speech->end_voice(id);
-					//fclose(fd);
-				}
-				break;
-			case SIREN_EVENT_VAD_CANCEL:
-			case SIREN_EVENT_WAKE_CANCEL:
-				if(id > 0)
-					runtime->_speech->cancel(id);
-				ALOGI("voice event : cancel   id    >>>    %d", id);
-				break;
-			case SIREN_EVENT_WAKE_PRE:
-				ALOGV("vicee event  >>>   prepare");
-				break;
-		}
-outside:
-		runtime->message_queue.pop_front();
-		delete message;
-		pthread_mutex_unlock(&runtime->event_mutex);
-	}
-	runtime->_speech->release();
-	delete runtime->_speech;
+		if(!runtime->flag) goto _skip;
+        switch(message->event) {
+        case SIREN_EVENT_WAKE_CMD:
+			//set_siren_state_change(1);
+            break;
+        case SIREN_EVENT_WAKE_NOCMD:
+            ALOGV("WAKE_NOCMD");
+            break;
+        case SIREN_EVENT_SLEEP:
+			//set_siren_state_change(2);
+            ALOGV("SLEEP");
+            break;
+        case SIREN_EVENT_VAD_START:
+        case SIREN_EVENT_WAKE_VAD_START:
+            id = runtime->_speech->start_voice();
+            ALOGV("VAD_START\t\t ID  :  <<%d>>", id);
+            break;
+        case SIREN_EVENT_VAD_DATA:
+        case SIREN_EVENT_WAKE_VAD_DATA:
+            if (id > 0 && message->has_voice > 0) {
+                runtime->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
+                //fwrite(message->buff, message->length, 1, fd);
+            }
+            break;
+        case SIREN_EVENT_VAD_END:
+        case SIREN_EVENT_WAKE_VAD_END:
+            ALOGV("VAD_END\t\t ID  <<%d>> ", id);
+            if(id > 0) {
+                runtime->_speech->end_voice(id);
+                id = -1;
+                //fclose(fd);
+            }
+            break;
+        case SIREN_EVENT_VAD_CANCEL:
+        case SIREN_EVENT_WAKE_CANCEL:
+            if(id > 0) {
+                runtime->_speech->cancel(id);
+                ALOGI("VAD_CANCEL\t\t ID   <<%d>>", id);
+                id = -1;
+            }
+            break;
+        case SIREN_EVENT_WAKE_PRE:
+            break;
+        }
+_skip:
+        runtime->message_queue.pop_front();
+        delete message;
+        pthread_mutex_unlock(&runtime->event_mutex);
+    }
+    runtime->_speech->release();
+    delete_speech(runtime->_speech);
 	return NULL;
 }
 
