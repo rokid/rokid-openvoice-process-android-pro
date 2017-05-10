@@ -183,16 +183,16 @@ void* onResponse(void* arg){
 		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
 		ALOGV("result : action >>  %s", sr.action.c_str());
 
-		if(sr.type == 0 && sr.nlp != ""){
+		if(sr.type == 0 && !sr.nlp.empty()){
 			json_object *nlp_obj = json_tokener_parse(sr.nlp.c_str());
 			json_object *cdomain_obj = NULL;
 			if(TRUE == json_object_object_get_ex(nlp_obj, "domain", &cdomain_obj)){
 				const char *cdomain_str = json_object_get_string(cdomain_obj);
 				string s(const_cast<char *>(cdomain_str));
 				if(s.find("ROKID.EXCEPTION") == std::string::npos){
-					runtime->_speech->config("cdomain", cdomain_str);
+					runtime->_speech->config("stack", cdomain_str);
 				}else{
-					runtime->_speech->config("cdomain", "");
+					runtime->_speech->config("stack", "");
 				}
 				json_object_put(nlp_obj);
 			}
