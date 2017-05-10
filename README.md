@@ -2,7 +2,7 @@
 ##Rokid语音服务的Android示例代码文档此部分是Rokid语音服务（Rokid Voice Services）的Android示例代码，允许开发者快速搭建一套Rokid语音服务以体验Rokid提供的语音交互能力。使用指南请点[这里](https://developer-forum.rokid.com/t/rokid-open-voice-sdk/97/10)
 
 ## 内容
-1.请编译speech的[配置](https://developer-forum.rokid.com/t/rokid/101)文件到/system/etc/speech_profile.json
+1.请编译speech的[配置](https://developer-forum.rokid.com/t/rokid/101)文件到/system/etc/openvoice_profile.json
 
 	{
 		'server_address': 'apigw.open.rokid.com:443',
@@ -36,4 +36,8 @@
 	
 	include rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
 
-6.请在联网下调试
+6.请在build/core/definitions.mk最后一行添加如下内容
+
+	include rokid-openvoice-sample-android/build/core/definitions_exts.mk
+
+7.请在联网下调试
