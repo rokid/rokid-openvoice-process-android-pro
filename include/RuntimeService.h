@@ -1,7 +1,7 @@
 #ifndef RUNTIME_SERVICE_H
 #define RUNTIME_SERVICE_H
 
-#define SPEECH_CONFIG_FILE "/system/etc/speech_sdk.json"
+#define SPEECH_CONFIG_FILE "/system/etc/openvoice_profile.json"
 
 #include <cutils/log.h>
 #include <pthread.h>

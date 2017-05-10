@@ -39,5 +39,5 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
 					roots.pem \
-					tts_sdk.json \
-					speech_profile.json
+					blacksiren.json \
+					openvoice_profile.json
