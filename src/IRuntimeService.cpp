@@ -8,6 +8,8 @@ class BpRuntimeService : public BpInterface<IRuntimeService>{
 		virtual bool init();
 		virtual void start_siren(bool);
 		virtual void set_siren_state(const int&);
+		virtual void network_state_change(bool);
+		virtual void update_domain(String16, String16);
 };
 
 IMPLEMENT_META_INTERFACE (RuntimeService, "com.rokid.native.RuntimeService");
@@ -32,6 +34,21 @@ status_t BnRuntimeService::onTransact(uint32_t code, const Parcel &data, Parcel 
 			CHECK_INTERFACE(IRuntimeService, data, reply);
 			int state = data.readInt32();
 			set_siren_state(state);
+			reply->writeNoException();
+			return NO_ERROR;
+		}
+		case TRANSACTION_NETWORK_STATE_CHANGE:{
+			CHECK_INTERFACE(IRuntimeService, data, reply);
+			int state = data.readInt32();
+			network_state_change((state > 0 ? true : false));
+			reply->writeNoException();
+			return NO_ERROR;
+		}
+		case TRANSACTION_UPDATE_DOMAIN:{
+			CHECK_INTERFACE(IRuntimeService, data, reply);
+			String16 cdomain(data.readString16());
+			String16 sdomain(data.readString16());
+			update_domain(cdomain, sdomain);
 			reply->writeNoException();
 			return NO_ERROR;
 		}

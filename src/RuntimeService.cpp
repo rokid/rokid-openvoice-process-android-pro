@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <binder/IServiceManager.h>
+#include <utils/String8.h>
+#include <fstream>
+#include <thread>
 
 #include "RuntimeService.h"
 #include "voice_engine.h"
@@ -13,107 +16,149 @@ using namespace std;
 using namespace rokid;
 using namespace speech;
 
-bool RuntimeService::init(){
-	if(!_init(this)){
-		ALOGE("init siren failed.");
-		return false;
-	}
-	pthread_create(&event_thread, NULL, onEvent, this);
-	return true;
+RuntimeService::RuntimeService(){
+	pthread_mutex_init(&event_mutex, NULL);
+	pthread_mutex_init(&speech_mutex, NULL);
+	pthread_cond_init(&event_cond, NULL);
 }
 
-void RuntimeService::start_siren(bool flag){
-	this->flag = flag;
-	set_siren_state_change((flag ? SIREN_STATE_AWAKE : SIREN_STATE_SLEEP));
+bool RuntimeService::init() {
+    if(!_init(this)) {
+        ALOGE("init siren failed.");
+        return false;
+    }
+    if(_speech == NULL)_speech = new_speech();
+    pthread_create(&event_thread, NULL, onEvent, this);
+    return true;
 }
 
-void RuntimeService::set_siren_state(const int &state){
-	set_siren_state_change(state);
-	ALOGV("current_status     >>   %d", state);
+void RuntimeService::start_siren(bool flag) {
+    disturb_mode = flag;
+    set_siren_state_change((disturb_mode ? SIREN_STATE_AWAKE : SIREN_STATE_SLEEP));
 }
 
-void RuntimeService::config(){
-	json_object *json_obj = json_object_from_file(SPEECH_CONFIG_FILE);
-	
-	if(json_obj == NULL) {
-		ALOGE("%s not find", SPEECH_CONFIG_FILE);
-	}
-
-	json_object *server_address = NULL;
-	json_object *ssl_roots_pem = NULL;
-	json_object *auth_key = NULL;
-	json_object *device_type = NULL;
-	json_object *device_id = NULL;
-	json_object *secret = NULL;
-	json_object *api_version = NULL;
-	json_object *codec = NULL;
-
-	if(TRUE == json_object_object_get_ex(json_obj, "server_address", &server_address)){
-		_speech->config("server_address", json_object_get_string(server_address));
-		ALOGE("%s", json_object_get_string(server_address));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "ssl_roots_pem", &ssl_roots_pem)){
-		_speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
-		ALOGE("%s", json_object_get_string(ssl_roots_pem));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "key", &auth_key)){
-		_speech->config("key", json_object_get_string(auth_key));
-		ALOGE("%s", json_object_get_string(auth_key));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "device_type_id", &device_type)){
-		_speech->config("device_type_id", json_object_get_string(device_type));
-		ALOGE("%s", json_object_get_string(device_type));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "device_id", &device_id)){
-		_speech->config("device_id", json_object_get_string(device_id));
-		ALOGE("%s", json_object_get_string(device_id));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "api_version", &api_version)){
-		_speech->config("api_version", json_object_get_string(api_version));
-		ALOGE("%s", json_object_get_string(api_version));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "secret", &secret)){
-		_speech->config("secret", json_object_get_string(secret));
-		ALOGE("%s", json_object_get_string(secret));
-	}
-	if(TRUE == json_object_object_get_ex(json_obj, "codec", &codec)){
-		_speech->config("codec", json_object_get_string(codec));
-		ALOGE("%s", json_object_get_string(codec));
-	}
-	_speech->config("vt", "若琪");
-	json_object_put(json_obj);
+void RuntimeService::set_siren_state(const int &state) {
+    set_siren_state_change(state);
+    ALOGV("current_status     >>   %d", state);
 }
 
-void* onEvent(void* arg){
-	RuntimeService *runtime = (RuntimeService*)arg;
+void RuntimeService::network_state_change(bool connected) {
+    ALOGV("network_state_change      isconnect  <<%d>>", connected);
+    //pthread_mutex_lock(&speech_mutex);
+    if(pthread_mutex_trylock(&speech_mutex) == EBUSY) {
+        ALOGE("blocking 。。。");
+        return;
+    }
+    if(_speech == NULL)_speech = new_speech();
+    if(connected && !prepared) {
+        this->config();
+        if(_speech->prepare()) {
+            prepared = true;
+			pthread_create(&response_thread, NULL, onResponse, this);
+			pthread_detach(response_thread);
+        }
+    } else if(!connected && prepared) {
+        _speech->release();
+        prepared = false;
+    }
+    pthread_mutex_unlock(&speech_mutex);
+}
 
-	int id = -1;
-	bool err = false;;
-	runtime->_speech = new_speech();
+void RuntimeService::update_domain(String16 cdomain, String16 sdomain){
+	if(_speech != NULL && prepared){
+		if(cdomain.size() > 0){
+			String8 cdomain8(cdomain);
+			ALOGE("cdomain  %s", cdomain8.string());
+			_speech->config("stack", cdomain8.string());
+		}else{
+			_speech->config("stack", "");
+		}
+//		if(sdomain.size() > 0){
+//			String8 sdomain8(sdomain);
+//			ALOGE("sdomain  %s", sdomain8.string());
+//			_speech->config("sdomain", sdomain8.string());
+//		}else{
+//			_speech->config("sdomain", "");
+//		}
+	}
+}
+
+void RuntimeService::config() {
+    json_object *json_obj = json_object_from_file(SPEECH_CONFIG_FILE);
+
+    if(json_obj == NULL) {
+        ALOGE("%s cannot find", SPEECH_CONFIG_FILE);
+    }
+    json_object *server_address = NULL;
+    json_object *ssl_roots_pem = NULL;
+    json_object *auth_key = NULL;
+    json_object *device_type = NULL;
+    json_object *device_id = NULL;
+    json_object *secret = NULL;
+    json_object *api_version = NULL;
+    json_object *codec = NULL;
+
+    if(TRUE == json_object_object_get_ex(json_obj, "server_address", &server_address)) {
+        _speech->config("server_address", json_object_get_string(server_address));
+        ALOGE("%s", json_object_get_string(server_address));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "ssl_roots_pem", &ssl_roots_pem)) {
+        _speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
+        ALOGE("%s", json_object_get_string(ssl_roots_pem));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "key", &auth_key)) {
+        _speech->config("key", json_object_get_string(auth_key));
+        ALOGE("%s", json_object_get_string(auth_key));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "device_type_id", &device_type)) {
+        _speech->config("device_type_id", json_object_get_string(device_type));
+        ALOGE("%s", json_object_get_string(device_type));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "device_id", &device_id)) {
+        _speech->config("device_id", json_object_get_string(device_id));
+        ALOGE("%s", json_object_get_string(device_id));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "api_version", &api_version)) {
+        _speech->config("api_version", json_object_get_string(api_version));
+        ALOGE("%s", json_object_get_string(api_version));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "secret", &secret)) {
+        _speech->config("secret", json_object_get_string(secret));
+        ALOGE("%s", json_object_get_string(secret));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "codec", &codec)) {
+        _speech->config("codec", json_object_get_string(codec));
+        ALOGE("%s", json_object_get_string(codec));
+    }
+    _speech->config("vt", "若琪");
+    json_object_put(json_obj);
+}
+
+void* onEvent(void* arg) {
+    RuntimeService *runtime = (RuntimeService*)arg;
+    int id = -1;
 	runtime->config();
 	if (!runtime->_speech->prepare()) {
 		return NULL;
 	}
 	//FILE *fd = fopen("/data/voice.pcm", "w");
 	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
-	for(;;){
-		pthread_mutex_lock(&runtime->event_mutex);
-		while(runtime->message_queue.empty()){
-			pthread_cond_wait(&runtime->event_cond, &runtime->event_mutex);
-		}
-		const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
+    for(;;) {
+        pthread_mutex_lock(&runtime->event_mutex);
+        while(runtime->message_queue.empty()) {
+            pthread_cond_wait(&runtime->event_cond, &runtime->event_mutex);
+        }
+        const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
 
-		ALOGV("event : -------------------------%d----", message->event);
-		if(!runtime->flag) goto _skip;
+        ALOGV("event : -------------------------%d----", message->event);
+        if(!runtime->disturb_mode || runtime->_speech == NULL) goto _skip;
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
-			//set_siren_state_change(1);
             break;
         case SIREN_EVENT_WAKE_NOCMD:
             ALOGV("WAKE_NOCMD");
             break;
         case SIREN_EVENT_SLEEP:
-			//set_siren_state_change(2);
             ALOGV("SLEEP");
             break;
         case SIREN_EVENT_VAD_START:
@@ -155,24 +200,24 @@ _skip:
     }
     runtime->_speech->release();
     delete_speech(runtime->_speech);
-	return NULL;
+    return NULL;
 }
 
-void* onResponse(void* arg){
-	RuntimeService *runtime= (RuntimeService*)arg;
+void* onResponse(void* arg) {
+    RuntimeService *runtime = (RuntimeService*)arg;
+    sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
 	json_object *_json_obj = NULL;
-	SpeechResult sr;
-	sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
-	for(;;){
-		bool res = runtime->_speech->poll(sr);
-		if (!res)
+    SpeechResult sr;
+    for(;;) {
+        bool res = runtime->_speech->poll(sr);
+        if (!res) {
 			break;
+        }
+        ALOGV("result : asr  >>  %s    <<%d>>     <<%d>>", sr.asr.c_str(), sr.type, sr.err);
+        ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
+        ALOGV("result : action >>  %s", sr.action.c_str());
 
-		ALOGV("result : asr  >>  %s, type : %d", sr.asr.c_str(), sr.type);
-		ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
-		ALOGV("result : action >>  %s", sr.action.c_str());
-
-		if(sr.type == 0 && !sr.nlp.empty()){
+        if(sr.type == 0 && !sr.nlp.empty()) {
 			json_object *nlp_obj = json_tokener_parse(sr.nlp.c_str());
 			json_object *cdomain_obj = NULL;
 			if(TRUE == json_object_object_get_ex(nlp_obj, "domain", &cdomain_obj)){
@@ -206,10 +251,8 @@ void* onResponse(void* arg){
 			}
 			json_object_put(_json_obj);
 			_json_obj = NULL;
-		}else if(sr.type == 4){
-			ALOGE("speech error : %d", sr.err);
-		}
-	}
-	ALOGE("exit !!");
-	return NULL;
+        }
+    }
+	ALOGV("exit !!");
+    return NULL;
 }

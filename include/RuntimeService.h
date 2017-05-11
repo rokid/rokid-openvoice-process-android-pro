@@ -37,22 +37,26 @@ class RuntimeService : public BnRuntimeService{
 					buff = NULL;
 				}
 		};
-
 		static char const* getServiceName(){
 			return "runtime_native";
 		}
+		RuntimeService();
 
 		bool init();
 		void config();
 		void start_siren(bool);
 		void set_siren_state(const int&);
+		void network_state_change(bool);
+		void update_domain(String16, String16);
 
 		pthread_mutex_t event_mutex;
+		pthread_mutex_t speech_mutex;
 		pthread_cond_t event_cond;
 		pthread_t event_thread;
 		pthread_t response_thread;
 
-		bool flag = true;
+		bool disturb_mode = true;
+		bool prepared = false;
 		Speech *_speech = NULL;
 		sp<IBinder> power_poxy = NULL;
 		list<VoiceMessage*> message_queue;

@@ -10,6 +10,8 @@ enum{
 	TRANSACTION_INIT = IBinder::FIRST_CALL_TRANSACTION + 0,
 	TRANSACTION_START_SIREN,
 	TRANSACTION_SET_SIREN_STATUS,
+	TRANSACTION_NETWORK_STATE_CHANGE,
+	TRANSACTION_UPDATE_DOMAIN,
 };
 
 class IRuntimeService : public IInterface {
@@ -18,6 +20,8 @@ class IRuntimeService : public IInterface {
 		virtual bool init() = 0;
 		virtual void start_siren(bool) = 0;
 		virtual void set_siren_state(const int&) = 0;
+		virtual void network_state_change(bool) = 0;
+		virtual void update_domain(String16, String16) = 0;
 };
 
 class BnRuntimeService : public BnInterface<IRuntimeService> {

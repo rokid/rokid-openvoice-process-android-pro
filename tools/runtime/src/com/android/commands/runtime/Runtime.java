@@ -28,29 +28,6 @@ public class Runtime{
 				data.recycle();
 				reply.recycle();
 			}
-		}else if(common.equals("getState")){
-			try{
-				data.writeInterfaceToken("rokid.os.IRuntimeService");
-				binder.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
-				reply.readException();
-				System.out.println("currnet state  >>>   " + reply.readInt());
-			}catch(RemoteException e){
-				e.printStackTrace();
-			}finally{
-				data.recycle();
-				reply.recycle();
-			}
-		}else if(common.equals("bind")){
-			try{
-				data.writeInterfaceToken("rokid.os.IRuntimeService");
-				binder.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
-				reply.readException();
-			}catch(RemoteException e){
-				e.printStackTrace();
-			}finally{
-				data.recycle();
-				reply.recycle();
-			}
 		}
 	}
 }

@@ -75,7 +75,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		try{
 			data.writeInterfaceToken(_thiz.getInterfaceDescriptor());
 			data.writeInt(state);
-			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 0, data, reply, 0);
+			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){
 			e.printStackTrace();
@@ -85,33 +85,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		}
 	}
 
-	@Override
-	public int getSirenState(){
-		_thiz = android.os.ServiceManager.getService("runtime_native");
-		Log.e(TAG, "get siren state  " + _thiz);
-		if(_thiz == null){
-			Log.e(TAG, "Permission denied in (RuntimeService getSirenState)");
-			return -1;
-		}
-		getNativeService();
-		Parcel data = Parcel.obtain();
-		Parcel reply = Parcel.obtain();
-		try{
-			data.writeInterfaceToken("com.rokid.native.RuntimeService");
-			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 1, data, reply, 0);
-			reply.readException();
-			return reply.readInt();
-		}catch(RemoteException e){
-			e.printStackTrace();
-		}finally{
-			data.recycle();
-			reply.recycle();
-		}
-		return -1;
-	}
-
-	@Override
-	public void bindService(){
+	private void bindService(){
 		Log.e(TAG, "mContext   " + mContext);
 		if(mContext != null){
 			ComponentName cn = new ComponentName("com.rokid.system.cloudappclient", 
@@ -158,7 +132,6 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			Parcel reply = Parcel.obtain();
 			try{
 				data.writeInterfaceToken("com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-				Log.e(TAG, "_thiz    >>>   " + _thiz);
 				data.writeString(msg);
 				_service.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 665, data, reply, 0);
 				reply.readException();
@@ -168,8 +141,6 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 				data.recycle();
 				reply.recycle();
 			}
-		}else{
-			Log.e(TAG, "nativeNlpMessage    " + msg);
 		}
 	}
 
