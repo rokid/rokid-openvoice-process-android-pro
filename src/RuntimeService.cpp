@@ -5,7 +5,6 @@
 #include <binder/IServiceManager.h>
 #include <utils/String8.h>
 #include <fstream>
-#include <thread>
 
 #include "RuntimeService.h"
 #include "voice_engine.h"
@@ -141,7 +140,7 @@ void* onEvent(void* arg) {
 	if (!runtime->_speech->prepare()) {
 		return NULL;
 	}
-	prepared = true;
+	runtime->prepared = true;
 	//FILE *fd = fopen("/data/voice.pcm", "w");
 	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
     for(;;) {
