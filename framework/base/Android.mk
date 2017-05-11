@@ -31,7 +31,7 @@ LOCAL_NO_STANDARD_LIBRARIES := true
 LOCAL_JAVA_LIBRARIES := bouncycastle conscrypt
 LOCAL_JAVA_LIBRARIES += core-libart
 LOCAL_JAVA_LIBRARIES += core-junit ext framework
-LOCAL_JAVA_LIBRARIES += org.apache.http.legacy.boot
+#LOCAL_JAVA_LIBRARIES += org.apache.http.legacy.boot
 ### modified by lujnan end.
 
 LOCAL_MODULE := rokid-framework-base
