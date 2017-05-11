@@ -24,18 +24,17 @@ OPENVOICE_DIR_DEP = openvoice
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		$(OPENVOICE_DIR_DEP)/rokid-blacksiren-master/include \
-		$(OPENVOICE_DIR_DEP)/rokid-blacksiren-master/thirdparty/libjsonc/include \
+		$(OPENVOICE_DIR_DEP)/rokid-blacksiren/include \
+		$(OPENVOICE_DIR_DEP)/rokid-blacksiren/thirdparty/libjsonc/include \
 		$(OPENVOICE_DIR_DEP)/speech/include
 
-ifeq ($(PLATFORM_SDK_VERSION), 18)
+ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libdl
 LOCAL_STATIC_LIBRARIES += libc++
 LOCAL_C_INCLUDES += external/libcxx/include
 endif
 
 LOCAL_MODULE := runtime
-#LOCAL_CXX_STL := libc++
 #protostream_objectwriter.cc
 LOCAL_ARM_MODE := arm
 LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) -std=c++11
