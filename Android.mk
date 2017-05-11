@@ -32,8 +32,7 @@ ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libdl
 LOCAL_STATIC_LIBRARIES += libc++
 LOCAL_C_INCLUDES += external/libcxx/include
-endif
-ifeq ($(PLATFORM_SDK_VERSION), 19)
+else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_SDK_VERSION := 14
 LOCAL_NDK_STL_VARIANT := gnustl_static
 endif
