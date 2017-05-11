@@ -21,19 +21,24 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 
 	Context mContext;
 	IBinder _service = null;
-	IBinder _thiz = null;
+	LegacySiren mLegacySiren = null;
 	
 	Map<String, Pair<String, String>> domains = new HashMap<String, Pair<String, String>>();
 
 	public RuntimeService(Context mContext){
 		Log.e(TAG, "RuntimeService  created " + mContext);
 		this.mContext = mContext;
+		mLegacySiren = new LegacySiren();
+		mLegacySiren.initSiren();
 
 		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.scene"));
 		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.cut"));
 		domains.put("com.rokid.system.cloudapp.engine", new Pair("service", "com.rokid.system.cloudapp.engine"));
 
-		bindService();
+		ComponentName cn = new ComponentName("com.rokid.system.cloudappclient", 
+				"com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
+		Intent intent = new Intent().setComponent(cn);
+		mContext.bindServiceAsUser(intent, connect, Context.BIND_AUTO_CREATE, android.os.UserHandle.OWNER);
 	}
 
 	ServiceConnection connect = new ServiceConnection(){	
@@ -63,54 +68,6 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	};	
 
 	@Override
-	public void setSirenState(int state){
-		Log.e(TAG, "set siren state   >>>   " + state + "    " + _thiz);
-		if(_thiz == null){
-			Log.e(TAG, "Permission denied in (RuntimeService setSirenState)");
-			return;
-		}
-		getNativeService();
-		Parcel data = Parcel.obtain();
-		Parcel reply = Parcel.obtain();
-		try{
-			data.writeInterfaceToken(_thiz.getInterfaceDescriptor());
-			data.writeInt(state);
-			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
-			reply.readException();
-		}catch(RemoteException e){
-			e.printStackTrace();
-		}finally{
-			data.recycle();
-			reply.recycle();
-		}
-	}
-
-	private void bindService(){
-		Log.e(TAG, "mContext   " + mContext);
-		if(mContext != null){
-			ComponentName cn = new ComponentName("com.rokid.system.cloudappclient", 
-					"com.rokid.system.cloudapp.engine.service.RKCloudAppEngineService");
-			Intent intent = new Intent().setComponent(cn);
-			mContext.bindServiceAsUser(intent, connect, Context.BIND_AUTO_CREATE, android.os.UserHandle.OWNER);
-		}
-
-		Parcel data = Parcel.obtain();
-		Parcel reply = Parcel.obtain();
-		try{
-			data.writeInterfaceToken("com.rokid.native.RuntimeService");
-			getNativeService();
-			Log.e(TAG, "service conneted   _thiz : " + _thiz);
-			_thiz.transact(android.os.IBinder.FIRST_CALL_TRANSACTION, data, reply, 0);
-			reply.readException();
-		}catch(RemoteException e){
-			e.printStackTrace();
-		}finally{
-			data.recycle();
-			reply.recycle();
-		}
-	}
-	
-	@Override
 	public void nativeNlpMessage(String msg){
 		if(msg == null) return;
 		JSONObject json = null;
@@ -127,7 +84,6 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			e.printStackTrace();
 		}
 		if(cloud){
-			getNativeService();
 			Parcel data = Parcel.obtain();
 			Parcel reply = Parcel.obtain();
 			try{
@@ -142,6 +98,16 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 				reply.recycle();
 			}
 		}
+	}
+
+	@Override
+	public void setSirenState(int state){
+		mLegacySiren.setSirenState(state);
+	}
+
+	@Override
+	public void sirenEvent(int event, double sl_degree, double has_sl){
+		mLegacySiren.sirenEvent(event, sl_degree, has_sl);
 	}
 
 	@Override
@@ -168,14 +134,6 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-	}
-
-	private IBinder getNativeService(){
-		if(_thiz != null && _thiz.isBinderAlive()) {
-			return _thiz;
-		}	
-		_thiz = android.os.ServiceManager.getService("runtime_native");
-		return _thiz;
 	}
 
 	private void startService(String action, String nlp){
