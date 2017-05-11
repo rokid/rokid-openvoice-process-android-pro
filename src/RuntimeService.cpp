@@ -141,6 +141,7 @@ void* onEvent(void* arg) {
 	if (!runtime->_speech->prepare()) {
 		return NULL;
 	}
+	prepared = true;
 	//FILE *fd = fopen("/data/voice.pcm", "w");
 	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
     for(;;) {
