@@ -58,7 +58,6 @@ class RuntimeService : public BnRuntimeService{
 		bool disturb_mode = true;
 		bool prepared = false;
 		Speech *_speech = NULL;
-		sp<IBinder> power_poxy = NULL;
 		list<VoiceMessage*> message_queue;
 };
 
