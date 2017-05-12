@@ -206,7 +206,6 @@ _skip:
 void* onResponse(void* arg) {
     RuntimeService *runtime = (RuntimeService*)arg;
     sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
-	json_object *_json_obj = NULL;
     SpeechResult sr;
     for(;;) {
         bool res = runtime->_speech->poll(sr);
@@ -218,39 +217,18 @@ void* onResponse(void* arg) {
         ALOGV("result : action >>  %s", sr.action.c_str());
 
         if(sr.type == 0 && !sr.nlp.empty()) {
-			json_object *nlp_obj = json_tokener_parse(sr.nlp.c_str());
-			json_object *cdomain_obj = NULL;
-			if(TRUE == json_object_object_get_ex(nlp_obj, "domain", &cdomain_obj)){
-				const char *cdomain_str = json_object_get_string(cdomain_obj);
-				string s(const_cast<char *>(cdomain_str));
-				if(s.find("ROKID.EXCEPTION") == std::string::npos){
-					runtime->_speech->config("stack", cdomain_str);
-				}else{
-					runtime->_speech->config("stack", "");
-				}
-				json_object_put(nlp_obj);
-			}
-
-			_json_obj = json_object_new_object();
-			json_object_object_add(_json_obj, "nlp", json_object_new_string(sr.nlp.c_str()));
-			json_object_object_add(_json_obj, "asr", json_object_new_string(sr.asr.c_str()));
-			json_object_object_add(_json_obj, "action", json_object_new_string(sr.action.c_str()));
-
-			ALOGV("-------------------------------------------------------------------------");
-			ALOGV("%s", json_object_to_json_string(_json_obj));
-			ALOGV("-------------------------------------------------------------------------");
 			if(binder != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
-				data.writeString16(String16(json_object_to_json_string(_json_obj)));
-				//data.writeInt32(sr.type);
-				binder->transact(IBinder::FIRST_CALL_TRANSACTION + 0, data, &reply);
+				data.writeString16(String16(sr.asr.c_str()));
+				data.writeString16(String16(sr.nlp.c_str()));
+				data.writeString16(String16(sr.action.c_str()));
+				data.writeInt32(sr.type);
+				binder->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
 				reply.readExceptionCode();
 			}else{
 				ALOGI("Java runtime is null , Waiting for it to initialize");
 			}
-			json_object_put(_json_obj);
-			_json_obj = NULL;
         }
     }
 	ALOGV("exit !!");
