@@ -35,9 +35,8 @@ LOCAL_C_INCLUDES += external/libcxx/include
 else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
 		external/stlport/stlport \
-		bionic\
+		bionic
 #		bionic/libstdc++/include
-
 LOCAL_STATIC_LIBRARIES += libstlport_static
 endif
 #protostream_objectwriter.cc

@@ -2,8 +2,14 @@ package com.rokid.server.runtime;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.content.BroadcastReceiver;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo.DetailedState;
 import org.json.JSONObject;
 import android.util.Log;
 import android.os.Parcel;
@@ -30,6 +36,12 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		this.mContext = mContext;
 		mLegacySiren = new LegacySiren();
 		mLegacySiren.initSiren();
+		new NetworkBroadcastReceiver().registReceiver();
+		ConnectivityManager cm = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo mNetworkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		if(mNetworkInfo.isConnected()){
+			mLegacySiren.networkStateChange(true);
+		}
 
 		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.scene"));
 		domains.put("com.rokid.system.cloudapp.client.cut", new Pair("activity", "com.rokid.system.cloudapp.client.cut"));
@@ -154,6 +166,29 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 			mContext.startActivityAsUser(intent, android.os.UserHandle.OWNER);
 		}else{
 			Log.e(TAG, "context is null ");
+		}
+	}
+
+	class NetworkBroadcastReceiver extends BroadcastReceiver{
+
+		public void registReceiver(){
+			IntentFilter intent = new IntentFilter();
+			intent.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+			mContext.registerReceiver(this, intent);
+		}
+
+		@Override
+		public void onReceive(Context ctx, Intent intent) {
+			Log.e(TAG, intent.getAction());
+			if(android.net.wifi.WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(intent.getAction())){
+				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+				DetailedState state = info.getDetailedState();
+				if(state == DetailedState.CONNECTED){
+					mLegacySiren.networkStateChange(true);
+				}else if(state == DetailedState.DISCONNECTED){
+					mLegacySiren.networkStateChange(false);
+				}
+			}
 		}
 	}
 }
