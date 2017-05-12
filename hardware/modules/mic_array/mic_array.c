@@ -338,7 +338,7 @@ static int read_left_frame(struct mic_array_device_ex* dev, char* buff, int left
             memcpy(buff, dev->buffer, dev->pts);
             left -= dev->pts;
             if ((ret = read_frame(dev, dev->buffer)) != 0) {
-                ALOGE("read frame return %d, pcm read error", ret);
+				ALOGE("read frame return %d, pcm read error:%s", ret, strerror(errno));
                 resetBuffer(dev);
                 return ret;
             }
@@ -383,7 +383,7 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
 
         for (i = 0; i < cnt; i++) {
             if ((ret = read_frame(dev, buff + dev_ex->pts + i * size)) != 0) {
-                ALOGE("read frame return %d, pcm read error", ret);
+				ALOGE("read frame return %d, pcm read error:%s", ret, strerror(errno));
                 resetBuffer(dev_ex);
                 return ret;
             }

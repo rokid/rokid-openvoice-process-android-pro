@@ -2,7 +2,6 @@
 PRODUCT_PACKAGES += \
 					mic_array.p230 \
 					runtime 
-
 #siren
 PRODUCT_PACKAGES += \
 					libbsiren \
@@ -12,7 +11,6 @@ PRODUCT_PACKAGES += \
 					libr2audio \
 					libr2vt \
 #					libjsonc
-
 
 #speech
 PRODUCT_PACKAGES += \
@@ -25,11 +23,11 @@ PRODUCT_PACKAGES += \
 					libspeech \
 					libspeech_tts \
 					librokid_tts_jni \
+					RKTtsService \
 #					libspeech_asr \
 					libspeech_nlp \
 					librokid_speech_jni \
 					rokid_tts \
-					RKTtsService \
 
 #java runtime
 PRODUCT_PACKAGES += \
