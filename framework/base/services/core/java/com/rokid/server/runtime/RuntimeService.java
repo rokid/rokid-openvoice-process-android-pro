@@ -40,7 +40,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		ConnectivityManager cm = (ConnectivityManager)mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		if(mNetworkInfo.isConnected()){
-			mLegacySiren.networkStateChange(true);
+			networkStateChange(true);
 		}
 
 		domains.put("com.rokid.system.cloudapp.client.scene", new Pair("activity", "com.rokid.system.cloudapp.client.scene"));
@@ -169,6 +169,22 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 		}
 	}
 
+	private void networkStateChange(boolean connected){
+		Parcel data	= Parcel.obtain();
+		Parcel reply = Parcel.obtain();
+		try{
+			data.writeInterfaceToken(DESCRIPTOR);
+			data.writeInt(connected ? 1 : 0);
+			runtime.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
+			reply.readException();
+		}catch(RemoteException e){
+			e.printStackTrace();
+		}finally{
+			data.recycle();
+			reply.recycle();
+		}
+	}
+
 	class NetworkBroadcastReceiver extends BroadcastReceiver{
 
 		public void registReceiver(){
@@ -184,9 +200,9 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 				DetailedState state = info.getDetailedState();
 				if(state == DetailedState.CONNECTED){
-					mLegacySiren.networkStateChange(true);
+					networkStateChange(true);
 				}else if(state == DetailedState.DISCONNECTED){
-					mLegacySiren.networkStateChange(false);
+					networkStateChange(false);
 				}
 			}
 		}

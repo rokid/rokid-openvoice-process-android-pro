@@ -65,22 +65,6 @@ public class LegacySiren{
 		}
 	}
 
-	public void networkStateChange(boolean connected){
-		Parcel data	= Parcel.obtain();
-		Parcel reply = Parcel.obtain();
-		try{
-			data.writeInterfaceToken(DESCRIPTOR);
-			data.writeInt(connected ? 1 : 0);
-			runtime.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
-			reply.readException();
-		}catch(RemoteException e){
-			e.printStackTrace();
-		}finally{
-			data.recycle();
-			reply.recycle();
-		}
-	}
-
 	public void sirenEvent(int event, double sl_degree, double has_sl){
 		android.util.Log.e("DX", event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
 	}
