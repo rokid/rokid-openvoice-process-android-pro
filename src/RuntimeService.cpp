@@ -87,6 +87,7 @@ void RuntimeService::config() {
 
     if(json_obj == NULL) {
         ALOGE("%s cannot find", SPEECH_CONFIG_FILE);
+		return;
     }
     json_object *server_address = NULL;
     json_object *ssl_roots_pem = NULL;
@@ -216,7 +217,7 @@ void* onResponse(void* arg) {
         ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
         ALOGV("result : action >>  %s", sr.action.c_str());
 
-        if(sr.type == 0 && !sr.nlp.empty()) {
+        if(sr.type <= 2 && !sr.nlp.empty()) {
 			if(binder != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
