@@ -13,9 +13,8 @@ LOCAL_SHARED_LIBRARIES := \
 		libbsiren \
 		libutils \
 		liblog \
-		libspeech_common \
 		libspeech \
-		libspeech_asr 
+#		libspeech_asr 
 
 LOCAL_STATIC_LIBRARIES += libjsonc_static 
 
