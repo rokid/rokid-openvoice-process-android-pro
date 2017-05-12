@@ -50,7 +50,7 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 
 	@Override
-	public void sirenEvent(int event, double sl_degree, double has_sl){
+	public void sirenEvent(int event, double sl_degree, int has_sl){
 		mLegacySiren.sirenEvent(event, sl_degree, has_sl);
 	}
 

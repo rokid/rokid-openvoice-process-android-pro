@@ -63,6 +63,23 @@ void RuntimeService::network_state_change(bool connected) {
     pthread_mutex_unlock(&speech_mutex);
 }
 
+void RuntimeService::siren_event(int event, double sl_degree, int has_sl){
+	if(remote == NULL)
+		remote = defaultServiceManager()->getService(String16("runtime_java"));
+
+	if(remote != NULL){
+		Parcel data, reply;
+		data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+		data.writeInt32(event);
+		data.writeDouble(sl_degree);
+		data.writeInt32(has_sl);
+		remote->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
+		reply.readExceptionCode();
+	}else{
+		ALOGI("Java runtime is null , Waiting for it to initialize");
+	}
+}
+
 void RuntimeService::update_domain(String16 cdomain, String16 sdomain){
 	if(_speech != NULL && prepared){
 		if(cdomain.size() > 0){
@@ -150,8 +167,11 @@ void* onEvent(void* arg) {
             pthread_cond_wait(&runtime->event_cond, &runtime->event_mutex);
         }
         const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
-
         ALOGV("event : -------------------------%d----", message->event);
+
+		if(message->event != SIREN_EVENT_VAD_DATA || message->event != SIREN_EVENT_WAKE_VAD_END){
+			runtime->siren_event(message->event, message->sl_degree, message->has_sl);
+		}
         if(!runtime->disturb_mode || runtime->_speech == NULL) goto _skip;
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
@@ -206,8 +226,10 @@ _skip:
 
 void* onResponse(void* arg) {
     RuntimeService *runtime = (RuntimeService*)arg;
-    sp<IBinder> binder = defaultServiceManager()->getService(String16("runtime_java"));
     SpeechResult sr;
+	if(runtime->remote == NULL)
+		runtime->remote = defaultServiceManager()->getService(String16("runtime_java"));
+
     for(;;) {
         bool res = runtime->_speech->poll(sr);
         if (!res) {
@@ -218,14 +240,14 @@ void* onResponse(void* arg) {
         ALOGV("result : action >>  %s", sr.action.c_str());
 
         if(sr.type <= 2 && !sr.nlp.empty()) {
-			if(binder != NULL){
+			if(runtime->remote != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
 				data.writeString16(String16(sr.asr.c_str()));
 				data.writeString16(String16(sr.nlp.c_str()));
 				data.writeString16(String16(sr.action.c_str()));
 				data.writeInt32(sr.type);
-				binder->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
+				runtime->remote->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
 				reply.readExceptionCode();
 			}else{
 				ALOGI("Java runtime is null , Waiting for it to initialize");

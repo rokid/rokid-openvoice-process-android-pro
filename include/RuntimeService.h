@@ -48,6 +48,7 @@ class RuntimeService : public BnRuntimeService{
 		void set_siren_state(const int&);
 		void network_state_change(bool);
 		void update_domain(String16, String16);
+		void siren_event(int, double, int);
 
 		pthread_mutex_t event_mutex;
 		pthread_mutex_t speech_mutex;
@@ -58,6 +59,7 @@ class RuntimeService : public BnRuntimeService{
 		bool disturb_mode = true;
 		bool prepared = false;
 		Speech *_speech = NULL;
+		sp<IBinder> remote = NULL;
 		list<VoiceMessage*> message_queue;
 };
 
