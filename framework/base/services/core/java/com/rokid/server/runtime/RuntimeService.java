@@ -45,13 +45,12 @@ public class RuntimeService extends rokid.os.IRuntimeService.Stub{
 	}
 
 	@Override
-	public void setSirenState(int state){
-		mLegacySiren.setSirenState(state);
-	}
-
-	@Override
 	public void sirenEvent(int event, double sl_degree, int has_sl){
 		mLegacySiren.sirenEvent(event, sl_degree, has_sl);
+	}
+
+	private void setSirenState(int state){
+		mLegacySiren.setSirenState(state);
 	}
 
 	private void networkStateChange(boolean connected){
