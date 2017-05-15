@@ -23,7 +23,6 @@ PRODUCT_PACKAGES += \
 					libspeech \
 					libspeech_tts \
 					librokid_tts_jni \
-					RKTtsService \
 #					libspeech_asr \
 					libspeech_nlp \
 					librokid_speech_jni \
@@ -31,9 +30,8 @@ PRODUCT_PACKAGES += \
 
 #java runtime
 PRODUCT_PACKAGES += \
-					rokid_framework \
-					rokid_services \
-					runtime_cmd
+					RuntimeService \
+					RKTtsService 
 
 PRODUCT_PACKAGES += \
 					roots.pem \
