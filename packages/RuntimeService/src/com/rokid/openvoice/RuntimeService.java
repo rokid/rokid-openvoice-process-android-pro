@@ -18,6 +18,7 @@ public class RuntimeService extends Service{
 		mRuntimeNative = RuntimeNative.asInstance();
 		mRuntimeNative.init();
 		mRuntimeNative.addBinder(new RuntimeProxy());
+
 		ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		if(mNetworkInfo.isConnected()){

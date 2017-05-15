@@ -28,12 +28,12 @@
 
 	OPENVOICE_DIR_DEP = robot/openvoice	//修改为自己的SDK路径
 
-4.请修改如下内容rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
+4.请修改如下内容rokid-openvoice-sample-android/device/xxxx/p230/openvoice.mk
 
 	mic_array.p230 //修改为自己的平台名称(p230)
 
 5.请添加如下内容到device/xxxx/p230/p230.mk
 	
-	include rokid-openvoice-sample-android/device/xxxx/p230/sample.mk
+	include rokid-openvoice-sample-android/device/xxxx/p230/openvoice.mk
 
 6.请在联网下调试
