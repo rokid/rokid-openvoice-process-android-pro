@@ -80,7 +80,6 @@ public class RuntimeNative{
 	public void networkStateChange(boolean connected){
 		Parcel data	= Parcel.obtain();
 		Parcel reply = Parcel.obtain();
-		IBinder runtime = android.os.ServiceManager.getService("runtime_native");
 		try{
 			data.writeInterfaceToken(runtime.getInterfaceDescriptor());
 			data.writeInt(connected ? 1 : 0);
@@ -125,9 +124,5 @@ public class RuntimeNative{
 			data.recycle();
 			reply.recycle();
 		}
-	}
-
-	public void sirenEvent(int event, double sl_degree, int has_sl){
-		android.util.Log.e("DX", event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
 	}
 }
