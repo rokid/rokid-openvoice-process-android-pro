@@ -1,4 +1,4 @@
-package com.openvoice.runtime;
+package com.rokid.openvoice;
 
 import android.content.Intent;
 import android.net.NetworkInfo;

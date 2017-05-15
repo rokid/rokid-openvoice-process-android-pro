@@ -3,7 +3,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
 		$(call all-java-files-under, src) \
-		src/com/openvoice/runtime/IRuntimeService.aidl
+		src/com/rokid/openvoice/IRuntimeService.aidl
 
 #LOCAL_JAVA_LIBRARIES := \
 	framework 

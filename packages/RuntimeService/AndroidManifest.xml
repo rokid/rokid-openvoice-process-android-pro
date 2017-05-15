@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.openvoice.runtime"
+	package="com.rokid.openvoice"
 	android:sharedUserId="android.uid.system">
 
 	<uses-sdk android:minSdkVersion="19"/>
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
 	<application android:persistent="true">
-		<service android:name="com.openvoice.runtime.RKRuntimeService">
+		<service android:name="com.rokid.openvoice.RuntimeService">
 			<intent-filter>
-				<action android:name="com.openvoice.runtime" />
+				<action android:name="com.rokid.openvoice.RuntimeService" />
 			</intent-filter>
 		</service>
-		<receiver android:name="com.openvoice.runtime.RKRuntimeReceiver">
+		<receiver android:name="com.rokid.openvoice.RuntimeReceiver">
 			<intent-filter android:priority="1000">
 				<action android:name="android.intent.action.BOOT_COMPLETED" />
 			</intent-filter>
