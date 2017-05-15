@@ -63,7 +63,7 @@ void RuntimeService::network_state_change(bool connected) {
     pthread_mutex_unlock(&speech_mutex);
 }
 
-void RuntimeService::siren_event(int event, double sl_degree, int has_sl){
+void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
 	if(remote != NULL){
 		Parcel data, reply;
 		data.writeInterfaceToken(String16("com.openvoice.runtime.IRuntimeService"));
@@ -172,7 +172,7 @@ void* onEvent(void* arg) {
 
         if(!runtime->disturb_mode || runtime->_speech == NULL) goto _skip;
 		if(message->event != SIREN_EVENT_VAD_DATA || message->event != SIREN_EVENT_WAKE_VAD_END){
-			runtime->siren_event(message->event, message->sl_degree, message->has_sl);
+			runtime->send_siren_event(message->event, message->sl_degree, message->has_sl);
 		}
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
@@ -239,7 +239,7 @@ void* onResponse(void* arg) {
         ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
         ALOGV("result : action >>  %s", sr.action.c_str());
 
-        if(sr.type <= 2 && !sr.nlp.empty()) {
+        if(sr.type == 0 && !sr.nlp.empty()) {
 			if(runtime->remote != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("com.openvoice.runtime.IRuntimeService"));

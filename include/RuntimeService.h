@@ -49,7 +49,7 @@ class RuntimeService : public BnRuntimeService{
 		void network_state_change(bool);
 		void update_stack(String16, String16);
 		void add_binder(sp<IBinder>);
-		void siren_event(int, double, int);
+		void send_siren_event(int, double, int);
 
 		pthread_mutex_t event_mutex;
 		pthread_mutex_t speech_mutex;
