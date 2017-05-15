@@ -66,7 +66,7 @@ void RuntimeService::network_state_change(bool connected) {
 void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
 	if(remote != NULL){
 		Parcel data, reply;
-		data.writeInterfaceToken(String16("com.openvoice.runtime.IRuntimeService"));
+		data.writeInterfaceToken(String16("com.rokid.openvoice.IRuntimeService"));
 		data.writeInt32(event);
 		data.writeDouble(sl_degree);
 		data.writeInt32(has_sl);
@@ -242,7 +242,7 @@ void* onResponse(void* arg) {
         if(sr.type == 0 && !sr.nlp.empty()) {
 			if(runtime->remote != NULL){
 				Parcel data, reply;
-				data.writeInterfaceToken(String16("com.openvoice.runtime.IRuntimeService"));
+				data.writeInterfaceToken(String16("com.rokid.openvoice.IRuntimeService"));
 				data.writeString16(String16(sr.asr.c_str()));
 				data.writeString16(String16(sr.nlp.c_str()));
 				data.writeString16(String16(sr.action.c_str()));
