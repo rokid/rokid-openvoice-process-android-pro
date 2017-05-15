@@ -14,7 +14,8 @@ LOCAL_SHARED_LIBRARIES := \
 		libutils \
 		liblog \
 		libspeech \
-#		libspeech_asr 
+#		libspeech_asr \
+		libspeech_nlp
 
 LOCAL_STATIC_LIBRARIES += libjsonc_static 
 
@@ -35,7 +36,6 @@ else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
 		external/stlport/stlport \
 		bionic
-#		bionic/libstdc++/include
 LOCAL_STATIC_LIBRARIES += libstlport_static
 endif
 #protostream_objectwriter.cc
