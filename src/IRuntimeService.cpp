@@ -9,7 +9,8 @@ class BpRuntimeService : public BpInterface<IRuntimeService>{
 		virtual void start_siren(bool);
 		virtual void set_siren_state(const int&);
 		virtual void network_state_change(bool);
-		virtual void update_domain(String16, String16);
+		virtual void update_stack(String16, String16);
+		virtual void add_binder(sp<IBinder>);
 };
 
 IMPLEMENT_META_INTERFACE (RuntimeService, "com.rokid.native.RuntimeService");
@@ -44,11 +45,17 @@ status_t BnRuntimeService::onTransact(uint32_t code, const Parcel &data, Parcel 
 			reply->writeNoException();
 			return NO_ERROR;
 		}
-		case TRANSACTION_UPDATE_DOMAIN:{
+		case TRANSACTION_UPDATE_STACK:{
 			CHECK_INTERFACE(IRuntimeService, data, reply);
-			String16 cdomain(data.readString16());
-			String16 sdomain(data.readString16());
-			update_domain(cdomain, sdomain);
+			String16 curr_appid(data.readString16());
+			String16 prev_appid(data.readString16());
+			update_stack(curr_appid, prev_appid);
+			reply->writeNoException();
+			return NO_ERROR;
+		}
+		case TRANSACTION_ADD_BINDER:{
+			CHECK_INTERFACE(IRuntimeService, data, reply);
+			add_binder(data.readStrongBinder());
 			reply->writeNoException();
 			return NO_ERROR;
 		}

@@ -47,7 +47,8 @@ class RuntimeService : public BnRuntimeService{
 		void start_siren(bool);
 		void set_siren_state(const int&);
 		void network_state_change(bool);
-		void update_domain(String16, String16);
+		void update_stack(String16, String16);
+		void add_binder(sp<IBinder>);
 		void siren_event(int, double, int);
 
 		pthread_mutex_t event_mutex;

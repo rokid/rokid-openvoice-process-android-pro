@@ -11,7 +11,8 @@ enum{
 	TRANSACTION_START_SIREN,
 	TRANSACTION_SET_SIREN_STATUS,
 	TRANSACTION_NETWORK_STATE_CHANGE,
-	TRANSACTION_UPDATE_DOMAIN,
+	TRANSACTION_UPDATE_STACK,
+	TRANSACTION_ADD_BINDER,
 };
 
 class IRuntimeService : public IInterface {
@@ -21,7 +22,8 @@ class IRuntimeService : public IInterface {
 		virtual void start_siren(bool) = 0;
 		virtual void set_siren_state(const int&) = 0;
 		virtual void network_state_change(bool) = 0;
-		virtual void update_domain(String16, String16) = 0;
+		virtual void update_stack(String16, String16) = 0;
+		virtual void add_binder(sp<IBinder>) = 0;
 };
 
 class BnRuntimeService : public BnInterface<IRuntimeService> {

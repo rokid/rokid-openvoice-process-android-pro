@@ -1,4 +1,4 @@
-package rokid.os;
+package com.openvoice.runtime;
 
 import android.os.Bundle;
 

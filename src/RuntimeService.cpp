@@ -64,12 +64,9 @@ void RuntimeService::network_state_change(bool connected) {
 }
 
 void RuntimeService::siren_event(int event, double sl_degree, int has_sl){
-	if(remote == NULL)
-		remote = defaultServiceManager()->getService(String16("runtime_java"));
-
 	if(remote != NULL){
 		Parcel data, reply;
-		data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+		data.writeInterfaceToken(String16("com.openvoice.runtime.IRuntimeService"));
 		data.writeInt32(event);
 		data.writeDouble(sl_degree);
 		data.writeInt32(has_sl);
@@ -80,23 +77,27 @@ void RuntimeService::siren_event(int event, double sl_degree, int has_sl){
 	}
 }
 
-void RuntimeService::update_domain(String16 cdomain, String16 sdomain){
+void RuntimeService::update_stack(String16 curr_appid, String16 prev_appid){
 	if(_speech != NULL && prepared){
-		if(cdomain.size() > 0){
-			String8 cdomain8(cdomain);
-			ALOGE("cdomain  %s", cdomain8.string());
-			_speech->config("stack", cdomain8.string());
+		if(curr_appid.size() > 0){
+			String8 curr_appid8(curr_appid);
+			ALOGE("curr_appid  %s", curr_appid8.string());
+			_speech->config("stack", curr_appid8.string());
 		}else{
 			_speech->config("stack", "");
 		}
-//		if(sdomain.size() > 0){
-//			String8 sdomain8(sdomain);
-//			ALOGE("sdomain  %s", sdomain8.string());
-//			_speech->config("sdomain", sdomain8.string());
+//		if(prev_appid.size() > 0){
+//			String8 prev_appid8(prev_appid);
+//			ALOGE("prev_appid  %s", paev_appid8.string());
+//			_speech->config("sdomain", prev_appid8.string());
 //		}else{
 //			_speech->config("sdomain", "");
 //		}
 	}
+}
+
+void RuntimeService::add_binder(sp<IBinder> binder){
+	remote = binder;
 }
 
 void RuntimeService::config() {
@@ -227,8 +228,7 @@ _skip:
 void* onResponse(void* arg) {
     RuntimeService *runtime = (RuntimeService*)arg;
     SpeechResult sr;
-	if(runtime->remote == NULL)
-		runtime->remote = defaultServiceManager()->getService(String16("runtime_java"));
+	//runtime->remote = defaultServiceManager()->getService(String16("runtime_java"));
 
     for(;;) {
         bool res = runtime->_speech->poll(sr);
@@ -242,7 +242,7 @@ void* onResponse(void* arg) {
         if(sr.type <= 2 && !sr.nlp.empty()) {
 			if(runtime->remote != NULL){
 				Parcel data, reply;
-				data.writeInterfaceToken(String16("rokid.os.IRuntimeService"));
+				data.writeInterfaceToken(String16("com.openvoice.runtime.IRuntimeService"));
 				data.writeString16(String16(sr.asr.c_str()));
 				data.writeString16(String16(sr.nlp.c_str()));
 				data.writeString16(String16(sr.action.c_str()));
