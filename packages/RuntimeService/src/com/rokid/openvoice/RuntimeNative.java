@@ -81,7 +81,7 @@ public class RuntimeNative{
 		Parcel data	= Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken(runtime.getInterfaceDescriptor());
+			data.writeInterfaceToken(DESCRIPTOR);
 			data.writeInt(connected ? 1 : 0);
 			runtime.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
 			reply.readException();
@@ -97,7 +97,7 @@ public class RuntimeNative{
 		Parcel data	= Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
-			data.writeInterfaceToken(runtime.getInterfaceDescriptor());
+			data.writeInterfaceToken(DESCRIPTOR);
 			data.writeString(currAppid);
 			data.writeString(prevAppid);
 			runtime.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
