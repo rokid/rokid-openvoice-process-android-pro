@@ -2,7 +2,6 @@ package com.rokid.openvoice;
 
 import android.os.Parcel;
 import android.os.IBinder;
-import android.os.Bundle;
 import android.os.RemoteException;
 
 public class RuntimeNative{

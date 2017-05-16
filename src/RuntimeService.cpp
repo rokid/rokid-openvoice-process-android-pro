@@ -2,9 +2,8 @@
 #define LOG_NDEBUG 0
 
 #include <stdio.h>
-#include <binder/IServiceManager.h>
 #include <utils/String8.h>
-#include <fstream>
+#include <binder/IServiceManager.h>
 
 #include "RuntimeService.h"
 #include "voice.h"
@@ -163,7 +162,6 @@ void* onEvent(void* arg) {
 		return NULL;
 	}
 	runtime->prepared = true;
-	//FILE *fd = fopen("/data/voice.pcm", "w");
 	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
     for(;;) {
         pthread_mutex_lock(&runtime->event_mutex);
@@ -194,7 +192,6 @@ void* onEvent(void* arg) {
         case SIREN_EVENT_WAKE_VAD_DATA:
             if (id > 0 && message->has_voice > 0) {
                 runtime->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
-                //fwrite(message->buff, message->length, 1, fd);
             }
             break;
         case SIREN_EVENT_VAD_END:
@@ -203,7 +200,6 @@ void* onEvent(void* arg) {
             if(id > 0) {
                 runtime->_speech->end_voice(id);
                 id = -1;
-                //fclose(fd);
             }
             break;
         case SIREN_EVENT_VAD_CANCEL:
