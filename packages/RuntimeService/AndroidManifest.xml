@@ -5,6 +5,8 @@
 
 	<uses-sdk android:minSdkVersion="19"/>
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
 
 	<application android:persistent="true">
 		<service android:name="com.rokid.openvoice.RuntimeService">
@@ -16,9 +18,9 @@
 			<intent-filter android:priority="1000">
 				<action android:name="android.intent.action.BOOT_COMPLETED" />
 			</intent-filter>
-			<intent-filter>
+			<!--<intent-filter>
 				<action android:name="android.net.wifi.STATE_CHANGE" />
-			</intent-filter>
+			</intent-filter>-->
 		</receiver>
 			<intent-filter>
 				<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
