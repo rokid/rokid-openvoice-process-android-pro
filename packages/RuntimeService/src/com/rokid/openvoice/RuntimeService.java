@@ -28,7 +28,7 @@ public class RuntimeService extends Service{
 
 	@Override
 	public void onCreate(){
-		new MyUEventObserver().startObserving("/sys/class/android_usb/android0/f_audio_source/pcm");
+		mUEventObserver.startObserving("/sys/class/android_usb/android0/f_audio_source/pcm");
 	}
 
 	class RuntimeProxy extends IRuntimeService.Stub{
@@ -46,13 +46,13 @@ public class RuntimeService extends Service{
 		}
 	}	
 
-	class MyUEventObserver extends android.os.UEventObserver{
-	
+	private final android.os.UEventObserver mUEventObserver = new android.os.UEventObserver() {
+		 
 		@Override
 		public void onUEvent(android.os.UEventObserver.UEvent event){
 			Log.e(TAG, event.toString());
 		}
-	}
+	};
 
 	@Override
 	public IBinder onBind(Intent intent) {
