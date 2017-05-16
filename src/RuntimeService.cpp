@@ -32,8 +32,11 @@ bool RuntimeService::init() {
 }
 
 void RuntimeService::start_siren(bool flag) {
-    disturb_mode = flag;
-    set_siren_state_change((disturb_mode ? SIREN_STATE_AWAKE : SIREN_STATE_SLEEP));
+	if(flag){
+		start_siren_process_stream();
+	}else{
+		stop_siren_stream();
+	}
 }
 
 void RuntimeService::set_siren_state(const int &state) {

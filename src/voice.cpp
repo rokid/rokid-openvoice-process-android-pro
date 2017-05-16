@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <hardware/hardware.h>
+//#include <unistd.h>
 #include "voice.h"
 
 struct mic_array_device_t *mic_array_device = NULL;
@@ -30,6 +31,7 @@ static inline int mic_array_device_open(const hw_module_t *module, struct mic_ar
 }
 
 bool _init(RuntimeService *runtime){
+//	uevent_next_event(NULL, 0);
 	//1. open mic driver.
 	mic_array_module_t *module;
 	if(hw_get_module(MIC_ARRAY_HARDWARE_MODULE_ID, (const struct hw_module_t **)&module) != 0){
@@ -44,9 +46,17 @@ bool _init(RuntimeService *runtime){
 	//2. init siren
 	_siren = init_siren(runtime, NULL, &siren_input);	
 	//3. set siren callback	
-	start_siren_process_stream(_siren, &siren_callback);
+	start_siren_process_stream();
 	//set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
+}
+
+void start_siren_process_stream(){
+	start_siren_process_stream(_siren, &siren_callback);
+}
+
+void stop_siren_stream(){
+	stop_siren_stream(_siren);
 }
 
 void set_siren_state_change(int state){
@@ -113,7 +123,6 @@ void voice_event_callback(void *token, int length, siren_event_t event,
 	message->threshold = threshold;
 	message->has_voiceprint = has_voiceprint;
 	runtime->message_queue.push_back(message);
-
 	pthread_cond_signal(&runtime->event_cond);
 	pthread_mutex_unlock(&runtime->event_mutex);
 }
