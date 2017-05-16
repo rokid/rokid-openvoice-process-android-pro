@@ -173,7 +173,6 @@ void* onEvent(void* arg) {
         const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
         ALOGV("event : -------------------------%d----", message->event);
 
-        if(!runtime->disturb_mode || runtime->_speech == NULL) goto _skip;
 		if(message->event != SIREN_EVENT_VAD_DATA || message->event != SIREN_EVENT_WAKE_VAD_END){
 			runtime->send_siren_event(message->event, message->sl_degree, message->has_sl);
 		}
@@ -218,7 +217,6 @@ void* onEvent(void* arg) {
         case SIREN_EVENT_WAKE_PRE:
             break;
         }
-_skip:
         runtime->message_queue.pop_front();
         delete message;
         pthread_mutex_unlock(&runtime->event_mutex);
