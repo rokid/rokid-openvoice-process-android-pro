@@ -88,13 +88,6 @@ void RuntimeService::update_stack(String16 curr_appid, String16 prev_appid){
 		}else{
 			_speech->config("stack", "");
 		}
-//		if(prev_appid.size() > 0){
-//			String8 prev_appid8(prev_appid);
-//			ALOGE("prev_appid  %s", paev_appid8.string());
-//			_speech->config("sdomain", prev_appid8.string());
-//		}else{
-//			_speech->config("sdomain", "");
-//		}
 	}
 }
 
