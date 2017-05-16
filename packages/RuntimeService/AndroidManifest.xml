@@ -16,9 +16,12 @@
 			<intent-filter android:priority="1000">
 				<action android:name="android.intent.action.BOOT_COMPLETED" />
 			</intent-filter>
-			<intent-filter android:priority="1000">
+			<intent-filter>
 				<action android:name="android.net.wifi.STATE_CHANGE" />
 			</intent-filter>
 		</receiver>
+			<intent-filter>
+				<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+			</intent-filter>
 	</application>
 </manifest>
