@@ -3,7 +3,7 @@
 
 #include <string.h>
 #include <hardware/hardware.h>
-#include "voice_engine.h"
+#include "voice.h"
 
 struct mic_array_device_t *mic_array_device = NULL;
 siren_t _siren;
