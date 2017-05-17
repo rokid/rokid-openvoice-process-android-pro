@@ -11,7 +11,7 @@ int main(void){
 	sp<RuntimeService> runtime = new RuntimeService();
 	defaultServiceManager()->addService(String16(RuntimeService::getServiceName()), runtime, false);
 
-	runtime->init();
+	//runtime->init();
 
 	ProcessState::self()->startThreadPool();
 	IPCThreadState::self()->joinThreadPool();

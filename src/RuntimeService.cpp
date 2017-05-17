@@ -150,12 +150,12 @@ void RuntimeService::config() {
 void* onEvent(void* arg) {
     RuntimeService *runtime = (RuntimeService*)arg;
     int id = -1;
-	runtime->config();
-	if (!runtime->_speech->prepare()) {
-		return NULL;
-	}
-	runtime->prepared = true;
-	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
+//	runtime->config();
+//	if (!runtime->_speech->prepare()) {
+//		return NULL;
+//	}
+//	runtime->prepared = true;
+//	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
     for(;;) {
         pthread_mutex_lock(&runtime->event_mutex);
         while(runtime->message_queue.empty()) {

@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <hardware/hardware.h>
-//#include <unistd.h>
 #include "voice.h"
 
 struct mic_array_device_t *mic_array_device = NULL;
@@ -31,7 +30,6 @@ static inline int mic_array_device_open(const hw_module_t *module, struct mic_ar
 }
 
 bool _init(RuntimeService *runtime){
-//	uevent_next_event(NULL, 0);
 	//1. open mic driver.
 	mic_array_module_t *module;
 	if(hw_get_module(MIC_ARRAY_HARDWARE_MODULE_ID, (const struct hw_module_t **)&module) != 0){
@@ -47,7 +45,6 @@ bool _init(RuntimeService *runtime){
 	_siren = init_siren(runtime, NULL, &siren_input);	
 	//3. set siren callback	
 	start_siren_process_stream();
-	//set_siren_state_change(SIREN_STATE_SLEEP);
 	return true;
 }
 
