@@ -43,8 +43,6 @@ bool _init(RuntimeService *runtime){
 	ALOGI ("open mic array done");
 	//2. init siren
 	_siren = init_siren(runtime, NULL, &siren_input);	
-	//3. set siren callback	
-	start_siren_process_stream();
 	return true;
 }
 
