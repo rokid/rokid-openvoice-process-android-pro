@@ -57,8 +57,10 @@ void RuntimeService::network_state_change(bool connected) {
             prepared = true;
 			pthread_create(&response_thread, NULL, onResponse, this);
 			pthread_detach(response_thread);
+			start_siren_process_stream();
         }
     } else if(!connected && prepared) {
+		stop_siren_stream();
         _speech->release();
         prepared = false;
     }
