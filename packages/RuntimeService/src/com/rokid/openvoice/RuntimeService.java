@@ -18,17 +18,17 @@ public class RuntimeService extends Service{
 		mRuntimeNative = RuntimeNative.asInstance();
 		mRuntimeNative.init();
 		mRuntimeNative.addBinder(new RuntimeProxy());
+	}
+
+	@Override
+	public void onCreate(){
+		mUEventObserver.startObserving("/sys/class/android_usb/android0/f_audio_source/pcm");
 
 		ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
 		if(mNetworkInfo != null){
 			mRuntimeNative.networkStateChange(true);
 		}
-	}
-
-	@Override
-	public void onCreate(){
-		mUEventObserver.startObserving("/sys/class/android_usb/android0/f_audio_source/pcm");
 	}
 
 	class RuntimeProxy extends IRuntimeService.Stub{
