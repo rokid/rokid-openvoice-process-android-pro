@@ -74,7 +74,7 @@ void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
 		data.writeInt32(event);
 		data.writeDouble(sl_degree);
 		data.writeInt32(has_sl);
-		remote->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
+		remote->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
 		reply.readExceptionCode();
 	}else{
 		ALOGI("Java runtime is null , Waiting for it to initialize");
