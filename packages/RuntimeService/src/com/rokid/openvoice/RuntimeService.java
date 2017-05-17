@@ -12,12 +12,14 @@ public class RuntimeService extends Service{
 
 	String TAG = getClass().getSimpleName();
 	RuntimeNative mRuntimeNative = null;
+	public static boolean initialized = false;
 	
 	public RuntimeService(){
 		Log.e(TAG, "RuntimeService  created ");
 		mRuntimeNative = RuntimeNative.asInstance();
 		mRuntimeNative.init();
 		mRuntimeNative.addBinder(new RuntimeProxy());
+		initialized = true;
 	}
 
 	@Override
