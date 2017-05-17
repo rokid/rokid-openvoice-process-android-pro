@@ -22,7 +22,7 @@ public class RuntimeService extends Service{
 
 	@Override
 	public void onCreate(){
-		mUEventObserver.startObserving("/sys/class/android_usb/android0/f_audio_source/pcm");
+		mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
 
 		ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
@@ -51,6 +51,12 @@ public class RuntimeService extends Service{
 		@Override
 		public void onUEvent(android.os.UEventObserver.UEvent event){
 			Log.e(TAG, event.toString());
+			String action = event.get("ACTION");
+			if("add".equals(action)){
+				mRuntimeNative.startSiren(true);
+			}else if("remove".equals(action)){
+				mRuntimeNative.startSiren(false);
+			}
 		}
 	};
 
