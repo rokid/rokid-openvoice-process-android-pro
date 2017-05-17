@@ -34,7 +34,7 @@ void RuntimeService::start_siren(bool flag) {
 	if(flag){
 		start_siren_process_stream();
 	}else{
-		stop_siren_stream();
+		stop_siren_process_stream();
 	}
 }
 
@@ -60,7 +60,7 @@ void RuntimeService::network_state_change(bool connected) {
 			start_siren_process_stream();
         }
     } else if(!connected && prepared) {
-		stop_siren_stream();
+		stop_siren_process_stream();
         _speech->release();
         prepared = false;
     }

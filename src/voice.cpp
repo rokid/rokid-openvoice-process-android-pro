@@ -50,8 +50,8 @@ void start_siren_process_stream(){
 	start_siren_process_stream(_siren, &siren_callback);
 }
 
-void stop_siren_stream(){
-	stop_siren_stream(_siren);
+void stop_siren_process_stream(){
+	stop_siren_process_stream(_siren);
 }
 
 void set_siren_state_change(int state){

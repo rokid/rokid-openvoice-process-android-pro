@@ -28,7 +28,7 @@ void state_changed_callback(void*, int);
 
 void start_siren_process_stream();
 
-void stop_siren_stream();
+void stop_siren_process_stream();
 
 void voice_event_callback(void* token, int length, siren_event_t event, 
 		void* buff, int has_sl,
