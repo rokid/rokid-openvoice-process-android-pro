@@ -164,7 +164,7 @@ void* onEvent(void* arg) {
         const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
         ALOGV("event : -------------------------%d----", message->event);
 
-		if(message->event != SIREN_EVENT_VAD_DATA || message->event != SIREN_EVENT_WAKE_VAD_END){
+		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_END)){
 			runtime->send_siren_event(message->event, message->sl_degree, message->has_sl);
 		}
         switch(message->event) {
