@@ -1,4 +1,4 @@
-#define LOG_TAG "VoiceEngine"
+#define LOG_TAG "Voice"
 #define LOG_NDEBUG 0
 
 #include <string.h>
