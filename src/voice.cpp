@@ -86,6 +86,10 @@ int read_input(void *token, char *buff, int	frame_cnt){
 	return mic_array_device->read_stream(mic_array_device, buff, frame_cnt);
 }
 
+int find_card(const char *snd){
+	return mic_array_device->find_card(snd);
+}
+
 void on_err_input(void *token){
 	ALOGV("%s", __FUNCTION__);
 }

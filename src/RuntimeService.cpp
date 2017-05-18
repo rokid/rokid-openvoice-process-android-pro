@@ -33,7 +33,8 @@ bool RuntimeService::init() {
 void RuntimeService::start_siren(bool start) {
     pthread_mutex_lock(&speech_mutex);
 	if(start && !ready){
-		start_siren_process_stream();
+		if(find_card("USB-Audio") > 0)
+			start_siren_process_stream();
 	}else if(!start && ready){
 		stop_siren_process_stream();
 	}
@@ -47,7 +48,7 @@ void RuntimeService::set_siren_state(const int &state) {
 
 void RuntimeService::network_state_change(bool connected) {
     ALOGV("network_state_change      isconnect  <<%d>>", connected);
-    //pthread_mutex_lock(&speech_mutex);
+//    pthread_mutex_lock(&speech_mutex);
     if(pthread_mutex_trylock(&speech_mutex) == EBUSY) {
         ALOGE("blocking 。。。");
         return;
@@ -59,7 +60,7 @@ void RuntimeService::network_state_change(bool connected) {
             prepared = true;
 			pthread_create(&response_thread, NULL, onResponse, this);
 			pthread_detach(response_thread);
-			if(!ready)
+			if(find_card("USB-Audio") > 0)
 				start_siren_process_stream();
         }
     } else if(!connected && prepared) {

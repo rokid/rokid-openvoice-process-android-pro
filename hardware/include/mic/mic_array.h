@@ -35,6 +35,7 @@ struct mic_array_device_t {
     int (*resume_stream) (struct mic_array_device_t *dev);
     int (*read_stream) (struct mic_array_device_t *dev, char *buff, unsigned int frame_cnt);
     int (*config_stream) (struct mic_array_device_t *dev, int cmd, char *cmd_buff);
+	int (*find_card) (const char *snd);
 };
 __END_DECLS
 #endif

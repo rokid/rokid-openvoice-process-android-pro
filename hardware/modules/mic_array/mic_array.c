@@ -83,6 +83,8 @@ static int mic_array_device_get_stream_buff_size (struct mic_array_device_t *dev
 
 static int mic_array_device_resume_stream (struct mic_array_device_t *dev);
 
+static int mic_array_device_find_card (const char *snd);
+
 static struct hw_module_methods_t mic_array_module_methods = {
     .open = mic_array_device_open,
 };
@@ -190,6 +192,9 @@ static void tinymix_set_value(struct mixer *mixer, const char *control,
 	}
 }
 
+static int mic_array_device_find_card(const char *snd){
+	return find_snd(snd);
+}
 
 static int mic_array_device_open (const struct hw_module_t *module, const
        									char *name, struct hw_device_t **device) {
@@ -217,6 +222,7 @@ static int mic_array_device_open (const struct hw_module_t *module, const
     dev->read_stream = mic_array_device_read_stream;
     dev->config_stream = mic_array_device_config_stream;
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
+	dev->find_card = mic_array_device_find_card;
     
     dev->channels = MIC_CHANNEL;;
     dev->sample_rate = MIC_SAMPLE_RATE;
@@ -274,7 +280,7 @@ static int mic_array_device_start_stream (struct mic_array_device_t *dev)
 		pcm = pcm_open (card, PCM_DEVICE, PCM_IN, &pcm_config_in);
 	 } else {
     	ALOGE("xmos card");
-		card = find_snd ("xCORE");
+		card = find_snd ("USB-Audio");
 		if (card  < 0) {
 		   ALOGE("Can't find xmos sound card");
 	       card = PCM_CARD;

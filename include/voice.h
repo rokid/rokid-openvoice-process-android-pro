@@ -30,6 +30,8 @@ void start_siren_process_stream();
 
 void stop_siren_process_stream();
 
+int find_card(const char*);
+
 void voice_event_callback(void* token, int length, siren_event_t event, 
 		void* buff, int has_sl,
 		int has_voice, double sl_degree, double energy, double threshold,
