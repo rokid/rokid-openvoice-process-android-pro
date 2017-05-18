@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-public class RuntimeNative{
+public class RuntimeNative implements IBinder.DeathRecipient{
 
 	private static final String DESCRIPTOR = "com.rokid.native.RuntimeService";
 
@@ -13,6 +13,13 @@ public class RuntimeNative{
 
 	private RuntimeNative(){
 		runtime = android.os.ServiceManager.getService("runtime_native");
+		if(runtime != null){
+			try{
+				runtime.linkToDeath(this, 0);
+			}catch(RemoteException e){
+				e.printStackTrace();
+			}
+		}else android.util.Log.e("RuntimeNative", "native service is null");
 	}
 
 	public static RuntimeNative asInstance(){
@@ -24,6 +31,11 @@ public class RuntimeNative{
 			}
 		}
 		return mRuntimeNative;
+	}
+
+	@Override
+	public void binderDied(){
+		android.util.Log.e("RuntimeNative", "native service died !");
 	}
 
 	public boolean init(){
@@ -82,7 +94,7 @@ public class RuntimeNative{
 		try{
 			data.writeInterfaceToken(DESCRIPTOR);
 			data.writeInt(connected ? 1 : 0);
-			runtime.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
+			runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){
 			e.printStackTrace();
@@ -99,7 +111,7 @@ public class RuntimeNative{
 			data.writeInterfaceToken(DESCRIPTOR);
 			data.writeString(currAppid);
 			data.writeString(prevAppid);
-			runtime.transact(android.os.IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
+			runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){
 			e.printStackTrace();
