@@ -87,7 +87,9 @@ int read_input(void *token, char *buff, int	frame_cnt){
 }
 
 int find_card(const char *snd){
-	return mic_array_device->find_card(snd);
+	if(snd != null)
+		return mic_array_device->find_card(snd);
+	return false;
 }
 
 void on_err_input(void *token){
