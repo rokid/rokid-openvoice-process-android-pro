@@ -12,7 +12,21 @@ public class RuntimeService extends Service{
 
 	String TAG = getClass().getSimpleName();
 	RuntimeNative mRuntimeNative = null;
+
 	public static boolean initialized = false;
+
+	public static final int SIREN_STATE_AWAKE = 1;
+	public static final int SIREN_STATE_SLEEP = 2;
+
+	public static final int VAD_START = 100;
+	public static final int VAD_END = 102;
+	public static final int VAD_CANCEL = 103;
+	public static final int WAKE_VAD_START = 104;
+	public static final int WAKE_VAD_END = 106;
+	public static final int WAKE_NOCMD = 108;
+	public static final int WAKE_CMD = 109;
+	public static final int WAKE_CANCEL = 110;
+	public static final int SLEEP = 111;
 	
 	public RuntimeService(){
 		Log.e(TAG, "RuntimeService  created ");
