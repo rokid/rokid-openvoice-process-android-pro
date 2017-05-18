@@ -50,14 +50,14 @@ public class RuntimeService extends Service{
 	class RuntimeProxy extends IRuntimeService.Stub{
 
 		@Override
-		public void nativeNlpMessage(String asr, String nlp, String action, int type){
+		public void onResponse(String asr, String nlp, String action, int type){
 			Log.e(TAG, "asr\t" + asr);
 			Log.e(TAG, "nlp\t" + nlp);
 			Log.e(TAG, "action\t" + action);
 		}
 	
 		@Override
-		public void sirenEvent(int event, double sl_degree, int has_sl){
+		public void onEvent(int event, double sl_degree, int has_sl){
 			Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
 		}
 	}	
