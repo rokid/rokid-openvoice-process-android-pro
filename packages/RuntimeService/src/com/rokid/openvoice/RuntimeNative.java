@@ -104,13 +104,12 @@ public class RuntimeNative implements IBinder.DeathRecipient{
 		}
 	}
 
-	public void updateStack(String currAppid, String prevAppid){
+	public void updateStack(String appid){
 		Parcel data	= Parcel.obtain();
 		Parcel reply = Parcel.obtain();
 		try{
 			data.writeInterfaceToken(DESCRIPTOR);
-			data.writeString(currAppid);
-			data.writeString(prevAppid);
+			data.writeString(appid);
 			runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
 			reply.readException();
 		}catch(RemoteException e){

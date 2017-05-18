@@ -9,7 +9,7 @@ class BpRuntimeService : public BpInterface<IRuntimeService>{
 		virtual void start_siren(bool);
 		virtual void set_siren_state(const int&);
 		virtual void network_state_change(bool);
-		virtual void update_stack(String16, String16);
+		virtual void update_stack(String16);
 		virtual void add_binder(sp<IBinder>);
 };
 
@@ -47,9 +47,8 @@ status_t BnRuntimeService::onTransact(uint32_t code, const Parcel &data, Parcel 
 		}
 		case TRANSACTION_UPDATE_STACK:{
 			CHECK_INTERFACE(IRuntimeService, data, reply);
-			String16 curr_appid(data.readString16());
-			String16 prev_appid(data.readString16());
-			update_stack(curr_appid, prev_appid);
+			String16 appid(data.readString16());
+			update_stack(appid);
 			reply->writeNoException();
 			return NO_ERROR;
 		}

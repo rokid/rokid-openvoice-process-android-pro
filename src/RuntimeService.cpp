@@ -85,12 +85,12 @@ void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
 	}
 }
 
-void RuntimeService::update_stack(String16 curr_appid, String16 prev_appid){
+void RuntimeService::update_stack(String16 appid){
 	if(_speech != NULL && prepared){
-		if(curr_appid.size() > 0){
-			String8 curr_appid8(curr_appid);
-			ALOGE("curr_appid  %s", curr_appid8.string());
-			_speech->config("stack", curr_appid8.string());
+		if(appid.size() > 0){
+			String8 appid8(appid);
+			ALOGE("appid  %s", appid8.string());
+			_speech->config("stack", appid8.string());
 		}else{
 			_speech->config("stack", "");
 		}
