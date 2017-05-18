@@ -31,12 +31,13 @@ bool RuntimeService::init() {
 }
 
 void RuntimeService::start_siren(bool start) {
+    pthread_mutex_lock(&speech_mutex);
 	if(start && !ready){
 		start_siren_process_stream();
 	}else if(!start && ready){
 		stop_siren_process_stream();
 	}
-	ready = start;
+    pthread_mutex_unlock(&speech_mutex);
 }
 
 void RuntimeService::set_siren_state(const int &state) {
@@ -58,13 +59,13 @@ void RuntimeService::network_state_change(bool connected) {
             prepared = true;
 			pthread_create(&response_thread, NULL, onResponse, this);
 			pthread_detach(response_thread);
-			start_siren_process_stream();
-			ready = true;
+			if(!ready)
+				start_siren_process_stream();
         }
     } else if(!connected && prepared) {
-		stop_siren_process_stream();
+		if(ready)
+			stop_siren_process_stream();
         _speech->release();
-		ready = false;
         prepared = false;
     }
     pthread_mutex_unlock(&speech_mutex);
