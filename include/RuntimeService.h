@@ -57,6 +57,7 @@ class RuntimeService : public BnRuntimeService{
 		pthread_t event_thread;
 		pthread_t response_thread;
 
+		bool ready = false;
 		bool prepared = false;
 		Speech *_speech = NULL;
 		sp<IBinder> remote = NULL;
