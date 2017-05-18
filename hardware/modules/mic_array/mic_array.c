@@ -35,11 +35,8 @@
 #define MODULE_AUTHOR "jiaqi@rokid.com"
 
 #define MIC_SAMPLE_RATE 48000
-#define MIC_CHANNEL 8
-//32 bit valid bit equals to 4 byte
-#define MIC_BYTE_PER_POINT 4       
-//10ms equals 480(frame) * 8(channel) * 4(32bit)
-#define FRAME_COUNT ((MIC_SAMPLE_RATE / 100) * MIC_CHANNEL * MIC_BYTE_PER_POINT)
+#define MIC_CHANNEL 4
+#define FRAME_COUNT 15360
 
 #define PCM_CARD 0
 #define PCM_DEVICE 0 
@@ -49,7 +46,7 @@ static struct pcm_config pcm_config_in = {
     .rate = MIC_SAMPLE_RATE,
     .period_size = 1024,
     .period_count = 4,
-    .format = PCM_FORMAT_S24_LE,
+    .format = PCM_FORMAT_S32_LE,
 };
 
 static struct pcm_config pcm_config_xmos = {
