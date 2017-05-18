@@ -60,7 +60,7 @@ void RuntimeService::network_state_change(bool connected) {
             prepared = true;
 			pthread_create(&response_thread, NULL, onResponse, this);
 			pthread_detach(response_thread);
-			if(find_card("USB-Audio") > 0)
+			if(!ready && find_card("USB-Audio") > 0)
 				start_siren_process_stream();
         }
     } else if(!connected && prepared) {
