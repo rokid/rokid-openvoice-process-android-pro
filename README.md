@@ -1,8 +1,8 @@
 # rokid-openvoice-sample-android
-##Rokid语音服务的Android示例代码文档此部分是Rokid语音服务（Rokid Voice Services）的Android示例代码，允许开发者快速搭建一套Rokid语音服务以体验Rokid提供的语音交互能力。此码最低兼容Android4.4,使用指南请点[这里](https://developer-forum.rokid.com/t/rokid-open-voice-sdk/97/10)
+##Rokid语音服务的Android示例代码文档此部分是Rokid语音服务（Rokid Voice Services）的Android示例代码，允许开发者快速搭建一套Rokid语音服务以体验Rokid提供的语音交互能力。此代码最低兼容Android4.4,使用指南请点[这里](https://developer-forum.rokid.com/t/rokid-open-voice-sdk/97/10)
 
 ## 内容
-1.请修改rokid-openvoice-sample-android/etc/openvoice_profile.json[配置文件](https://developer-forum.rokid.com/t/rokid/101)
+1.请修改rokid-openvoice-sample-android/etc/openvoice_profile.json路径的[配置](https://developer-forum.rokid.com/t/rokid/101)文件
 
 	{
 		'server_address': 'apigw.open.rokid.com:443',
