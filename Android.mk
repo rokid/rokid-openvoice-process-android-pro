@@ -19,7 +19,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_STATIC_LIBRARIES += libjsonc_static 
 
-OPENVOICE_DEP_DIR = robot/openvoice
+OPENVOICE_DEP_DIR = openvoice
 
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \

@@ -24,12 +24,8 @@
 		. . .	. . . 
 	}
 
-3.请修改如下内容rokid-openvoice-sample-android/Android.mk
-
-	OPENVOICE_DEP_DIR = robot/openvoice	//修改为自己的SDK路径
-
-4.请添加如下内容到device/xxxx/p230/p230.mk
+3.请添加如下内容到device/xxxx/p230/p230.mk
 	
 	include rokid-openvoice-sample-android/device/xxxx/p230/openvoice.mk
 
-5.请在联网下调试
+4.请在联网下调试
