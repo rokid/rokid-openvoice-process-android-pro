@@ -1,6 +1,6 @@
 #native runtime
 PRODUCT_PACKAGES += \
-					mic_array.p230 \
+					mic_array.$(TARGET_PRODUCT) \
 					runtime 
 #siren
 PRODUCT_PACKAGES += \
