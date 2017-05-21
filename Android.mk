@@ -19,14 +19,12 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_STATIC_LIBRARIES += libjsonc_static 
 
-OPENVOICE_DEP_DIR = openvoice
-
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		$(OPENVOICE_DEP_DIR)/rokid-blacksiren/include \
-		$(OPENVOICE_DEP_DIR)/rokid-blacksiren/thirdparty/libjsonc/include \
-		$(OPENVOICE_DEP_DIR)/speech/include
+		$(LOCAL_PATH)/../rokid-blacksiren/include \
+		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include \
+		$(LOCAL_PATH)/../speech/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libdl
