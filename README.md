@@ -5,7 +5,9 @@
 1.请修改rokid-openvoice-sample-android/etc/openvoice_profile.json路径的[配置](https://developer-forum.rokid.com/t/rokid/101)文件
 
 	{
-		'server_address': 'apigw.open.rokid.com:443',
+		'host': 'apigwws.open.rokid.com',
+		'port': '443',
+		'branch': '/api',
 		'ssl_roots_pem': '/system/etc/roots.pem',
 		'key': 'your_key',
 		'device_type_id': 'your_device_type_id',

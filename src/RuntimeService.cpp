@@ -109,7 +109,9 @@ void RuntimeService::config() {
         ALOGE("%s cannot find", SPEECH_CONFIG_FILE);
 		return;
     }
-    json_object *server_address = NULL;
+    json_object *host = NULL;
+    json_object *port = NULL;
+    json_object *branch = NULL;
     json_object *ssl_roots_pem = NULL;
     json_object *auth_key = NULL;
     json_object *device_type = NULL;
@@ -118,9 +120,17 @@ void RuntimeService::config() {
     json_object *api_version = NULL;
     json_object *codec = NULL;
 
-    if(TRUE == json_object_object_get_ex(json_obj, "server_address", &server_address)) {
-        _speech->config("server_address", json_object_get_string(server_address));
-        ALOGE("%s", json_object_get_string(server_address));
+    if(TRUE == json_object_object_get_ex(json_obj, "host", &host)) {
+        _speech->config("host", json_object_get_string(host));
+        ALOGE("%s", json_object_get_string(host));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "port", &port)) {
+        _speech->config("port", json_object_get_string(port));
+        ALOGE("%s", json_object_get_string(port));
+    }
+    if(TRUE == json_object_object_get_ex(json_obj, "branch", &branch)) {
+        _speech->config("branch", json_object_get_string(branch));
+        ALOGE("%s", json_object_get_string(branch));
     }
     if(TRUE == json_object_object_get_ex(json_obj, "ssl_roots_pem", &ssl_roots_pem)) {
         _speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
