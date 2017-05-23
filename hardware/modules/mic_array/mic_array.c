@@ -222,9 +222,9 @@ static int mic_array_device_open(const struct hw_module_t* module,
     dev->read_stream = mic_array_device_read_stream;
     dev->config_stream = mic_array_device_config_stream;
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
+	dev->find_card = mic_array_device_find_card;
 
     dev->channels = MIC_CHANNEL;
-    ;
     dev->sample_rate = MIC_SAMPLE_RATE;
     dev->bit = pcm_format_to_bits(pcm_config_in.format);
     dev->pcm = NULL;
