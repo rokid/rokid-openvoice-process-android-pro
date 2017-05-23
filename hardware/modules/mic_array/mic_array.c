@@ -236,10 +236,8 @@ static int mic_array_device_close(struct hw_device_t* device)
 {
     ALOGI("pcm close");
 
-    struct mic_array_device_t* mic_array_device
-        = (struct mic_array_device_t*)device;
-    struct mic_array_device_ex* dev_ex
-        = (struct mic_array_device_ex*)mic_array_device;
+    struct mic_array_device_t* mic_array_device = (struct mic_array_device_t*)device;
+    struct mic_array_device_ex* dev_ex = (struct mic_array_device_ex*)mic_array_device;
 
     if (dev_ex != NULL) {
         free(dev_ex->buffer);
@@ -319,8 +317,7 @@ static int read_left_frame(
             return ret;
         }
         memcpy(buff, dev->buffer, left);
-        memcpy(
-            dev->buffer, dev->buffer + left, dev->mic_array.frame_cnt - left);
+        memcpy(dev->buffer, dev->buffer + left, dev->mic_array.frame_cnt - left);
         dev->pts = dev->mic_array.frame_cnt - left;
     } else {
         if (dev->pts >= left) {
@@ -338,8 +335,7 @@ static int read_left_frame(
                 return ret;
             }
             memcpy(buff + dev->pts, dev->buffer, left);
-            memcpy(dev->buffer, dev->buffer + left,
-                dev->mic_array.frame_cnt - left);
+            memcpy(dev->buffer, dev->buffer + left,dev->mic_array.frame_cnt - left);
             dev->pts = dev->mic_array.frame_cnt - left;
         }
     }
