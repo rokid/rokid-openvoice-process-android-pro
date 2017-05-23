@@ -57,8 +57,7 @@ static struct mic_array_device_ex {
     char* buffer;
 };
 
-static int mic_array_device_open(const struct hw_module_t* module,
-    const char* name, struct hw_device_t** device);
+static int mic_array_device_open(const struct hw_module_t* module, const char* name, struct hw_device_t** device);
 
 static int mic_array_device_close(struct hw_device_t* device);
 
@@ -68,14 +67,11 @@ static int mic_array_device_stop_stream(struct mic_array_device_t* dev);
 
 static int mic_array_device_finish_stream(struct mic_array_device_t* dev);
 
-static int mic_array_device_read_stream(
-    struct mic_array_device_t* dev, char* buff, unsigned int frame_cnt);
+static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* buff, unsigned int frame_cnt);
 
-static int mic_array_device_config_stream(
-    struct mic_array_device_t* dev, int cmd, char* cmd_buff);
+static int mic_array_device_config_stream(struct mic_array_device_t* dev, int cmd, char* cmd_buff);
 
-static int mic_array_device_get_stream_buff_size(
-    struct mic_array_device_t* dev);
+static int mic_array_device_get_stream_buff_size(struct mic_array_device_t* dev);
 
 static int mic_array_device_resume_stream(struct mic_array_device_t* dev);
 
@@ -198,11 +194,9 @@ static int mic_array_device_open(const struct hw_module_t* module,
     const char* name, struct hw_device_t** device)
 {
     int i = 0;
-    char value[PROPERTY_VALUE_MAX];
     struct mic_array_device_ex* dev_ex = NULL;
     struct mic_array_device_t* dev = NULL;
-    dev_ex = (struct mic_array_device_ex*)malloc(
-        sizeof(struct mic_array_device_ex));
+    dev_ex = (struct mic_array_device_ex*)malloc(sizeof(struct mic_array_device_ex));
     dev = (struct mic_array_device_t*)dev_ex;
 
     if (!dev_ex) {
@@ -222,7 +216,7 @@ static int mic_array_device_open(const struct hw_module_t* module,
     dev->read_stream = mic_array_device_read_stream;
     dev->config_stream = mic_array_device_config_stream;
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
-	dev->find_card = mic_array_device_find_card;
+    dev->find_card = mic_array_device_find_card;
 
     dev->channels = MIC_CHANNEL;
     dev->sample_rate = MIC_SAMPLE_RATE;
