@@ -9,16 +9,12 @@ PRODUCT_PACKAGES += \
 					libztvad \
 					libztcodec2 \
 					libr2audio \
-					libr2vt \
-#					libjsonc
+					libr2vt
 
 #speech
 PRODUCT_PACKAGES += \
-					libprotobuf-rokid-cpp-lite \
 					libprotobuf-rokid-cpp-full \
-					libgpr \
-					libgrpc \
-					libgrpc++ \
+					libpoco \
 					libspeech_common \
 					libspeech \
 					libspeech_tts \
@@ -28,7 +24,7 @@ PRODUCT_PACKAGES += \
 					librokid_speech_jni \
 					rokid_tts \
 
-#java runtime
+#apps
 PRODUCT_PACKAGES += \
 					RuntimeService \
 					RKTtsService 
@@ -36,5 +32,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 					roots.pem \
 					workdir_cn \
+					workdir_en \
 					blacksiren.json \
 					openvoice_profile.json
