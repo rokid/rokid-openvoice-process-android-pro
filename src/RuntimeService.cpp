@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <utils/String8.h>
 #include <binder/IServiceManager.h>
 
 #include "RuntimeService.h"
@@ -143,15 +144,15 @@ void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
 }
 
 void RuntimeService::update_stack(String16 appid){
-//	if(_speech != NULL && mCurrentSpeechState == SPEECH_STATE_PREPARED){
-//		if(appid.size() > 0){
-//			String8 appid8(appid);
-//			ALOGE("appid  %s", appid8.string());
-//			_speech->config("stack", appid8.string());
-//		}else{
-//			_speech->config("stack", "");
-//		}
-//	}
+	if(_speech != NULL && mCurrentSpeechState == SPEECH_STATE_PREPARED){
+		if(appid.size() > 0){
+			String8 appid8(appid);
+			ALOGE("appid  %s", appid8.string());
+			_speech->config("stack", appid8.string());
+		}else{
+			_speech->config("stack", "");
+		}
+	}
 }
 
 void RuntimeService::add_binder(sp<IBinder> binder){
