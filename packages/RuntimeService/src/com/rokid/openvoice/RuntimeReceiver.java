@@ -12,13 +12,9 @@ public class RuntimeReceiver extends android.content.BroadcastReceiver{
 			context.startServiceAsUser(new Intent(context, RuntimeService.class), android.os.UserHandle.OWNER);
 		}else if(android.net.ConnectivityManager.CONNECTIVITY_ACTION.equals(action)){
 			android.net.NetworkInfo mNetworkInfo = intent.getParcelableExtra(android.net.ConnectivityManager.EXTRA_NETWORK_INFO);
-			if(mNetworkInfo != null){
+			if(mNetworkInfo != null && RuntimeService.initialized){
 				android.util.Log.e("RuntimeReceiver", mNetworkInfo.toString());
-				if(mNetworkInfo.isConnected() && RuntimeService.initialized){
-					RuntimeNative.asInstance().networkStateChange(true);
-				}else{
-					RuntimeNative.asInstance().networkStateChange(false);
-				}
+                RuntimeNative.asInstance().networkStateChange(mNetworkInfo.isConnected());
 			}
 		}
 	}

@@ -257,11 +257,7 @@ static int mic_array_device_start_stream(struct mic_array_device_t* dev)
     int card = find_snd("USB-Audio");
     ALOGI("find card with %d", card);
     if (card <= 0) {
-        card = find_snd("msm8974-taiko-m");
-        if (card < 0) {
-            ALOGE("Can't find qualcomm sound card");
-            card = PCM_CARD;
-        }
+        card = PCM_CARD;
         mixer = mixer_open(card);
         if (!mixer) {
             ALOGE("Failed to open mixer +++%s\n", strerror(errno));
