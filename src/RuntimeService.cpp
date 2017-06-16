@@ -14,6 +14,10 @@ using namespace std;
 using namespace rokid;
 using namespace speech;
 
+#ifdef USB_AUDIO_DEVICE
+#warning "=============================USB_AUDIO_DEVICE==============================="
+#endif
+
 RuntimeService::RuntimeService(){
 	pthread_mutex_init(&event_mutex, NULL);
 	pthread_mutex_init(&speech_mutex, NULL);
@@ -47,10 +51,14 @@ void RuntimeService::start_siren(bool flag) {
             || mCurrentSirenState == SIREN_STATE_STOPED)){
 //            && find_card("PawPaw Microphone") > 0){
         openSiren = true;
-//        if(wait_for_alsa_usb_card()){
+#ifdef USB_AUDIO_DEVICE
+        if(wait_for_alsa_usb_card()){
+#endif
 		    start_siren_process_stream();
             mCurrentSirenState = SIREN_STATE_STARTED;
-//       }
+#ifdef USB_AUDIO_DEVICE
+       }
+#endif
 	}else if(!flag && mCurrentSirenState == SIREN_STATE_STARTED){
 		stop_siren_process_stream();
         openSiren = false;
@@ -59,6 +67,7 @@ void RuntimeService::start_siren(bool flag) {
     pthread_mutex_unlock(&siren_mutex);
 }
 
+#ifdef USB_AUDIO_DEVICE
 bool RuntimeService::wait_for_alsa_usb_card(){
     int index = 0;
     while (index++ < 3){
@@ -69,6 +78,7 @@ bool RuntimeService::wait_for_alsa_usb_card(){
     }
     return false;
 }
+#endif
 
 void RuntimeService::set_siren_state(const int &state) {
     set_siren_state_change(state);
@@ -93,10 +103,15 @@ void RuntimeService::network_state_change(bool connected) {
             pthread_mutex_lock(&siren_mutex);
 	        if(openSiren && (mCurrentSirenState == SIREN_STATE_INITED
                     || mCurrentSirenState == SIREN_STATE_STOPED)){
-                    //&& find_card("PawPaw Microphone") > 0){
-	    	    start_siren_process_stream();
-                mCurrentSirenState = SIREN_STATE_STARTED;
+#ifdef USB_AUDIO_DEVICE
+                if(find_card("PawPaw Microphone") > 0){
+#endif
+	    	        start_siren_process_stream();
+                    mCurrentSirenState = SIREN_STATE_STARTED;
+                }
+#ifdef USB_AUDIO_DEVICE
             }
+#endif
             pthread_mutex_unlock(&siren_mutex);
         }
     } else if(!connected && mCurrentSpeechState == SPEECH_STATE_PREPARED) {

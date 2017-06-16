@@ -73,7 +73,9 @@ class RuntimeService : public BnRuntimeService{
 		void network_state_change(bool);
 		void update_stack(String16);
 		void add_binder(sp<IBinder>);
+#ifdef USB_AUDIO_DEVICE
         bool wait_for_alsa_usb_card();
+#endif
 
         int mCurrentSirenState = SIREN_STATE_UNKNOW;
         int mCurrentSpeechState = SPEECH_STATE_UNKNOW;
