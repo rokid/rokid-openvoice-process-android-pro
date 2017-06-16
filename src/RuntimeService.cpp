@@ -72,7 +72,7 @@ void RuntimeService::start_siren(bool flag) {
 bool RuntimeService::wait_for_alsa_usb_card(){
     int index = 0;
     while (index++ < 3){
-        if(find_card("PawPaw Microphone") > 0){
+        if(find_card("USB-Audio") > 0){
             return true;
         }
         usleep(1000 * 100);
@@ -105,7 +105,7 @@ void RuntimeService::network_state_change(bool connected) {
 	        if(openSiren && (mCurrentSirenState == SIREN_STATE_INITED
                     || mCurrentSirenState == SIREN_STATE_STOPED)){
 #ifdef USB_AUDIO_DEVICE
-                if(find_card("PawPaw Microphone") > 0){
+                if(find_card("USB-Audio") > 0){
 #endif
 	    	        start_siren_process_stream();
                     mCurrentSirenState = SIREN_STATE_STARTED;
