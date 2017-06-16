@@ -22,8 +22,8 @@ LOCAL_STATIC_LIBRARIES += libjsonc_static
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		$(LOCAL_PATH)/../rokid-blacksiren/include \
-		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include \
+		$(LOCAL_PATH)/../blacksiren/include \
+		$(LOCAL_PATH)/../blacksiren/thirdparty/libjsonc/include \
 		$(LOCAL_PATH)/../speech/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
@@ -40,7 +40,7 @@ endif
 
 LOCAL_MODULE := runtime
 LOCAL_ARM_MODE := arm
-LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) -std=c++11
+LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) -DUSB_AUDIO_DEVICE -std=c++11 -fpermissive
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_TARGET_ARCH := arm
 

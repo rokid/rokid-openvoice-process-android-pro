@@ -2,7 +2,7 @@
 #define LOG_NDEBUG 0
 
 #include <stdio.h>
-#include <utils/String8.h>
+#include <unistd.h>
 #include <binder/IServiceManager.h>
 
 #include "RuntimeService.h"
@@ -17,28 +17,57 @@ using namespace speech;
 RuntimeService::RuntimeService(){
 	pthread_mutex_init(&event_mutex, NULL);
 	pthread_mutex_init(&speech_mutex, NULL);
+	pthread_mutex_init(&siren_mutex, NULL);
 	pthread_cond_init(&event_cond, NULL);
 }
 
 bool RuntimeService::init() {
-    if(!_init(this)) {
-        ALOGE("init siren failed.");
-        return false;
+    pthread_mutex_lock(&siren_mutex);
+    if(mCurrentSirenState == SIREN_STATE_UNKNOW){
+        if(!_init(this)) {
+            ALOGE("init siren failed.");
+            pthread_mutex_unlock(&siren_mutex);
+            return false;
+        }
+    }else{
+        goto done;
     }
+    mCurrentSirenState = SIREN_STATE_INITED;
     if(_speech == NULL)_speech = new_speech();
     pthread_create(&event_thread, NULL, onEvent, this);
+done:
+    pthread_mutex_unlock(&siren_mutex);
     return true;
 }
 
-void RuntimeService::start_siren(bool start) {
-    pthread_mutex_lock(&speech_mutex);
-	if(start && !ready){
-		if(find_card("USB-Audio") > 0)
-			start_siren_process_stream();
-	}else if(!start && ready){
+void RuntimeService::start_siren(bool flag) {
+    ALOGV("%s \t %d", __FUNCTION__, flag);
+    pthread_mutex_lock(&siren_mutex);
+	if(flag && (mCurrentSirenState == SIREN_STATE_INITED
+            || mCurrentSirenState == SIREN_STATE_STOPED)){
+//            && find_card("PawPaw Microphone") > 0){
+        openSiren = true;
+//        if(wait_for_alsa_usb_card()){
+		    start_siren_process_stream();
+            mCurrentSirenState = SIREN_STATE_STARTED;
+//       }
+	}else if(!flag && mCurrentSirenState == SIREN_STATE_STARTED){
 		stop_siren_process_stream();
+        openSiren = false;
+        mCurrentSirenState = SIREN_STATE_STOPED;
 	}
-    pthread_mutex_unlock(&speech_mutex);
+    pthread_mutex_unlock(&siren_mutex);
+}
+
+bool RuntimeService::wait_for_alsa_usb_card(){
+    int index = 0;
+    while (index++ < 3){
+        if(find_card("PawPaw Microphone") > 0){
+            return true;
+        }
+        usleep(1000 * 100);
+    }
+    return false;
 }
 
 void RuntimeService::set_siren_state(const int &state) {
@@ -48,26 +77,38 @@ void RuntimeService::set_siren_state(const int &state) {
 
 void RuntimeService::network_state_change(bool connected) {
     ALOGV("network_state_change      isconnect  <<%d>>", connected);
-//    pthread_mutex_lock(&speech_mutex);
-    if(pthread_mutex_trylock(&speech_mutex) == EBUSY) {
-        ALOGE("blocking 。。。");
-        return;
-    }
+    pthread_mutex_lock(&speech_mutex);
+//    if(pthread_mutex_trylock(&speech_mutex) == EBUSY) {
+//        ALOGE("blocking 。。。");
+//        return;
+//    }
     if(_speech == NULL)_speech = new_speech();
-    if(connected && !prepared) {
+    if(connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
         this->config();
         if(_speech->prepare()) {
-            prepared = true;
-			pthread_create(&response_thread, NULL, onResponse, this);
-			pthread_detach(response_thread);
-			if(!ready && find_card("USB-Audio") > 0)
-				start_siren_process_stream();
+            mCurrentSpeechState = SPEECH_STATE_PREPARED;
+	        pthread_create(&response_thread, NULL, onResponse, this);
+	        pthread_detach(response_thread);
+
+            pthread_mutex_lock(&siren_mutex);
+	        if(openSiren && (mCurrentSirenState == SIREN_STATE_INITED
+                    || mCurrentSirenState == SIREN_STATE_STOPED)){
+                    //&& find_card("PawPaw Microphone") > 0){
+	    	    start_siren_process_stream();
+                mCurrentSirenState = SIREN_STATE_STARTED;
+            }
+            pthread_mutex_unlock(&siren_mutex);
         }
-    } else if(!connected && prepared) {
-		if(ready)
-			stop_siren_process_stream();
+    } else if(!connected && mCurrentSpeechState == SPEECH_STATE_PREPARED) {
+        pthread_mutex_lock(&siren_mutex);
+	    if(mCurrentSirenState == SIREN_STATE_STARTED){
+		    stop_siren_process_stream();
+            mCurrentSirenState = SIREN_STATE_STOPED;
+        }
+        pthread_mutex_unlock(&siren_mutex);
+
         _speech->release();
-        prepared = false;
+        mCurrentSpeechState = SPEECH_STATE_RELEASED;
     }
     pthread_mutex_unlock(&speech_mutex);
 }
@@ -87,18 +128,19 @@ void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
 }
 
 void RuntimeService::update_stack(String16 appid){
-	if(_speech != NULL && prepared){
-		if(appid.size() > 0){
-			String8 appid8(appid);
-			ALOGE("appid  %s", appid8.string());
-			_speech->config("stack", appid8.string());
-		}else{
-			_speech->config("stack", "");
-		}
-	}
+//	if(_speech != NULL && mCurrentSpeechState == SPEECH_STATE_PREPARED){
+//		if(appid.size() > 0){
+//			String8 appid8(appid);
+//			ALOGE("appid  %s", appid8.string());
+//			_speech->config("stack", appid8.string());
+//		}else{
+//			_speech->config("stack", "");
+//		}
+//	}
 }
 
 void RuntimeService::add_binder(sp<IBinder> binder){
+    binder->linkToDeath(new RuntimeService::DeathNotifier(this));
 	remote = binder;
 }
 
@@ -164,15 +206,9 @@ void RuntimeService::config() {
     json_object_put(json_obj);
 }
 
-void* onEvent(void* arg) {
-    RuntimeService *runtime = (RuntimeService*)arg;
+void* onEvent(void* args) {
+    RuntimeService *runtime = (RuntimeService*)args;
     int id = -1;
-//	runtime->config();
-//	if (!runtime->_speech->prepare()) {
-//		return NULL;
-//	}
-//	runtime->prepared = true;
-//	pthread_create(&runtime->response_thread, NULL, onResponse, runtime);
     for(;;) {
         pthread_mutex_lock(&runtime->event_mutex);
         while(runtime->message_queue.empty()) {
@@ -181,17 +217,18 @@ void* onEvent(void* arg) {
         const RuntimeService::VoiceMessage *message = runtime->message_queue.front();
         ALOGV("event : -------------------------%d----", message->event);
 
-		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_END)){
-			runtime->send_siren_event(message->event, message->sl_degree, message->has_sl);
-		}
+	if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_END)){
+		runtime->send_siren_event(message->event, message->sl_degree, message->has_sl);
+	}
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
+            ALOGV("WAKE_CMD");
             break;
         case SIREN_EVENT_WAKE_NOCMD:
             ALOGV("WAKE_NOCMD");
             break;
         case SIREN_EVENT_SLEEP:
-            ALOGV("SLEEP");
+            ALOGV("EVENT_SLEEP");
             break;
         case SIREN_EVENT_VAD_START:
         case SIREN_EVENT_WAKE_VAD_START:
@@ -232,21 +269,19 @@ void* onEvent(void* arg) {
     return NULL;
 }
 
-void* onResponse(void* arg) {
-    RuntimeService *runtime = (RuntimeService*)arg;
+void* onResponse(void* args) {
+    RuntimeService *runtime = (RuntimeService*)args;
     SpeechResult sr;
-	//runtime->remote = defaultServiceManager()->getService(String16("runtime_java"));
-
     for(;;) {
         bool res = runtime->_speech->poll(sr);
         if (!res) {
 			break;
         }
-        ALOGV("result : asr  >>  %s    <<%d>>     <<%d>>", sr.asr.c_str(), sr.type, sr.err);
-        ALOGV("result : nlp  >>  %s", sr.nlp.c_str());
-        ALOGV("result : action >>  %s", sr.action.c_str());
-
-        if(sr.type == 0 && !sr.nlp.empty()) {
+        ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
+        if(sr.type == 0 && !sr.asr.empty()) {
+            ALOGV("result : asr\t%s", sr.asr.c_str());
+            ALOGV("result : asr\t%s", sr.nlp.c_str());
+            ALOGV("result : asr\t%s", sr.action.c_str());
 			if(runtime->remote != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("com.rokid.openvoice.IRuntimeService"));

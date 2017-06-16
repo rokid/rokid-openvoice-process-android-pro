@@ -16,7 +16,7 @@ int init_input(void*);
 
 void release_input(void*);
 
-void start_input(void*);
+int start_input(void*);
 
 void stop_input(void*);
 

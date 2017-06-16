@@ -37,7 +37,8 @@ bool _init(RuntimeService *runtime){
 		return false;
 	}
 	if(mic_array_device_open(&module->common, &mic_array_device) != 0){
-		ALOGE("open mic_array failed"); return false;
+		ALOGE("open mic_array failed");
+		return false;
 	}	
 	ALOGI ("open mic array done");
 	//2. init siren
@@ -65,29 +66,31 @@ void release_input(void *token){
 	mic_array_device->finish_stream(mic_array_device);
 }
 
-void start_input(void *token){
-	RuntimeService *_runtime = (RuntimeService*)token;
-	if(mic_array_device->start_stream(mic_array_device) != 0){
-		_runtime->ready = false;
-		ALOGV("%s    failed !", __FUNCTION__);
-	}else{
-		_runtime->ready = true;	
-	}
+int start_input(void *token){
+    return mic_array_device->start_stream(mic_array_device);
+//	RuntimeService *_runtime = (RuntimeService*)token;
+//	if(mic_array_device->start_stream(mic_array_device) != 0){
+//		_runtime->mCurrentSirenState == RuntimeService::SIREN_STATE_INITED;
+//		ALOGE("%s failed", __FUNCTION__);
+//	}else{
+//		_runtime->mCurrentSirenState = RuntimeService::SIREN_STATE_STARTED;
+//	}
 }
 
 void stop_input(void *token){
 	RuntimeService *_runtime = (RuntimeService*)token;
-	_runtime->ready = false;
+	//_runtime->ready = false;
 	mic_array_device->stop_stream(mic_array_device);
 	ALOGV("%s", __FUNCTION__);
 }
 
 int read_input(void *token, char *buff, int	frame_cnt){
+	//ALOGV("read input ..");
 	return mic_array_device->read_stream(mic_array_device, buff, frame_cnt);
 }
 
 int find_card(const char *snd){
-	if(snd != null)
+	if(snd != NULL)
 		return mic_array_device->find_card(snd);
 	return -1;
 }

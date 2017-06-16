@@ -37,11 +37,35 @@ class RuntimeService : public BnRuntimeService{
 					buff = NULL;
 				}
 		};
+
+        class DeathNotifier : public IBinder::DeathRecipient{
+            public:
+                DeathNotifier(RuntimeService *runtime) : _runtime(runtime){}
+            private:
+                RuntimeService *_runtime = NULL;
+                void binderDied(const wp<IBinder> &binder){_runtime->remote = NULL;}
+        };
+
 		static char const* getServiceName(){
 			return "runtime_native";
 		}
 		RuntimeService();
+		void send_siren_event(int, double, int);
 
+		pthread_mutex_t event_mutex;
+		pthread_mutex_t speech_mutex;
+        pthread_mutex_t siren_mutex;
+		pthread_cond_t event_cond;
+		pthread_t event_thread;
+		pthread_t response_thread;
+        
+
+        bool openSiren = true;
+		Speech *_speech = NULL;
+		sp<IBinder> remote = NULL;
+		list<VoiceMessage*> message_queue;
+
+    private:
 		bool init();
 		void config();
 		void start_siren(bool);
@@ -49,19 +73,21 @@ class RuntimeService : public BnRuntimeService{
 		void network_state_change(bool);
 		void update_stack(String16);
 		void add_binder(sp<IBinder>);
-		void send_siren_event(int, double, int);
+        bool wait_for_alsa_usb_card();
 
-		pthread_mutex_t event_mutex;
-		pthread_mutex_t speech_mutex;
-		pthread_cond_t event_cond;
-		pthread_t event_thread;
-		pthread_t response_thread;
-
-		bool ready = false;
-		bool prepared = false;
-		Speech *_speech = NULL;
-		sp<IBinder> remote = NULL;
-		list<VoiceMessage*> message_queue;
+        int mCurrentSirenState = SIREN_STATE_UNKNOW;
+        int mCurrentSpeechState = SPEECH_STATE_UNKNOW;
+        enum{
+            SIREN_STATE_UNKNOW = 0,
+            SIREN_STATE_INITED,
+            SIREN_STATE_STARTED,
+            SIREN_STATE_STOPED
+        };
+        enum{
+            SPEECH_STATE_UNKNOW = 0,
+            SPEECH_STATE_PREPARED,
+            SPEECH_STATE_RELEASED
+        };
 };
 
 void* onEvent(void *);
