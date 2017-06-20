@@ -46,11 +46,10 @@ done:
 }
 
 void RuntimeService::start_siren(bool flag) {
-    ALOGV("%s \t %d", __FUNCTION__, flag);
+    ALOGV("%s \t flag : %d \t mCurrentState : %d \t opensiren : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren);
     pthread_mutex_lock(&siren_mutex);
 	if(flag && (mCurrentSirenState == SIREN_STATE_INITED
             || mCurrentSirenState == SIREN_STATE_STOPED)){
-//            && find_card("PawPaw Microphone") > 0){
         openSiren = true;
 #ifdef USB_AUDIO_DEVICE
         if(wait_for_alsa_usb_card()){
@@ -62,9 +61,9 @@ void RuntimeService::start_siren(bool flag) {
 #endif
 	}else if(!flag && mCurrentSirenState == SIREN_STATE_STARTED){
 		stop_siren_process_stream();
-        openSiren = false;
         mCurrentSirenState = SIREN_STATE_STOPED;
 	}
+    if(!flag) openSiren = false;
     pthread_mutex_unlock(&siren_mutex);
 }
 
