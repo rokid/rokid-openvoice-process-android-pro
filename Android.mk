@@ -24,7 +24,7 @@ LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/hardware/include \
 		$(LOCAL_PATH)/../rokid-blacksiren/include \
 		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include \
-		$(LOCAL_PATH)/../speech/include
+		$(LOCAL_PATH)/../rokid-openvoice-sdk/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libdl
