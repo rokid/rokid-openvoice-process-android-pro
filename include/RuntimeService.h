@@ -43,7 +43,10 @@ class RuntimeService : public BnRuntimeService{
                 DeathNotifier(RuntimeService *runtime) : _runtime(runtime){}
             private:
                 RuntimeService *_runtime = NULL;
-                void binderDied(const wp<IBinder> &binder){_runtime->remote = NULL;}
+                void binderDied(const wp<IBinder> &binder){
+                    _runtime->remote = NULL;
+                    delete this;
+                }
         };
 
 		static char const* getServiceName(){
