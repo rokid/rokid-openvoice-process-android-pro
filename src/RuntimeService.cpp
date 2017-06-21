@@ -295,8 +295,8 @@ void* onResponse(void* args) {
         ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
         if(sr.type == 0 && !sr.asr.empty()) {
             ALOGV("result : asr\t%s", sr.asr.c_str());
-            ALOGV("result : asr\t%s", sr.nlp.c_str());
-            ALOGV("result : asr\t%s", sr.action.c_str());
+            ALOGV("result : nlp\t%s", sr.nlp.c_str());
+            ALOGV("result : action\t%s", sr.action.c_str());
 			if(runtime->remote != NULL){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("com.rokid.openvoice.IRuntimeService"));

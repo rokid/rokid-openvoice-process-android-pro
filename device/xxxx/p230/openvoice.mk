@@ -9,7 +9,8 @@ PRODUCT_PACKAGES += \
 					libztvad \
 					libztcodec2 \
 					libr2audio \
-					libr2vt
+					libr2vt \
+					libcurl
 
 #speech
 PRODUCT_PACKAGES += \
