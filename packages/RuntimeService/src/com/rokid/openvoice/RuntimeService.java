@@ -94,8 +94,9 @@ public class RuntimeService extends Service{
 		public void onEvent(int event, double sl_degree, int has_sl){
 			Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
 			if(event == VAD_ATART || event == WAKE_VAD_START){
+
 			}else if(event == VAD_END || event == WAKE_VAD_END){
-				mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
+				//mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
 			}
 		}
 	};
