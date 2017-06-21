@@ -108,10 +108,10 @@ void RuntimeService::network_state_change(bool connected) {
 #endif
 	    	        start_siren_process_stream();
                     mCurrentSirenState = SIREN_STATE_STARTED;
-                }
 #ifdef USB_AUDIO_DEVICE
-            }
+                }
 #endif
+            }
             pthread_mutex_unlock(&siren_mutex);
         }
     } else if(!connected && mCurrentSpeechState == SPEECH_STATE_PREPARED) {
