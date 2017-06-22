@@ -63,7 +63,9 @@ void RuntimeService::start_siren(bool flag) {
 		stop_siren_process_stream();
         mCurrentSirenState = SIREN_STATE_STOPED;
 	}
-    if(!flag) openSiren = false;
+    if(!flag && mCurrentSirenState != SIREN_STATE_UNKNOW){
+        openSiren = false;
+    }
     pthread_mutex_unlock(&siren_mutex);
 }
 
