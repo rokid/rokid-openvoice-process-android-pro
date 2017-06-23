@@ -14,7 +14,7 @@ public class RuntimeService extends Service{
 
 	String TAG = getClass().getSimpleName();
 
-	RuntimeNative mRuntimeNative = null;
+	public RuntimeNative mRuntimeNative = null;
     public static MainHandler mHandler = null;
     public static final int MSG_NATIVE_SERVICE_DIED = 0;
     public static final int MSG_REINIT = 1;
@@ -87,7 +87,7 @@ public class RuntimeService extends Service{
 		public void onNLP(String asr, String nlp, String action, int type){
             Log.e(TAG, "asr\t" + asr);
             Log.e(TAG, "nlp\t" + nlp);
-            Log.e(TAG, "action\t" + action);
+            Log.e(TAG, "action " + action);
 		}
 	
 		@Override
