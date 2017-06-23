@@ -9,9 +9,11 @@
 	<uses-permission android:name="android.permission.INTERNET"/>
 
 	<application android:persistent="true">
-		<service android:name="com.rokid.openvoice.RuntimeService">
+        <service android:name="com.rokid.openvoice.RuntimeService" />
+		<service android:name="com.rokid.openvoice.SirenService"
+		    android:exported="true">
 			<intent-filter>
-				<action android:name="com.rokid.openvoice.RuntimeService" />
+				<action android:name="com.rokid.openvoice" />
 			</intent-filter>
 		</service>
 		<receiver android:name="com.rokid.openvoice.RuntimeReceiver">
@@ -22,11 +24,5 @@
 				<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
 			</intent-filter>
 		</receiver>
-		<service android:name="com.rokid.openvoice.SirenService"
-		    android:exported="true">
-			<intent-filter>
-				<action android:name="com.rokid.openvoice" />
-			</intent-filter>
-		</service>
 	</application>
 </manifest>
