@@ -61,7 +61,7 @@ public class RuntimeService extends Service{
 		if(mNetworkInfo != null){
 		    mRuntimeNative.networkStateChange(true);
 		}
-		//mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
+		mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
 	}
 
     private void reinit(){
