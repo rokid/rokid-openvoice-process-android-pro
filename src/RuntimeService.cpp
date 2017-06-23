@@ -123,9 +123,10 @@ void RuntimeService::network_state_change(bool connected) {
             mCurrentSirenState = SIREN_STATE_STOPED;
         }
         pthread_mutex_unlock(&siren_mutex);
-
+        ALOGV("################################################");
         _speech->release();
         mCurrentSpeechState = SPEECH_STATE_RELEASED;
+        ALOGV("################################################");
     }
     pthread_mutex_unlock(&speech_mutex);
 }
