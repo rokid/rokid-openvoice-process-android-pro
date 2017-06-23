@@ -29,3 +29,8 @@ Rokid语音服务的Android示例代码文档此部分是Rokid语音服务（Rok
 3.请添加如下内容到device/xxxx/p230/p230.mk
 	
 	include rokid-openvoice-sample-android/device/xxxx/p230/openvoice.mk
+
+比如PHP[^1] Markdown Extra [^2] 是这样的。
+
+[^1]: 脚注1
+[^2]: 脚注2
