@@ -8,8 +8,7 @@ LOCAL_SHARED_LIBRARIES := \
 		libbinder
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
-LOCAL_SHARED_LIBRARIES += libdl
-LOCAL_STATIC_LIBRARIES += libc++
+LOCAL_SHARED_LIBRARIES += libc++ libdl
 LOCAL_C_INCLUDES += external/libcxx/include
 else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \

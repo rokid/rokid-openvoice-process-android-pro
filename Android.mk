@@ -13,9 +13,7 @@ LOCAL_SHARED_LIBRARIES := \
 		libbsiren \
 		libutils \
 		liblog \
-		libspeech \
-#		libspeech_asr \
-		libspeech_nlp
+		libspeech
 
 LOCAL_STATIC_LIBRARIES += libjsonc_static 
 
@@ -27,8 +25,7 @@ LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/../rokid-openvoice-sdk/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
-LOCAL_SHARED_LIBRARIES += libdl
-LOCAL_STATIC_LIBRARIES += libc++
+LOCAL_SHARED_LIBRARIES += libc++ libdl
 LOCAL_C_INCLUDES += external/libcxx/include
 else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
