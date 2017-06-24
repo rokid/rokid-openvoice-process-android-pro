@@ -17,16 +17,8 @@ PRODUCT_PACKAGES += \
 					libpoco \
 					libspeech_common \
 					libspeech \
-#					libspeech_tts \
-					libspeech_asr \
-					libspeech_nlp \
-					librokid_tts_jni \
-					librokid_asr_jni \
-					librokid_speech_jni \
-					rokid_tts \
-					rokid_asr \
+#					librokid_speech_jni \
 					rokid_speech \
-					librokid_tts_util
 
 #apps
 PRODUCT_PACKAGES += \
