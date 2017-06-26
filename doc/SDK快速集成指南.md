@@ -164,12 +164,10 @@ Android 基于Linux引入了selinux，这是专门为Linux设计的一套安全�
     sl.poc        ：实际使用的MIC通道(不包括aec)
     bf.mics       ：同上
 
-![](config3.png)
+![](images/config3.png)
 到这为止整个集成就大告完成，后续优化主要针对MIC硬件，以及添加AEC来改善拾音，下一章就会讲解编译中普遍遇到的问题。
 
 **附件1：**
 
 如图，MIC可以呈三维立体设计，但一般都是二维的。不管怎样，只要找到圆心，顺时针测量从圆心到MIC之间的距离。例如上面pos.0的坐标：x=0.00000000，y=0.03000000，z=0.00000000，单位为”米“。
-<div align=center>
 ![](images/MIC.png)
-</div>
