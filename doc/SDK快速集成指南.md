@@ -23,6 +23,7 @@ Android 6.0 使用 `git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-
 
 ## 1 目录结构
 ![](images/menu.png)
+
 **命名建议与上图一致**
 
  rokid-openvoice-sample-android 与整个的业务逻辑相关，其中包含一个C进程和一个Java进程，以及MIC HAL。C进程用于为Siren提供pcm流，然后传递由Siren滤波降噪过的纯净语音给NLP或ASR，NLP或ASR经过云端处理返回结果，还有一个最重要的点就是维持Siren与NLP或ASR之间的状态。Java进程用于解析NLP或ASR返回结果，处理应用层逻辑。
@@ -35,9 +36,9 @@ Android 6.0 使用 `git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-
 
 > 3、具体做法：语音接入 &gt; 创建新设备 &gt; 填写设备名称 &gt; 创建认证文件。之后您将获得：
 
-> account_id
-device_type_id
-device_id
+> account_id、
+device_type_id、
+device_id、
 secret、key
 
 通过以上信息，您就可以获取Rokid语音服务了，然后把申请得到的账号信息写入到 /rokid-openvoice-sample-android/etc/openvoice-profile.json文件中。
