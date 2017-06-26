@@ -166,6 +166,7 @@ Android 基于Linux引入了selinux，这是专门为Linux设计的一套安全�
     bf.mics       ：同上
 
 ![](images/config3.png)
+
 到这为止整个集成就大告完成，后续优化主要针对MIC硬件，以及添加AEC来改善拾音，下一章就会讲解编译中普遍遇到的问题。
 
 **附件1：**
