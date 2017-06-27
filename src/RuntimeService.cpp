@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/prctl.h>
 #include <utils/String8.h>
 #include <binder/IServiceManager.h>
 
@@ -226,6 +227,7 @@ void RuntimeService::config() {
 
 void* onEvent(void* args) {
     RuntimeService *runtime = (RuntimeService*)args;
+    prctl(PR_SET_NAME, __FUNCTION__);
     int id = -1;
     for(;;) {
         pthread_mutex_lock(&runtime->event_mutex);
@@ -289,6 +291,7 @@ void* onEvent(void* args) {
 
 void* onResponse(void* args) {
     RuntimeService *runtime = (RuntimeService*)args;
+    prctl(PR_SET_NAME, __FUNCTION__);
     SpeechResult sr;
     for(;;) {
         bool res = runtime->_speech->poll(sr);
