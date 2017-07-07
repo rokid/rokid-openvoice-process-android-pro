@@ -133,7 +133,7 @@ void RuntimeService::network_state_change(bool connected) {
 }
 
 void RuntimeService::send_siren_event(int event, double sl_degree, int has_sl){
-	if(remote != NULL){
+	if(remote.get()){
 		Parcel data, reply;
 		data.writeInterfaceToken(String16("com.rokid.openvoice.IRuntimeService"));
 		data.writeInt32(event);
@@ -159,7 +159,7 @@ void RuntimeService::update_stack(String16 appid){
 }
 
 void RuntimeService::add_binder(sp<IBinder> binder){
-    binder->linkToDeath(new RuntimeService::DeathNotifier(this));
+    binder->linkToDeath(sp<DeathRecipient>(new RuntimeService::DeathNotifier(this)));
 	remote = binder;
 }
 
@@ -303,7 +303,7 @@ void* onResponse(void* args) {
             ALOGV("result : asr\t%s", sr.asr.c_str());
             ALOGV("result : nlp\t%s", sr.nlp.c_str());
             ALOGV("result : action %s", sr.action.c_str());
-			if(runtime->remote != NULL){
+			if(runtime->remote.get()){
 				Parcel data, reply;
 				data.writeInterfaceToken(String16("com.rokid.openvoice.IRuntimeService"));
 				data.writeString16(String16(sr.asr.c_str()));

@@ -41,12 +41,9 @@ class RuntimeService : public BnRuntimeService{
         class DeathNotifier : public IBinder::DeathRecipient{
             public:
                 DeathNotifier(RuntimeService *runtime) : _runtime(runtime){}
+                void binderDied(const wp<IBinder> &binder){_runtime->remote.clear();}
             private:
                 RuntimeService *_runtime = NULL;
-                void binderDied(const wp<IBinder> &binder){
-                    _runtime->remote = NULL;
-                    delete this;
-                }
         };
 
 		static char const* getServiceName(){
@@ -65,7 +62,7 @@ class RuntimeService : public BnRuntimeService{
 
         bool openSiren = true;
 		Speech *_speech = NULL;
-		sp<IBinder> remote = NULL;
+		sp<IBinder> remote;
 		list<VoiceMessage*> message_queue;
 
     private:
