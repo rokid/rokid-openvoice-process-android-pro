@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/prctl.h>
 #include <utils/String8.h>
-#include <binder/IServiceManager.h>
+#include <binder/IPCThreadState.h>
 
 #include "RuntimeService.h"
 #include "voice.h"
@@ -47,7 +47,8 @@ done:
 }
 
 void RuntimeService::start_siren(bool flag) {
-    ALOGV("%s \t flag : %d \t mCurrentState : %d \t opensiren : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren);
+    pid_t pid = IPCThreadState::self()->getCallingPid();
+    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t pid : ", __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
     pthread_mutex_lock(&siren_mutex);
 	if(flag && (mCurrentSirenState == SIREN_STATE_INITED
             || mCurrentSirenState == SIREN_STATE_STOPED)){
