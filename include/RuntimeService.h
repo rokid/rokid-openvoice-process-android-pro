@@ -60,7 +60,6 @@ class RuntimeService : public BnRuntimeService{
 		pthread_t response_thread;
         
 
-        bool openSiren = true;
 		Speech *_speech = NULL;
 		sp<IBinder> remote;
 		list<VoiceMessage*> message_queue;
@@ -90,6 +89,7 @@ class RuntimeService : public BnRuntimeService{
             SPEECH_STATE_PREPARED,
             SPEECH_STATE_RELEASED
         };
+        bool openSiren = true;
 };
 
 void* onEvent(void *);
