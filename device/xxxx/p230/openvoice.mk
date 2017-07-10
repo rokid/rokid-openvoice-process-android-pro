@@ -5,6 +5,7 @@ PRODUCT_PACKAGES += \
 #siren
 PRODUCT_PACKAGES += \
 					libbsiren \
+					libr2audio \
 					libr2ssp \
 					libztvad \
 					libr2vt
