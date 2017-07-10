@@ -69,7 +69,7 @@ public class RuntimeService extends Service{
 		mRuntimeNative = RuntimeNative.asInstance();
 		mRuntimeNative.init();
 		mRuntimeNative.addBinder(proxy);
-        initialized = true
+        initialized = true;
 		ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
 		if(mNetworkInfo != null){

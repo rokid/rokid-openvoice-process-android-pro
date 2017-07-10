@@ -1,14 +1,19 @@
 #ifndef VOICE_ENGINE_H
 #define VOICE_ENGINE_H
 
-#include "RuntimeService.h"
-#include "mic/mic_array.h"
+#include "VoiceService.h"
 
-#ifndef __cplusplus
+#if defined(__ANDROID__) || defined(ANDROID)
+#include "mic/mic_array.h"
+#else
+#include <hardware/mic_array.h>
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-bool _init(RuntimeService*);
+bool _init_siren(VoiceService*);
 
 void set_siren_state_change(int state);
 
@@ -26,18 +31,15 @@ void on_err_input(void*);
 
 void state_changed_callback(void*, int);
 
-void start_siren_process_stream();
+void _start_siren_process_stream();
 
-void stop_siren_process_stream();
+void _stop_siren_process_stream();
 
 int find_card(const char*);
 
-void voice_event_callback(void* token, int length, siren_event_t event, 
-		void* buff, int has_sl,
-		int has_voice, double sl_degree, double energy, double threshold,
-		int has_voiceprint);
+void voice_event_callback(void *, voice_event_t *);
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

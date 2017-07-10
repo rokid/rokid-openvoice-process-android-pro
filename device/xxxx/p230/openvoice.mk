@@ -1,14 +1,12 @@
 #native runtime
 PRODUCT_PACKAGES += \
 					mic_array.$(TARGET_PRODUCT) \
-					runtime 
+					openvoice_proc
 #siren
 PRODUCT_PACKAGES += \
 					libbsiren \
 					libr2ssp \
 					libztvad \
-					libztcodec2 \
-					libr2audio \
 					libr2vt
 
 #speech

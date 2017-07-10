@@ -6,13 +6,13 @@ import android.os.RemoteException;
 
 public class RuntimeNative implements IBinder.DeathRecipient{
 
-	private static final String DESCRIPTOR = "com.rokid.openvoice.native.RuntimeService";
+	private static final String DESCRIPTOR = "com.rokid.openvoice.openvoice_process";
     private static RuntimeNative mRuntimeNative = null;
 
 	private IBinder runtime = null;
 
 	private RuntimeNative(){
-		runtime = android.os.ServiceManager.getService("runtime_native");
+		runtime = android.os.ServiceManager.getService("openvoice_proc");
 		if(runtime != null){
 			try{
 				runtime.linkToDeath(this, 0);

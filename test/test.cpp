@@ -1,4 +1,4 @@
-#define DESCRIPTOR "com.rokid.openvoice.native.RuntimeService"
+#define DESCRIPTOR "com.rokid.openvoice.openvoice_process"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@
 
 using namespace std;
 using namespace android;
-sp<IBinder> proxy = defaultServiceManager()->getService(String16("runtime_native")); 
+sp<IBinder> proxy = defaultServiceManager()->getService(String16("openvoice_proc")); 
 
 void init(){
     Parcel data, reply;
