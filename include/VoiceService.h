@@ -40,7 +40,8 @@ class VoiceService: public BnVoiceService{
 
 		VoiceService();
 		void send_siren_event(int, double, int);
-        int vad_start(const voice_event_t *);
+        int vad_start();
+        void voice_print(const voice_event_t *);
 
 		pthread_mutex_t event_mutex;
 		pthread_mutex_t speech_mutex;
@@ -79,6 +80,11 @@ class VoiceService: public BnVoiceService{
             SPEECH_STATE_RELEASED
         };
         String8 appid;
+        int vt_start;
+        int vt_end;
+        float vt_energy;
+        char vt_data[8];
+        bool has_vt;
         bool openSiren = true;
 };
 

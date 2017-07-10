@@ -149,18 +149,19 @@ void VoiceService::update_stack(String16 &appid){
 	ALOGE("appid  %s", this->appid.string());
 }
 
-int VoiceService::vad_start(const voice_event_t *voice_event){
+int VoiceService::vad_start(){
     if(mCurrentSpeechState == SPEECH_STATE_PREPARED){
         shared_ptr<Options> options = new_options();
-        if(options.get() && HAS_VT(voice_event->flag)){
-            options->set("voice_trigger", (char *)voice_event->buff);
+        if(options.get() && has_vt){
+            options->set("voice_trigger", (char *)vt_data);
             char buf[64];
-            snprintf(buf, sizeof(buf), "%d", voice_event->vt.start);
+            snprintf(buf, sizeof(buf), "%d", vt_start);
             options->set("trigger_start", buf);
-            snprintf(buf, sizeof(buf), "%d", voice_event->vt.end);
+            snprintf(buf, sizeof(buf), "%d", vt_end);
             options->set("trigger_end", buf);
-            snprintf(buf, sizeof(buf), "%F", voice_event->vt.energy);
+            snprintf(buf, sizeof(buf), "%F", vt_energy);
             options->set("trigger_power", buf);
+            has_vt = false;
         }
         options->set("stack", appid.isEmpty() ? "" : appid.string());
         string json;
@@ -169,6 +170,16 @@ int VoiceService::vad_start(const voice_event_t *voice_event){
         return _speech->start_voice(options);
     }
     return -1;
+}
+
+void VoiceService::voice_print(const voice_event_t *voice_event){
+    if(voice_event && HAS_VT(voice_event->flag)){
+        vt_start = voice_event->vt.start;
+        vt_end = voice_event->vt.end;
+        vt_energy = voice_event->vt.energy;
+        strcpy(vt_data, (char*)voice_event->buff);
+        has_vt = true;
+    }
 }
 
 void VoiceService::add_binder(sp<IBinder> binder){
@@ -266,7 +277,7 @@ void* onEvent(void* args) {
             break;
         case SIREN_EVENT_VAD_START:
         case SIREN_EVENT_WAKE_VAD_START:
-            id = service->vad_start(message);
+            id = service->vad_start();
             ALOGV("VAD_START\t\t ID  :  <<%d>>", id);
             break;
         case SIREN_EVENT_VAD_DATA:
@@ -292,6 +303,7 @@ void* onEvent(void* args) {
             }
             break;
         case SIREN_EVENT_VOICE_PRINT:
+            service->voice_print(message);
             ALOGI("VOICE_PRINT");
             break;
         }
