@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <sys/prctl.h>
-//#include <binder/IPCThreadState.h>
+#include <binder/IPCThreadState.h>
 
 #include "VoiceService.h"
 #include "engine.h"
@@ -50,8 +50,8 @@ done:
 }
 
 void VoiceService::start_siren(bool flag) {
- //   pid_t pid = IPCThreadState::self()->getCallingPid();
-    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren);
+    pid_t pid = IPCThreadState::self()->getCallingPid();
+    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t pid : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
     pthread_mutex_lock(&siren_mutex);
 	if(flag && (mCurrentSirenState == SIREN_STATE_INITED
             || mCurrentSirenState == SIREN_STATE_STOPED)){
