@@ -90,9 +90,9 @@ Android 基于Linux引入了selinux，这是专门为Linux设计的一套安全�
 
 ## 4 添加系统启动项
 
-进入到 /device/xxxx/common/products/mbox/init.xxxx.rc加入如下内容，每个人的目录是不一样的。因为rokid-openvoice-sample-android中的C进程编译出来为runtime，所以我们加在这里，让init进程帮我们启动。
+进入到 /device/xxxx/common/products/mbox/init.xxxx.rc加入如下内容，每个人的目录是不一样的。因为rokid-openvoice-sample-android中的C进程编译出来为openvoice_proc，所以我们加在这里，让init进程帮我们启动。
 
-    service runtime /system/bin/runtime
+    service openvoice_proc /system/bin/openvoice_proc
         class main
         user root
         group root root 
@@ -132,7 +132,7 @@ Android 基于Linux引入了selinux，这是专门为Linux设计的一套安全�
 **第一步**：测试硬件是否OK，我们使用tinycap命令抓取pcm裸数据，这个命令是从kernel层直接拿数据，不经过HAL层，这样可以定位问题。然后用Audacity工具分析波形，要想识别效果好就不能有杂音出现。
     
     adb shell
-    stop runtime
+    stop openvoice_proc
     cd /sdcard
     tinycap file.wav [-D card] [-d device] [-c channels] [-r rate] [-b bits] [-p period_size] [-n n_periods]
     
