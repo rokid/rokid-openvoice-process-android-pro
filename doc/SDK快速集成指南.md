@@ -3,14 +3,22 @@
 
 ## 简介
 
-Rokid开放平台SDK包含Siren、NLP、ASR、TTS几大模块。要使用Rokid开放平台的SDK，首先需要有一套 [Android](https://mirrors.tuna.tsinghua.edu.cn/help/AOSP/) 源码，然后下载以下SDK模块：
+Rokid开放平台SDK包含Siren、NLP、ASR、TTS几大模块。使用Rokid开放平台的SDK之前，首先需要有一套 [Android](https://mirrors.tuna.tsinghua.edu.cn/help/AOSP/) 源码，然后下载以下SDK模块：
 
 - [rokid-blacksiren](https://github.com/Rokid/rokid-blacksiren.git) 前端拾音降噪，寻向，音墙
 - [rokid-openvoice-sdk](https://github.com/Rokid/rokid-openvoice-sdk.git) 包含NLP语音识别，语义理解；ASR语音识别；TTS语音合成
 - [rokid-openvoice-sdk-deps-poco](https://github.com/Rokid/rokid-openvoice-sdk-deps-poco.git)  SDK依赖
 - [rokid-openvoice-sdk-deps-protobuf](https://github.com/Rokid/rokid-openvoice-sdk-deps-protobuf) (Android 4.4 不需要)
 
-Android 6.0 使用 `git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-protobuf -b android23` 命令获取protobuf。另外，这里为大家提供了[rokid-openvoice-sample-android](https://github.com/Rokid/rokid-openvoice-sample-android.git)示例代码帮忙大家快速集成。
+Android 6.0 使用 
+
+    git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-protobuf -b android23
+
+Android 5.0 使用 
+
+    git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-protobuf -b android22
+
+命令获取protobuf。另外，这里为大家提供了[rokid-openvoice-sample-android](https://github.com/Rokid/rokid-openvoice-sample-android.git)示例代码帮忙大家快速集成。
 
 接下来会从以下6个步骤完整讲述如何为自己的项目部署Rokid开放平台的SDK：
 
@@ -24,7 +32,7 @@ Android 6.0 使用 `git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-
 ## 1 目录结构
 ![](images/menu.png)
 
-**命名建议与上图一致**
+**命名建议与上图一致, 先在 Android 根目录建一个 openvoice 文件夹，把上图中的库放进去**
 
  rokid-openvoice-sample-android 与整个的业务逻辑相关，其中包含一个C进程和一个Java进程，以及MIC HAL。C进程用于为Siren提供pcm流，然后传递由Siren滤波降噪过的纯净语音给NLP或ASR，NLP或ASR经过云端处理返回结果，还有一个最重要的点就是维持Siren与NLP或ASR之间的状态。Java进程用于解析NLP或ASR返回结果，处理应用层逻辑。
 
@@ -160,7 +168,7 @@ Android 基于Linux引入了selinux，这是专门为Linux设计的一套安全�
 ![](images/config2.png)
 
     mic.num       ：总的MIC个数(aec没有则不计算在内)
-    mic.pos(0...n)：MIC方位，程三维立体型，需要游标尺精确测量，寻向角度与此相关，不影响拾音。如图0--3为实际MIC，需要精确方位，后面全部都是AEC虚拟通道，不需要方位 。大家根据自己的硬件进行配置(详细测量方式见附件1)
+    mic.pos(0...n)：MIC方位，程三维立体型，需要游标尺精确测量，寻向角度与此相关，影响拾音。如图0--3为实际MIC，需要精确方位，后面全部都是AEC虚拟通道，不需要方位 。大家根据自己的硬件进行配置(详细测量方式见附件1)
     sl.poc        ：实际使用的MIC通道(不包括aec)
     bf.mics       ：同上
 
