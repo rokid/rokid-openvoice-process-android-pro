@@ -5,12 +5,13 @@ using namespace android;
 class BpVoiceService : public BpInterface<IVoiceService>{
 	public:
 		BpVoiceService(const sp<IBinder> &impl):BpInterface<IVoiceService>(impl) {}
-		virtual bool init();
-		virtual void start_siren(bool);
-		virtual void set_siren_state(const int);
-		virtual void network_state_change(bool);
-		virtual void update_stack(String16&);
-		virtual void add_binder(sp<IBinder>);
+        virtual ~BpVoiceService(){}
+		virtual bool init(){return false;}
+		virtual void start_siren(bool){}
+		virtual void set_siren_state(const int){}
+		virtual void network_state_change(bool){}
+		virtual void update_stack(String16&){}
+		virtual void add_binder(sp<IBinder>){}
 };
 
 IMPLEMENT_META_INTERFACE (VoiceService, "com.rokid.openvoice.openvoice_process");
