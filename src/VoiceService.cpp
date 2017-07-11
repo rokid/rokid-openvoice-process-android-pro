@@ -321,15 +321,27 @@ void* onResponse(void* args) {
     prctl(PR_SET_NAME, __FUNCTION__);
     VoiceService *service = (VoiceService*)args;
     SpeechResult sr;
+    string activation;
     for(;;) {
         bool res = service->_speech->poll(sr);
         if (!res) {
 			break;
         }
         ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
-        ALOGV("result : activation \t%s", sr.extra.c_str());
-
-        if(sr.type == 2 && !sr.nlp.empty()) {
+        if(sr.type == SPEECH_RES_START){
+            activation.clear();
+        }else if((sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_END) && !sr.extra.empty()){
+            json_object *obj = json_tokener_parse(sr.extra.c_str());
+            activation = json_object_get_string(json_object_object_get(obj, "activation"));
+            json_object_put(obj);
+            ALOGV("result : activation \t%s\t%s", activation.c_str(), sr.extra.c_str());
+            if(sr.type == SPEECH_RES_END && (strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0)){
+                set_siren_state_change(SIREN_STATE_SLEEP);
+                activation.clear();
+                continue; 
+            }
+        }
+        if(sr.type == SPEECH_RES_END && !sr.nlp.empty()) {
             ALOGV("result : asr\t%s", sr.asr.c_str());
             ALOGV("result : nlp\t%s", sr.nlp.c_str());
             ALOGV("result : action  %s", sr.action.c_str());
