@@ -334,7 +334,7 @@ void* onResponse(void* args) {
             json_object *obj = json_tokener_parse(sr.extra.c_str());
             activation = json_object_get_string(json_object_object_get(obj, "activation"));
             json_object_put(obj);
-            ALOGV("result : activation \t%s\t%s", activation.c_str(), sr.extra.c_str());
+            ALOGV("result : extra \t %s \t activation %s", activation.c_str(), sr.extra.c_str());
             if(sr.type == SPEECH_RES_END && (strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0)){
                 set_siren_state_change(SIREN_STATE_SLEEP);
                 activation.clear();
