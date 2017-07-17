@@ -46,7 +46,7 @@ done:
 
 void VoiceService::start_siren(bool flag) {
     pid_t pid = IPCThreadState::self()->getCallingPid();
-    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t pid : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
+    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t calling pid : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
     pthread_mutex_lock(&siren_mutex);
 	if(flag && (mCurrentSirenState == SIREN_STATE_INITED
             || mCurrentSirenState == SIREN_STATE_STOPED)){
