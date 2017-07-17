@@ -1,7 +1,5 @@
 #include "IVoiceService.h"
 
-using namespace android;
-
 class BpVoiceService : public BpInterface<IVoiceService>{
 	public:
 		BpVoiceService(const sp<IBinder> &impl):BpInterface<IVoiceService>(impl) {}

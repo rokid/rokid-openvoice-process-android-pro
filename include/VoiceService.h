@@ -19,7 +19,6 @@
 
 #include "IVoiceService.h"
 
-using namespace android;
 using namespace std;
 using namespace rokid;
 using namespace speech;
