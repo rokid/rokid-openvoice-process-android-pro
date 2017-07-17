@@ -14,11 +14,6 @@
 #include <json-c/json.h>
 #endif
 
-using namespace android;
-using namespace std;
-using namespace rokid;
-using namespace speech;
-
 #ifdef USB_AUDIO_DEVICE
 #warning "=============================USB_AUDIO_DEVICE==============================="
 #endif
@@ -122,9 +117,9 @@ void VoiceService::network_state_change(bool connected) {
             mCurrentSirenState = SIREN_STATE_STOPED;
         }
         pthread_mutex_unlock(&siren_mutex);
-        ALOGV("###########################RELEASE BEGIN#######################");
+        ALOGV("===============================BEGIN================================");
         _speech->release();
-        ALOGV("###########################RELEASE END#########################");
+        ALOGV("=================================END==============================");
         mCurrentSpeechState = SPEECH_STATE_RELEASED;
     }
     pthread_mutex_unlock(&speech_mutex);
@@ -183,7 +178,6 @@ void VoiceService::voice_print(const voice_event_t *voice_event){
 }
 
 void VoiceService::add_binder(sp<IBinder> binder){
-    ALOGV("%s \t %p \t %p", __FUNCTION__, proxy.get(), binder.get());
     binder->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
 	proxy = binder;
 }
@@ -335,7 +329,7 @@ void* onResponse(void* args) {
             activation = json_object_get_string(json_object_object_get(obj, "activation"));
             json_object_put(obj);
             ALOGV("result : extra \t %s \t activation %s", activation.c_str(), sr.extra.c_str());
-            if(sr.type == SPEECH_RES_END && (strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0)){
+            if(strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0){
                 set_siren_state_change(SIREN_STATE_SLEEP);
                 activation.clear();
                 continue; 
@@ -357,6 +351,8 @@ void* onResponse(void* args) {
 			}else{
 				ALOGI("Java service is null , Waiting for it to initialize");
 			}
+        }else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT){
+            ALOGV("TIME_OUT");
         }
     }
 	ALOGV("exit !!");
