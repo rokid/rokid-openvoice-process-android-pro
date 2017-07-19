@@ -242,7 +242,7 @@ void VoiceService::config() {
         _speech->config("codec", json_object_get_string(codec));
         ALOGE("%s", json_object_get_string(codec));
     }
-    _speech->config("vt", "若琪");
+//    _speech->config("vt", "若琪");
     json_object_put(json_obj);
 }
 
