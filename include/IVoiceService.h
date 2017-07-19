@@ -1,6 +1,8 @@
 #ifndef IVOICE_SERVICE_H
 #define IVOIDE_SERVICE_H
 
+#define DESCRIPTOR "com.rokid.openvoice.openvoice_process"
+
 #include <binder/IInterface.h>
 #include <binder/Parcel.h>
 
