@@ -258,7 +258,7 @@ void* onEvent(void* args) {
         voice_event_t *message = service->message_queue.front();
         ALOGV("event : -------------------------%d----", message->event);
 
-		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_END)){
+		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_DATA)){
 			service->send_voice_event(message->event, message->sl, HAS_SL(message->flag), message->background_energy, message->background_threshold);
 		}
         switch(message->event) {
