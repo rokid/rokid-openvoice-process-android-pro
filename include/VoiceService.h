@@ -38,7 +38,7 @@ class VoiceService: public BnVoiceService{
 		}
 
 		VoiceService();
-		void send_siren_event(int, double, int);
+		void send_voice_event(int, double, int, double, double);
         int vad_start();
         void voice_print(const voice_event_t *);
 

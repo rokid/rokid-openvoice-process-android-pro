@@ -125,13 +125,15 @@ void VoiceService::network_state_change(bool connected) {
     pthread_mutex_unlock(&speech_mutex);
 }
 
-void VoiceService::send_siren_event(int event, double sl_degree, int has_sl){
+void VoiceService::send_voice_event(int event, double sl_degree, int has_sl, double energy, double threshold){
 	if(proxy.get()){
 		Parcel data, reply;
 		data.writeInterfaceToken(proxy->getInterfaceDescriptor());
 		data.writeInt32(event);
 		data.writeDouble(sl_degree);
 		data.writeInt32(has_sl);
+		data.writeDouble(energy);
+		data.writeDouble(threshold);
 		proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
 		reply.readExceptionCode();
 	}else{
@@ -257,7 +259,7 @@ void* onEvent(void* args) {
         ALOGV("event : -------------------------%d----", message->event);
 
 		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_END)){
-			service->send_siren_event(message->event, message->sl, HAS_SL(message->flag));
+			service->send_voice_event(message->event, message->sl, HAS_SL(message->flag), message->background_energy, message->background_threshold);
 		}
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
@@ -345,13 +347,21 @@ void* onResponse(void* args) {
 				data.writeString16(String16(sr.asr.c_str()));
 				data.writeString16(String16(sr.nlp.c_str()));
 				data.writeString16(String16(sr.action.c_str()));
-				data.writeInt32(sr.type);
 				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
 				reply.readExceptionCode();
 			}else{
 				ALOGI("Java service is null , Waiting for it to initialize");
 			}
         }else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT){
+			if(service->proxy.get()){
+				Parcel data, reply;
+				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+				data.writeInt32(sr.err);
+				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+				reply.readExceptionCode();
+			}else{
+				ALOGI("Java service is null , Waiting for it to initialize");
+			}
             ALOGV("TIME_OUT");
         }
     }

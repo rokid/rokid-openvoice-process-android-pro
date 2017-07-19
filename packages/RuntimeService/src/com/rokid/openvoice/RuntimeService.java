@@ -84,14 +84,14 @@ public class RuntimeService extends Service{
 	private final IRuntimeService.Stub proxy = new IRuntimeService.Stub(){
 
 		@Override
-		public void onNLP(String asr, String nlp, String action, int type){
+		public void onSpeechResult(String asr, String nlp, String action){
             Log.e(TAG, "asr\t" + asr);
             Log.e(TAG, "nlp\t" + nlp);
             Log.e(TAG, "action " + action);
 		}
-	
+
 		@Override
-		public void onEvent(int event, double sl_degree, int has_sl){
+		public void onVoiceEvent(int event, double sl_degree, int has_sl, double energy, double threshold){
 			Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
 			if(event == VAD_ATART || event == WAKE_VAD_START){
 
@@ -99,6 +99,13 @@ public class RuntimeService extends Service{
 				//mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
 			}
 		}
+
+        @Override
+        public void onSpeechError(int errcode){
+            if(errcode == 103){
+                Log.e(TAG, "timeouted");
+            }
+        }
 	};
 
 	private final android.os.UEventObserver mUEventObserver = new android.os.UEventObserver() {

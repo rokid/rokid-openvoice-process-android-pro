@@ -22,9 +22,8 @@ LOCAL_STATIC_LIBRARIES += libjsonc_static
 LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
-		$(LOCAL_PATH)/../rokid-blacksiren/include \
-		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include \
-#		$(LOCAL_PATH)/../rokid-openvoice-sdk/include
+		$(LOCAL_PATH)/../blacksiren/include \
+		$(LOCAL_PATH)/../blacksiren/thirdparty/libjsonc/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl

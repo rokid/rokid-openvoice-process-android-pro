@@ -1,6 +1,7 @@
 package com.rokid.openvoice;
 
 interface IRuntimeService{
-	void onNLP(String asr, String nlp, String action, int type);
-	void onEvent(int event, double sl_degree, int has_sl);
+	void onSpeechResult(String asr, String nlp, String action);
+	void onVoiceEvent(int event, double sl_degree, int has_sl, double energy, double threshold);
+    void onSpeechError(int errcode);
 }
