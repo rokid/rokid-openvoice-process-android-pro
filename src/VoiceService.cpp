@@ -352,7 +352,7 @@ void* onResponse(void* args) {
 			}else{
 				ALOGI("Java service is null , Waiting for it to initialize");
 			}
-        }else if(sr.type == SPEECH_RES_ERROR){
+        }else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT){
 			if(service->proxy.get()){
 				Parcel data, reply;
 				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
