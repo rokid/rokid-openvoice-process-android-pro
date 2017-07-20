@@ -154,10 +154,10 @@ int VoiceService::vad_start(){
             char buf[64];
             snprintf(buf, sizeof(buf), "%d", vt_start);
             options->set("trigger_start", buf);
-            snprintf(buf, sizeof(buf), "%d", vt_end);
-            options->set("trigger_end", buf);
+            snprintf(buf, sizeof(buf), "%d", vt_end - vt_start);
+            options->set("trigger_length", buf);
             snprintf(buf, sizeof(buf), "%F", vt_energy);
-            options->set("trigger_power", buf);
+            options->set("voice_power", buf);
             has_vt = false;
         }
         options->set("stack", appid.isEmpty() ? "" : appid.string());
