@@ -255,6 +255,8 @@ void* onEvent(void* args) {
         while(service->message_queue.empty()) {
             pthread_cond_wait(&service->event_cond, &service->event_mutex);
         }
+        pthread_mutex_unlock(&service->event_mutex);
+
         voice_event_t *message = service->message_queue.front();
         ALOGV("event : -------------------------%d----", message->event);
 
@@ -306,7 +308,6 @@ void* onEvent(void* args) {
         service->message_queue.pop_front();
         free(message->buff);
         free(message);
-        pthread_mutex_unlock(&service->event_mutex);
     }
     service->_speech->release();
     service->_speech.reset();
