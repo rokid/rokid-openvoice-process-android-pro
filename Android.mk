@@ -7,7 +7,7 @@ LOCAL_SRC_FILES := \
 		src/IVoiceService.cpp \
 		src/VoiceService.cpp \
 		src/Engine.cpp \
-		src/openvoice_main.cpp
+		src/main.cpp
 
 LOCAL_SHARED_LIBRARIES := \
 		libhardware \
