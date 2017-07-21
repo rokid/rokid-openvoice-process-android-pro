@@ -1,6 +1,6 @@
 package com.rokid.openvoice;
 /**
- * am startservice -n com.rokid.openvoice/com.rokid.openvoice.SirenService --es action 1
+ * am startservice -n com.rokid.openvoice/com.rokid.openvoice.SirenService --ei action 1
  */
 public class SirenService extends android.app.Service{
 
