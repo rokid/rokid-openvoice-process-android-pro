@@ -150,7 +150,7 @@ int VoiceService::vad_start(){
     if(mCurrentSpeechState == SPEECH_STATE_PREPARED){
         shared_ptr<Options> options = new_options();
         if(options.get() && has_vt){
-            options->set("voice_trigger", (char *)vt_data);
+            options->set("voice_trigger", vt_data.c_str());
             char buf[64];
             snprintf(buf, sizeof(buf), "%d", vt_start);
             options->set("trigger_start", buf);
@@ -174,7 +174,7 @@ void VoiceService::voice_print(const voice_event_t *voice_event){
         vt_start = voice_event->vt.start;
         vt_end = voice_event->vt.end;
         vt_energy = voice_event->vt.energy;
-        strcpy(vt_data, (char*)voice_event->buff);
+        vt_data = (char*)voice_event->buff;
         has_vt = true;
     }
 }
@@ -255,7 +255,6 @@ void* onEvent(void* args) {
         while(service->message_queue.empty()) {
             pthread_cond_wait(&service->event_cond, &service->event_mutex);
         }
-        pthread_mutex_unlock(&service->event_mutex);
 
         voice_event_t *message = service->message_queue.front();
         ALOGV("event : -------------------------%d----", message->event);
@@ -308,6 +307,7 @@ void* onEvent(void* args) {
         service->message_queue.pop_front();
         free(message->buff);
         free(message);
+        pthread_mutex_unlock(&service->event_mutex);
     }
     service->_speech->release();
     service->_speech.reset();

@@ -82,7 +82,7 @@ class VoiceService: public BnVoiceService{
         int vt_start;
         int vt_end;
         float vt_energy;
-        char vt_data[8];
+        string vt_data;
         bool has_vt;
         bool openSiren = true;
 };
