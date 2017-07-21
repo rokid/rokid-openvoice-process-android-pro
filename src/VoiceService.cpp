@@ -242,7 +242,6 @@ void VoiceService::config() {
         _speech->config("codec", json_object_get_string(codec));
         ALOGE("%s", json_object_get_string(codec));
     }
-//    _speech->config("vt", "若琪");
     json_object_put(json_obj);
 }
 
@@ -255,8 +254,10 @@ void* onEvent(void* args) {
         while(service->message_queue.empty()) {
             pthread_cond_wait(&service->event_cond, &service->event_mutex);
         }
-
         voice_event_t *message = service->message_queue.front();
+        service->message_queue.pop_front();
+        pthread_mutex_unlock(&service->event_mutex);
+
         ALOGV("event : -------------------------%d----", message->event);
 
 		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_DATA)){
@@ -304,10 +305,8 @@ void* onEvent(void* args) {
             ALOGI("VOICE_PRINT");
             break;
         }
-        service->message_queue.pop_front();
         free(message->buff);
         free(message);
-        pthread_mutex_unlock(&service->event_mutex);
     }
     service->_speech->release();
     service->_speech.reset();
