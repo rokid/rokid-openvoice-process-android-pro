@@ -3,48 +3,12 @@
 class BpVoiceService : public BpInterface<IVoiceService>{
 	public:
 		BpVoiceService(const sp<IBinder> &impl):BpInterface<IVoiceService>(impl) {}
-		bool init(){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16(DESCRIPTOR));
-			remote()->transact(TRANSACTION_INIT, data, &reply);
-			reply.readExceptionCode();
-            return ((reply.readInt32() > 0) ? true : false);
-        }
-		void start_siren(bool flag){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16(DESCRIPTOR));
-            data.writeInt32(flag ? 1 : 0);
-			remote()->transact(TRANSACTION_START_SIREN, data, &reply);
-			reply.readExceptionCode();
-        }
-		void set_siren_state(const int state){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16(DESCRIPTOR));
-            data.writeInt32(state);
-			remote()->transact(TRANSACTION_SET_SIREN_STATUS, data, &reply);
-			reply.readExceptionCode();
-        }
-		void network_state_change(bool connected){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16(DESCRIPTOR));
-            data.writeInt32(connected? 1 : 0);
-			remote()->transact(TRANSACTION_START_SIREN, data, &reply);
-			reply.readExceptionCode();
-        }
-		void update_stack(String16& appid){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16(DESCRIPTOR));
-            data.writeString16(appid);
-			remote()->transact(TRANSACTION_UPDATE_STACK, data, &reply);
-			reply.readExceptionCode();
-        }
-		void add_binder(sp<IBinder> binder){
-			Parcel data, reply;
-			data.writeInterfaceToken(String16(DESCRIPTOR));
-            data.writeStrongBinder(binder);
-			remote()->transact(TRANSACTION_ADD_BINDER, data, &reply);
-			reply.readExceptionCode();
-        }
+		bool init(){return false;}
+		void start_siren(bool flag){}
+		void set_siren_state(const int state){}
+		void network_state_change(bool connected){}
+		void update_stack(String16& appid){}
+		void add_binder(sp<IBinder> binder){}
 };
 
 IMPLEMENT_META_INTERFACE (VoiceService, DESCRIPTOR);
