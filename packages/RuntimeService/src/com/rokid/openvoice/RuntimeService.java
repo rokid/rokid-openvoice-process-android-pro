@@ -76,7 +76,7 @@ public class RuntimeService extends Service{
     }
 
     private void nativeServiceDied(){
-        mHandler.sendEmptyMessageDelayed(MSG_REINIT, 1000 * 5);
+        mHandler.sendEmptyMessageDelayed(MSG_REINIT, 1000 * 3);
     }
 
 	private final IRuntimeService.Stub proxy = new IRuntimeService.Stub(){
