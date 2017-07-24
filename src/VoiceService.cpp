@@ -332,6 +332,14 @@ void* onResponse(void* args) {
             json_object_put(obj);
             ALOGV("result : extra \t %s \t activation %s", activation.c_str(), sr.extra.c_str());
             if(strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0){
+    			if(service->proxy.get()){
+    				Parcel data, reply;
+    				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+    				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+    				reply.readExceptionCode();
+    			}else{
+    				ALOGI("Java service is null , Waiting for it to initialize");
+    			}
                 set_siren_state_change(SIREN_STATE_SLEEP);
                 activation.clear();
                 continue; 
@@ -356,8 +364,7 @@ void* onResponse(void* args) {
 			if(service->proxy.get()){
 				Parcel data, reply;
 				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-				data.writeInt32(sr.err);
-				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
 				reply.readExceptionCode();
 			}else{
 				ALOGI("Java service is null , Waiting for it to initialize");

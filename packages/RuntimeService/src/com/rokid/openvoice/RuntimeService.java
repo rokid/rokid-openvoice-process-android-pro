@@ -84,7 +84,7 @@ public class RuntimeService extends Service{
 	private final IRuntimeService.Stub proxy = new IRuntimeService.Stub(){
 
 		@Override
-		public void onSpeechResult(String asr, String nlp, String action){
+		public void onVoiceCommand(String asr, String nlp, String action){
             Log.e(TAG, "asr\t" + asr);
             Log.e(TAG, "nlp\t" + nlp);
             Log.e(TAG, "action " + action);
@@ -101,10 +101,13 @@ public class RuntimeService extends Service{
 		}
 
         @Override
-        public void onSpeechError(int errcode){
-            if(errcode == 103){
-                Log.e(TAG, "timeouted");
-            }
+        public void onVoiceReject(){
+
+        }
+
+        @Override
+        public void onSpeechTimeout(){
+
         }
 	};
 
