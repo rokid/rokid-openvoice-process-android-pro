@@ -337,8 +337,6 @@ void* onResponse(void* args) {
     				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
     				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
     				reply.readExceptionCode();
-    			}else{
-    				ALOGI("Java service is null , Waiting for it to initialize");
     			}
                 set_siren_state_change(SIREN_STATE_SLEEP);
                 activation.clear();
@@ -366,8 +364,6 @@ void* onResponse(void* args) {
 				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
 				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
 				reply.readExceptionCode();
-			}else{
-				ALOGI("Java service is null , Waiting for it to initialize");
 			}
             ALOGV("TIME_OUT");
         }
