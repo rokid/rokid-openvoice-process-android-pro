@@ -38,7 +38,7 @@ public class RuntimeNative implements IBinder.DeathRecipient{
         runtime = null;
         mRuntimeNative = null;
         RuntimeService.initialized = false;
-        RuntimeService.mHandler.sendEmptyMessage(RuntimeService.MSG_NATIVE_SERVICE_DIED);
+        RuntimeService.mHandler.sendEmptyMessageDelayed(RuntimeService.MSG_REINIT, 1000 * 3);
 		android.util.Log.e("RuntimeNative", "native service died !");
 	}
 

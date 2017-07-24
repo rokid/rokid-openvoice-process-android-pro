@@ -16,7 +16,6 @@ public class RuntimeService extends Service{
 
 	public RuntimeNative mRuntimeNative = null;
     public static MainHandler mHandler = null;
-    public static final int MSG_NATIVE_SERVICE_DIED = 0;
     public static final int MSG_REINIT = 1;
 
 	public static boolean initialized = false;
@@ -33,9 +32,6 @@ public class RuntimeService extends Service{
 
         public void handleMessage(Message msg) {
             switch(msg.what){
-                case MSG_NATIVE_SERVICE_DIED:
-                    nativeServiceDied();
-                    break;
                 case MSG_REINIT:
                     reinit();
                     break;
@@ -73,10 +69,6 @@ public class RuntimeService extends Service{
 		if(mNetworkInfo != null){
 		    mRuntimeNative.networkStateChange(true);
 		}
-    }
-
-    private void nativeServiceDied(){
-        mHandler.sendEmptyMessageDelayed(MSG_REINIT, 1000 * 3);
     }
 
 	private final IRuntimeService.Stub proxy = new IRuntimeService.Stub(){
