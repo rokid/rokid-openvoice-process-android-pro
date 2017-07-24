@@ -26,8 +26,6 @@ public class RuntimeService extends Service{
 
 	private static final int VAD_ATART = 100;
 	private static final int VAD_END = 102;
-	private static final int WAKE_VAD_START = 104;
-	private static final int WAKE_VAD_END = 106;
 	private static final int WAKE_NOCMD = 107;
 	private static final int WAKE_CMD = 108;
 
@@ -85,6 +83,7 @@ public class RuntimeService extends Service{
 
 		@Override
 		public void onVoiceCommand(String asr, String nlp, String action){
+			mRuntimeNative.setSirenState(SIREN_STATE_AWAKE);
             Log.e(TAG, "asr\t" + asr);
             Log.e(TAG, "nlp\t" + nlp);
             Log.e(TAG, "action " + action);
@@ -93,10 +92,10 @@ public class RuntimeService extends Service{
 		@Override
 		public void onVoiceEvent(int event, double sl_degree, int has_sl, double energy, double threshold){
 			Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
-			if(event == VAD_ATART || event == WAKE_VAD_START){
+			if(event == VAD_ATART){
 
-			}else if(event == VAD_END || event == WAKE_VAD_END){
-				//mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
+			}else if(event == VAD_END){
+				mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
 			}
 		}
 
