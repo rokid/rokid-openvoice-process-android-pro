@@ -313,6 +313,10 @@ void* onEvent(void* args) {
     return NULL;
 }
 
+inline bool arbitration(const string &activation){
+    return (strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0);
+}
+
 void* onResponse(void* args) {
     prctl(PR_SET_NAME, __FUNCTION__);
     VoiceService *service = (VoiceService*)args;
@@ -321,7 +325,7 @@ void* onResponse(void* args) {
     for(;;) {
         bool res = service->_speech->poll(sr);
         if (!res) {
-			break;
+            break;
         }
         ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
         if(sr.type == SPEECH_RES_START){
@@ -331,41 +335,41 @@ void* onResponse(void* args) {
             activation = json_object_get_string(json_object_object_get(obj, "activation"));
             json_object_put(obj);
             ALOGV("result : extra \t %s \t activation %s", activation.c_str(), sr.extra.c_str());
-            if(strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0){
-    			if(service->proxy.get()){
-    				Parcel data, reply;
-    				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-    				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
-    				reply.readExceptionCode();
-    			}
+            if(arbitration(activation)){
+                if(service->proxy.get()){
+                    Parcel data, reply;
+                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+                    reply.readExceptionCode();
+                }
                 set_siren_state_change(SIREN_STATE_SLEEP);
-                activation.clear();
                 continue; 
             }
         }
-        if(sr.type == SPEECH_RES_END && !sr.nlp.empty()) {
-            ALOGV("result : asr\t%s", sr.asr.c_str());
-            ALOGV("result : nlp\t%s", sr.nlp.c_str());
-            ALOGV("result : action  %s", sr.action.c_str());
-			if(service->proxy.get()){
-				Parcel data, reply;
-				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-				data.writeString16(String16(sr.asr.c_str()));
-				data.writeString16(String16(sr.nlp.c_str()));
-				data.writeString16(String16(sr.action.c_str()));
-				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
-				reply.readExceptionCode();
-			}else{
-				ALOGI("Java service is null , Waiting for it to initialize");
-			}
-        }else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT){
-			if(service->proxy.get()){
-				Parcel data, reply;
-				data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-				service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
-				reply.readExceptionCode();
-			}
-            ALOGV("TIME_OUT");
+        if(!arbitration(activation)){
+            if(sr.type == SPEECH_RES_END && !sr.nlp.empty()) {
+                ALOGV("result : asr\t%s", sr.asr.c_str());
+                ALOGV("result : nlp\t%s", sr.nlp.c_str());
+                ALOGV("result : action  %s", sr.action.c_str());
+                if(service->proxy.get()){
+                    Parcel data, reply;
+                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                    data.writeString16(String16(sr.asr.c_str()));
+                    data.writeString16(String16(sr.nlp.c_str()));
+                    data.writeString16(String16(sr.action.c_str()));
+                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
+                    reply.readExceptionCode();
+                }else{
+                	ALOGI("Java service is null , Waiting for it to initialize");
+                }
+            }else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT){
+                if(service->proxy.get()){
+                    Parcel data, reply;
+                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
+                    reply.readExceptionCode();
+                }
+            }
         }
     }
 	ALOGV("exit !!");
