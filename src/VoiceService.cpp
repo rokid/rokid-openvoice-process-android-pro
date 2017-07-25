@@ -322,9 +322,8 @@ void* onResponse(void* args) {
     VoiceService *service = (VoiceService*)args;
     SpeechResult sr;
     string activation;
-    for(;;) {
-        bool res = service->_speech->poll(sr);
-        if (!res) {
+    while(1){
+        if (!service->_speech->poll(sr)) {
             break;
         }
         ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
@@ -372,6 +371,6 @@ void* onResponse(void* args) {
             }
         }
     }
-	ALOGV("exit !!");
+    ALOGV("exit !!");
     return NULL;
 }
