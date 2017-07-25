@@ -23,10 +23,13 @@ public class RuntimeService extends Service{
 	public static final int SIREN_STATE_AWAKE = 1;
 	public static final int SIREN_STATE_SLEEP = 2;
 
-	private static final int VAD_ATART = 100;
-	private static final int VAD_END = 102;
-	private static final int WAKE_NOCMD = 107;
-	private static final int WAKE_CMD = 108;
+    private static final int EVENT_VAD_ATART = 100;
+    private static final int EVENT_VAD_DATA = 101;
+    private static final int EVENT_VAD_END = 102;
+    private static final int EVENT_VAD_CANCEL = 103;
+    private static final int EVENT_WAKE_NOCMD = 108;
+    private static final int EVENT_WAKE_CMD = 109;
+    private static final int EVENT_SLEEP = 111;
 
     class MainHandler extends Handler{
 
@@ -84,9 +87,9 @@ public class RuntimeService extends Service{
 		@Override
 		public void onVoiceEvent(int event, double sl_degree, int has_sl, double energy, double threshold){
 			Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
-			if(event == VAD_ATART){
+			if(event == EVENT_VAD_ATART){
 
-			}else if(event == VAD_END){
+			}else if(event == EVENT_VAD_END || evnet == EVENT_VAD_CANCEL){
 				mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
 			}
 		}
