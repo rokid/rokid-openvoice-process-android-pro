@@ -89,7 +89,7 @@ public class RuntimeService extends Service{
 			Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
 			if(event == EVENT_VAD_ATART){
 
-			}else if(event == EVENT_VAD_END || evnet == EVENT_VAD_CANCEL){
+			}else if(event == EVENT_VAD_END || event == EVENT_VAD_CANCEL){
 				mRuntimeNative.setSirenState(SIREN_STATE_SLEEP);
 			}
 		}
