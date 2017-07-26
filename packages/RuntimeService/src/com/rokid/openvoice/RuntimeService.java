@@ -80,12 +80,12 @@ public class RuntimeService extends Service{
         }
     }
 
-	private final IRuntimeService.Stub proxy = new IRuntimeService.Stub(){
+    private final IRuntimeService.Stub proxy = new IRuntimeService.Stub(){
 
         /**
          *  使用激活词+指令或设备激活后，输入一段语音, 此方法将会返回语音识别后的结果
          *  如"若琪，打开我要喝咖啡"，或在激活状态说"打开我要喝咖啡"
-         *  注意:有些情况不会调用此接口：1.设备被仲裁；2.出现网络超时
+         *  注意:有些情况不会调用此接口
          *  @see #onVoiceReject()
          *  @see #onSpeechTimiout()
          *
@@ -129,7 +129,7 @@ public class RuntimeService extends Service{
         }
 
         /**
-         * 设备被仲裁，此接口被调用，{@link #onVoiceCommand(String, String, String)}不会调用
+         * 设备被仲裁，此接口被调用
          * 并且会设置拾音状态为{@link SIREN_STATE_SLEEP}
          * @return Nothing
          */
@@ -139,7 +139,7 @@ public class RuntimeService extends Service{
         }
 
         /**
-         * speech 发生网络超时将被调用此接口被调用，此时{@link #onVoiceCommand(String, String, String)}不会调用
+         * speech 发生网络超时将被调用此接口被调用
          * @return Nothing
          */
         @Override
