@@ -20,9 +20,6 @@ public class RuntimeService extends Service{
     
     public static boolean initialized = false;
     
-    /**
-     * 
-     */
     public static final int SIREN_STATE_AWAKE = 1;
     public static final int SIREN_STATE_SLEEP = 2;
     
@@ -87,7 +84,7 @@ public class RuntimeService extends Service{
          *  如"若琪，打开我要喝咖啡"，或在激活状态说"打开我要喝咖啡"
          *  注意:有些情况不会调用此接口
          *  @see #onVoiceReject()
-         *  @see #onSpeechTimiout()
+         *  @see #onSpeechTimeout()
          *
          *  @param asr 语音识别结果
          *  @param nlp 语义理解
@@ -139,7 +136,7 @@ public class RuntimeService extends Service{
         }
 
         /**
-         * speech 发生网络超时将被调用此接口被调用
+         * speech 发生网络超时将调用此接口
          * @return Nothing
          */
         @Override
