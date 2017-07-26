@@ -100,7 +100,7 @@ public class RuntimeService extends Service{
             Log.e(TAG, "asr\t" + asr);
             Log.e(TAG, "nlp\t" + nlp);
             Log.e(TAG, "action " + action);
-		}
+        }
 
         /**
          * 使用激活词，如果本地判断不是误激活,会产生{@link #EVENT_WAKE_NOCMD}事件
@@ -119,7 +119,7 @@ public class RuntimeService extends Service{
          * @return Nothing
          */
         @Override
-		public void onVoiceEvent(int event, double sl_degree, boolean has_sl, double energy, double threshold){
+        public void onVoiceEvent(int event, double sl_degree, boolean has_sl, double energy, double threshold){
             Log.e(TAG, event+" ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
             if(event == EVENT_VAD_ATART){
             
@@ -146,23 +146,23 @@ public class RuntimeService extends Service{
         public void onSpeechTimeout(){
 
         }
-	};
+    };
 
-	private final android.os.UEventObserver mUEventObserver = new android.os.UEventObserver() {
+    private final android.os.UEventObserver mUEventObserver = new android.os.UEventObserver() {
 		 
-		@Override
-		public void onUEvent(android.os.UEventObserver.UEvent event){
-			Log.e(TAG, event.toString());
+        @Override
+        public void onUEvent(android.os.UEventObserver.UEvent event){
+            Log.e(TAG, event.toString());
             if(initialized){
-    			String action = event.get("ACTION");
-    			if("add".equals(action)){
-    				mRuntimeNative.startSiren(true);	
-    			}else if("remove".equals(action)){
-    				mRuntimeNative.startSiren(false);
-    			}
+                String action = event.get("ACTION");
+                if("add".equals(action)){
+                	mRuntimeNative.startSiren(true);	
+                }else if("remove".equals(action)){
+                	mRuntimeNative.startSiren(false);
+                }
             }
-		}
-	};
+        }
+    };
 
 	@Override
 	public IBinder onBind(Intent intent) {
