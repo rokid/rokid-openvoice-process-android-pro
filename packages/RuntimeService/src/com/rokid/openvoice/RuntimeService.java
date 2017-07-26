@@ -1,16 +1,14 @@
 package com.rokid.openvoice;
 
-import android.app.Service;
 import android.content.Intent;
 import android.content.Context;
-import android.os.IBinder;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.net.NetworkInfo;
 import android.net.ConnectivityManager;
 
-public class RuntimeService extends Service{
+public class RuntimeService extends android.app.Service{
 
     String TAG = getClass().getSimpleName();
     
@@ -162,7 +160,7 @@ public class RuntimeService extends Service{
     };
 
 	@Override
-	public IBinder onBind(Intent intent) {
+	public android.os.IBinder onBind(Intent intent) {
 		return null;
 	}
 }
