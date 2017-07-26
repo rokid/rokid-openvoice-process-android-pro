@@ -314,7 +314,7 @@ void* onEvent(void* args) {
 }
 
 inline bool arbitration(const string &activation){
-    return (strcmp("fake", activation.c_str()) == 0 || strcmp("reject", activation.c_str()) == 0);
+    return ("fake" == activation || "reject" == activation);
 }
 
 void* onResponse(void* args) {
@@ -346,7 +346,7 @@ void* onResponse(void* args) {
             }
         }
         if(!arbitration(activation)){
-            if(sr.type == SPEECH_RES_END && !sr.nlp.empty()) {
+            if(sr.type == SPEECH_RES_END) {
                 ALOGV("result : asr\t%s", sr.asr.c_str());
                 ALOGV("result : nlp\t%s", sr.nlp.c_str());
                 ALOGV("result : action  %s", sr.action.c_str());
