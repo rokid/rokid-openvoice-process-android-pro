@@ -98,7 +98,7 @@ public class RuntimeService extends android.app.Service{
         }
 
         /**
-         * 使用激活词，如果本地判断不是误激活,会产生{@link #EVENT_WAKE_NOCMD}事件
+         * 使用激活词，如果本地判断为激活词,会产生{@link #EVENT_WAKE_NOCMD}事件
          * 每一段语音都将产生{@link #EVENT_VAD_ATART}, {@link #EVENT_VAD_DATA}
          *                  {@link #EVENT_VAD_END}, or {@link #EVENT_VAD_CANCEL}
          * 如果本地本地判断为误激活，会产生{@link #EVENT_VAD_CANCEL}事件
