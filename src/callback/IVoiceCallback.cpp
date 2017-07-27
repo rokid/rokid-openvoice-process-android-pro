@@ -23,18 +23,21 @@ public:
         data.writeDouble(energy);
         data.writeDouble(threshold);
         remote()->transact(TRANSACTION_VOICE_EVENT, data, &reply);
+        reply.readExceptionCode();
     }
 
     void voice_reject() {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
         remote()->transact(TRANSACTION_VOICE_REJECT, data, &reply);
+        reply.readExceptionCode();
     }
 
     void speech_timeout() {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
         remote()->transact(TRANSACTION_SPEECH_TIMEOUT, data, &reply);
+        reply.readExceptionCode();
     }
 };
 
