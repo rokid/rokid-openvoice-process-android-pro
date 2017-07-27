@@ -1,6 +1,7 @@
-#native runtime
+#openvoice_process
 PRODUCT_PACKAGES += \
 					mic_array.$(TARGET_PRODUCT) \
+					libopenvoice \
 					openvoice_proc
 #siren
 PRODUCT_PACKAGES += \
