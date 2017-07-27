@@ -38,7 +38,7 @@ public:
     }
 
     VoiceService();
-    void send_voice_event(int, double, int, double, double);
+    void send_voice_event(int, int, double, double, double);
     int vad_start();
     void voice_print(const voice_event_t *);
 

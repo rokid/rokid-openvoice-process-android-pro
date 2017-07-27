@@ -125,13 +125,13 @@ void VoiceService::network_state_change(bool connected) {
     pthread_mutex_unlock(&speech_mutex);
 }
 
-void VoiceService::send_voice_event(int event, double sl_degree, int has_sl, double energy, double threshold) {
+void VoiceService::send_voice_event(int event, int has_sl, double sl_degree, double energy, double threshold) {
     if(proxy.get()) {
         Parcel data, reply;
         data.writeInterfaceToken(proxy->getInterfaceDescriptor());
         data.writeInt32(event);
-        data.writeDouble(sl_degree);
         data.writeInt32(has_sl);
+        data.writeDouble(sl_degree);
         data.writeDouble(energy);
         data.writeDouble(threshold);
         proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
@@ -261,7 +261,7 @@ void* onEvent(void* args) {
         ALOGV("event : -------------------------%d----", message->event);
 
         if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_DATA)) {
-            service->send_voice_event(message->event, message->sl, HAS_SL(message->flag), message->background_energy, message->background_threshold);
+            service->send_voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
         }
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
