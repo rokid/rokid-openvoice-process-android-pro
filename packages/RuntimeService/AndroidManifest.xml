@@ -9,9 +9,8 @@
 	<uses-permission android:name="android.permission.INTERNET"/>
 
 	<application android:persistent="true">
-        <service android:name="com.rokid.openvoice.RuntimeService" />
-		<service android:name="com.rokid.openvoice.SirenService"
-		    android:exported="true">
+        <service android:name="com.rokid.openvoice.RuntimeService" android:exported="true"/>
+		<service android:name="com.rokid.openvoice.SirenService" android:exported="true">
 			<intent-filter>
 				<action android:name="com.rokid.openvoice" />
 			</intent-filter>
