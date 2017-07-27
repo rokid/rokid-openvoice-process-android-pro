@@ -107,14 +107,14 @@ public class RuntimeService extends android.app.Service {
          *                      {@link #EVENT_VAD_ATART}, {@link #EVENT_VAD_DATA}
          *                      {@link #EVENT_VAD_END}, {@link #EVENT_VAD_CANCEL}
          *                      {@link #EVENT_SLEEP}
-         * @param sl_degree 声音角度值
          * @param has_sl 是否有角度值
+         * @param sl_degree 声音角度值
          * @param energy 声音能量值
          * @param threshold
          * @return Nothing
          */
         @Override
-        public void onVoiceEvent(int event, double sl_degree, boolean has_sl, double energy, double threshold) {
+        public void onVoiceEvent(int event, boolean has_sl, double sl_degree, double energy, double threshold) {
             Log.e(TAG, event + " ,has_sl : " + has_sl + " ,sl_degree : " + (float)sl_degree);
             if(event == EVENT_VAD_ATART) {
 
