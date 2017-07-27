@@ -47,7 +47,7 @@ public class RuntimeService extends android.app.Service {
         Log.e(TAG, "RuntimeService  created ");
         mRuntimeNative = RuntimeNative.asInstance();
         mRuntimeNative.init();
-        mRuntimeNative.addBinder(proxy);
+        mRuntimeNative.registCallback(callback);
         initialized = true;
     }
 
@@ -66,7 +66,7 @@ public class RuntimeService extends android.app.Service {
         Log.e(TAG, "==========================REINITT=============================");
         mRuntimeNative = RuntimeNative.asInstance();
         mRuntimeNative.init();
-        mRuntimeNative.addBinder(proxy);
+        mRuntimeNative.registCallback(callback);
         initialized = true;
         ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
@@ -75,7 +75,7 @@ public class RuntimeService extends android.app.Service {
         }
     }
 
-    private final IRuntimeService.Stub proxy = new IRuntimeService.Stub() {
+    private final IVoiceCallback.Stub callback = new IVoiceCallback.Stub() {
 
         /**
          *  使用激活词+指令或设备激活后，输入一段语音, 此方法将会返回语音识别后的结果

@@ -141,9 +141,9 @@ void VoiceService::send_voice_event(int event, double sl_degree, int has_sl, dou
     }
 }
 
-void VoiceService::update_stack(String16 &appid) {
-    this->appid = String8(appid);
-    ALOGE("appid  %s", this->appid.string());
+void VoiceService::update_stack(const string &appid) {
+    this->appid = appid;
+    ALOGE("appid  %s", this->appid.c_str());
 }
 
 int VoiceService::vad_start() {
@@ -160,7 +160,7 @@ int VoiceService::vad_start() {
             options->set("voice_power", buf);
             has_vt = false;
         }
-        options->set("stack", appid.isEmpty() ? "" : appid.string());
+        options->set("stack", appid.empty() ? "" : appid.c_str());
         string json;
         options->to_json_string(json);
         ALOGV("%s \t %s", __FUNCTION__, json.c_str());
@@ -179,7 +179,7 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
     }
 }
 
-void VoiceService::add_binder(sp<IBinder> binder) {
+void VoiceService::regist_callback(const sp<IBinder> &binder) {
     binder->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
     proxy = binder;
 }

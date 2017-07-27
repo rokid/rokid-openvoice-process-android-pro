@@ -139,7 +139,7 @@ public class RuntimeNative implements IBinder.DeathRecipient {
         }
     }
 
-    public void addBinder(IBinder binder) {
+    public void registCallback(IBinder binder) {
         if(runtime != null) {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();

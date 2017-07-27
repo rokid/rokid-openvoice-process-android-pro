@@ -5,8 +5,11 @@
 
 #include <binder/IInterface.h>
 #include <binder/Parcel.h>
+#include <utils/String8.h>
+#include <string>
 
 using namespace android;
+using namespace std;
 
 enum {
     TRANSACTION_INIT = IBinder::FIRST_CALL_TRANSACTION + 0,
@@ -14,7 +17,7 @@ enum {
     TRANSACTION_SET_SIREN_STATUS,
     TRANSACTION_NETWORK_STATE_CHANGE,
     TRANSACTION_UPDATE_STACK,
-    TRANSACTION_ADD_BINDER,
+    TRANSACTION_REGIST_CALLBACK,
 };
 
 class IVoiceService : public IInterface {
@@ -24,8 +27,8 @@ public:
     virtual void start_siren(bool) = 0;
     virtual void set_siren_state(const int) = 0;
     virtual void network_state_change(bool) = 0;
-    virtual void update_stack(String16&) = 0;
-    virtual void add_binder(sp<IBinder>) = 0;
+    virtual void update_stack(const string&) = 0;
+    virtual void regist_callback(const sp<IBinder>&) = 0;
 };
 
 class BnVoiceService : public BnInterface<IVoiceService> {

@@ -4,10 +4,8 @@
 #define SPEECH_CONFIG_FILE "/system/etc/openvoice_profile.json"
 
 #include <cutils/log.h>
-#include <utils/String8.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <memory>
 #include <list>
 
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -20,7 +18,6 @@
 
 #include "IVoiceService.h"
 
-using namespace std;
 using namespace rokid;
 using namespace speech;
 
@@ -62,8 +59,8 @@ private:
     void start_siren(bool);
     void set_siren_state(const int);
     void network_state_change(bool);
-    void update_stack(String16&);
-    void add_binder(sp<IBinder>);
+    void update_stack(const string&);
+    void regist_callback(const sp<IBinder>&);
 #ifdef USB_AUDIO_DEVICE
     bool wait_for_alsa_usb_card();
 #endif
@@ -81,12 +78,12 @@ private:
         SPEECH_STATE_PREPARED,
         SPEECH_STATE_RELEASED
     };
-    String8 appid;
+    string appid;
     int vt_start;
     int vt_end;
     float vt_energy;
     string vt_data;
-    bool has_vt;
+    bool has_vt = false;
     bool openSiren = true;
 };
 

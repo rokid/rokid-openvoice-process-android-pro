@@ -3,8 +3,34 @@ include $(CLEAR_VARS)
 
 $(shell cp $(LOCAL_PATH)/etc/openvoice_profile.json $(TARGET_OUT_ETC))
 
+LOCAL_C_INCLUDES += \
+		$(LOCAL_PATH)/include
+
 LOCAL_SRC_FILES := \
 		src/IVoiceService.cpp \
+		src/callback/IVoiceCallback.cpp
+
+LOCAL_SHARED_LIBRARIES := \
+		libbinder \
+		libutils
+
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
+ifeq ($(PLATFORM_SDK_VERSION), 22)
+LOCAL_SHARED_LIBRARIES += libc++ libdl
+LOCAL_C_INCLUDES += external/libcxx/include
+else ifeq ($(PLATFORM_SDK_VERSION), 19)
+LOCAL_C_INCLUDES += \
+		external/stlport/stlport \
+		bionic
+LOCAL_STATIC_LIBRARIES += libstlport_static
+endif
+
+LOCAL_MODULE := libopenvoice
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
 		src/VoiceService.cpp \
 		src/Engine.cpp \
 		src/main.cpp
@@ -12,9 +38,10 @@ LOCAL_SRC_FILES := \
 LOCAL_SHARED_LIBRARIES := \
 		libhardware \
 		libbinder \
-		libbsiren \
 		libutils \
 		liblog \
+		libopenvoice \
+		libbsiren \
 		libspeech
 
 LOCAL_STATIC_LIBRARIES += libjsonc_static
