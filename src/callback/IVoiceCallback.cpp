@@ -6,7 +6,7 @@ public:
     ~BpVoiceCallback() {}
     void voice_command(const string &asr, const string &nlp, const string &action) {
         Parcel data, reply;
-        data.writeInterfaceToken(remote()->getInterfaceDescriptor());
+        data.writeInterfaceToken(String16(DESCRIPTOR));
         data.writeString16(String16(asr.c_str()));
         data.writeString16(String16(nlp.c_str()));
         data.writeString16(String16(action.c_str()));
@@ -16,7 +16,7 @@ public:
 
     void voice_event(int event, bool has_sl, double sl, double energy, double threshold) {
         Parcel data, reply;
-        data.writeInterfaceToken(remote()->getInterfaceDescriptor());
+        data.writeInterfaceToken(String16(DESCRIPTOR));
         data.writeInt32(event);
         data.writeInt32((has_sl ? 1 : 0));
         data.writeDouble(sl);
@@ -27,13 +27,13 @@ public:
 
     void voice_reject() {
         Parcel data, reply;
-        data.writeInterfaceToken(remote()->getInterfaceDescriptor());
+        data.writeInterfaceToken(String16(DESCRIPTOR));
         remote()->transact(TRANSACTION_VOICE_REJECT, data, &reply);
     }
 
     void speech_timeout() {
         Parcel data, reply;
-        data.writeInterfaceToken(remote()->getInterfaceDescriptor());
+        data.writeInterfaceToken(String16(DESCRIPTOR));
         remote()->transact(TRANSACTION_SPEECH_TIMEOUT, data, &reply);
     }
 };
