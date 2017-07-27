@@ -21,7 +21,7 @@ PRODUCT_PACKAGES += \
 #apps
 PRODUCT_PACKAGES += \
 					RuntimeService \
-					RKTtsService 
+					RKTtsService
 
 PRODUCT_PACKAGES += \
 					roots.pem \

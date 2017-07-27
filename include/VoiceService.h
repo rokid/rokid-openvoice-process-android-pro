@@ -24,68 +24,70 @@ using namespace std;
 using namespace rokid;
 using namespace speech;
 
-class VoiceService: public BnVoiceService{
-	public:
-        class DeathNotifier : public IBinder::DeathRecipient{
-            public:
-                DeathNotifier(VoiceService *service) : _service(service){}
-                void binderDied(const wp<IBinder> &binder){_service->proxy.clear();}
-            private:
-                VoiceService *_service = NULL;
-        };
-
-		static char const* getServiceName(){
-			return "openvoice_process";
-		}
-
-		VoiceService();
-		void send_voice_event(int, double, int, double, double);
-        int vad_start();
-        void voice_print(const voice_event_t *);
-
-		pthread_mutex_t event_mutex;
-		pthread_mutex_t speech_mutex;
-		pthread_mutex_t siren_mutex;
-		pthread_cond_t event_cond;
-		pthread_t event_thread;
-		pthread_t response_thread;
-
-        shared_ptr<Speech> _speech;
-		sp<IBinder> proxy;
-        list<voice_event_t*> message_queue;
-
+class VoiceService: public BnVoiceService {
+public:
+    class DeathNotifier : public IBinder::DeathRecipient {
+    public:
+        DeathNotifier(VoiceService *service) : _service(service) {}
+        void binderDied(const wp<IBinder> &binder) {
+            _service->proxy.clear();
+        }
     private:
-		bool init();
-		void config();
-		void start_siren(bool);
-		void set_siren_state(const int);
-		void network_state_change(bool);
-		void update_stack(String16&);
-		void add_binder(sp<IBinder>);
+        VoiceService *_service = NULL;
+    };
+
+    static char const* getServiceName() {
+        return "openvoice_process";
+    }
+
+    VoiceService();
+    void send_voice_event(int, double, int, double, double);
+    int vad_start();
+    void voice_print(const voice_event_t *);
+
+    pthread_mutex_t event_mutex;
+    pthread_mutex_t speech_mutex;
+    pthread_mutex_t siren_mutex;
+    pthread_cond_t event_cond;
+    pthread_t event_thread;
+    pthread_t response_thread;
+
+    shared_ptr<Speech> _speech;
+    sp<IBinder> proxy;
+    list<voice_event_t*> message_queue;
+
+private:
+    bool init();
+    void config();
+    void start_siren(bool);
+    void set_siren_state(const int);
+    void network_state_change(bool);
+    void update_stack(String16&);
+    void add_binder(sp<IBinder>);
 #ifdef USB_AUDIO_DEVICE
-        bool wait_for_alsa_usb_card();
+    bool wait_for_alsa_usb_card();
 #endif
 
-        int mCurrentSirenState = SIREN_STATE_UNKNOWN;
-        int mCurrentSpeechState = SPEECH_STATE_UNKNOWN;
-        enum{
-            SIREN_STATE_UNKNOWN = 0,
-            SIREN_STATE_INITED,
-            SIREN_STATE_STARTED,
-            SIREN_STATE_STOPED
-        };
-        enum{
-            SPEECH_STATE_UNKNOWN = 0,
-            SPEECH_STATE_PREPARED,
-            SPEECH_STATE_RELEASED
-        };
-        String8 appid;
-        int vt_start;
-        int vt_end;
-        float vt_energy;
-        string vt_data;
-        bool has_vt;
-        bool openSiren = true;
+    int mCurrentSirenState = SIREN_STATE_UNKNOWN;
+    int mCurrentSpeechState = SPEECH_STATE_UNKNOWN;
+    enum {
+        SIREN_STATE_UNKNOWN = 0,
+        SIREN_STATE_INITED,
+        SIREN_STATE_STARTED,
+        SIREN_STATE_STOPED
+    };
+    enum {
+        SPEECH_STATE_UNKNOWN = 0,
+        SPEECH_STATE_PREPARED,
+        SPEECH_STATE_RELEASED
+    };
+    String8 appid;
+    int vt_start;
+    int vt_end;
+    float vt_energy;
+    string vt_data;
+    bool has_vt;
+    bool openSiren = true;
 };
 
 void* onEvent(void *);

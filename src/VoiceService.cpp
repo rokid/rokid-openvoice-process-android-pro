@@ -18,22 +18,22 @@
 #warning "=============================USB_AUDIO_DEVICE==============================="
 #endif
 
-VoiceService::VoiceService(){
-	pthread_mutex_init(&event_mutex, NULL);
-	pthread_mutex_init(&speech_mutex, NULL);
-	pthread_mutex_init(&siren_mutex, NULL);
-	pthread_cond_init(&event_cond, NULL);
+VoiceService::VoiceService() {
+    pthread_mutex_init(&event_mutex, NULL);
+    pthread_mutex_init(&speech_mutex, NULL);
+    pthread_mutex_init(&siren_mutex, NULL);
+    pthread_cond_init(&event_cond, NULL);
 }
 
 bool VoiceService::init() {
     pthread_mutex_lock(&siren_mutex);
-    if(mCurrentSirenState == SIREN_STATE_UNKNOWN){
+    if(mCurrentSirenState == SIREN_STATE_UNKNOWN) {
         if(!_init_siren(this)) {
             ALOGE("init siren failed.");
             pthread_mutex_unlock(&siren_mutex);
             return false;
         }
-    }else{
+    } else {
         goto done;
     }
     mCurrentSirenState = SIREN_STATE_INITED;
@@ -48,30 +48,30 @@ void VoiceService::start_siren(bool flag) {
     pid_t pid = IPCThreadState::self()->getCallingPid();
     ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t calling pid : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
     pthread_mutex_lock(&siren_mutex);
-	if(flag && (mCurrentSirenState == SIREN_STATE_INITED
-            || mCurrentSirenState == SIREN_STATE_STOPED)){
+    if(flag && (mCurrentSirenState == SIREN_STATE_INITED
+                || mCurrentSirenState == SIREN_STATE_STOPED)) {
         openSiren = true;
 #ifdef USB_AUDIO_DEVICE
-        if(wait_for_alsa_usb_card()){
+        if(wait_for_alsa_usb_card()) {
 #endif
-		    _start_siren_process_stream();
+            _start_siren_process_stream();
             mCurrentSirenState = SIREN_STATE_STARTED;
 #ifdef USB_AUDIO_DEVICE
-       }
+        }
 #endif
-	}else if(!flag && mCurrentSirenState == SIREN_STATE_STARTED){
-		_stop_siren_process_stream();
+    } else if(!flag && mCurrentSirenState == SIREN_STATE_STARTED) {
+        _stop_siren_process_stream();
         mCurrentSirenState = SIREN_STATE_STOPED;
-	}
+    }
     if(!flag && mCurrentSirenState != SIREN_STATE_UNKNOWN) openSiren = false;
     pthread_mutex_unlock(&siren_mutex);
 }
 
 #ifdef USB_AUDIO_DEVICE
-bool VoiceService::wait_for_alsa_usb_card(){
+bool VoiceService::wait_for_alsa_usb_card() {
     int index = 0;
-    while (index++ < 3){
-        if(find_card("USB-Audio")){
+    while (index++ < 3) {
+        if(find_card("USB-Audio")) {
             return true;
         }
         usleep(1000 * 100);
@@ -93,16 +93,16 @@ void VoiceService::network_state_change(bool connected) {
         this->config();
         if(_speech->prepare()) {
             mCurrentSpeechState = SPEECH_STATE_PREPARED;
-	        pthread_create(&response_thread, NULL, ::onResponse, this);
-	        pthread_detach(response_thread);
+            pthread_create(&response_thread, NULL, ::onResponse, this);
+            pthread_detach(response_thread);
 
             pthread_mutex_lock(&siren_mutex);
-	        if(openSiren && (mCurrentSirenState == SIREN_STATE_INITED
-                    || mCurrentSirenState == SIREN_STATE_STOPED)){
+            if(openSiren && (mCurrentSirenState == SIREN_STATE_INITED
+                             || mCurrentSirenState == SIREN_STATE_STOPED)) {
 #ifdef USB_AUDIO_DEVICE
-                if(find_card("USB-Audio")){
+                if(find_card("USB-Audio")) {
 #endif
-	    	        _start_siren_process_stream();
+                    _start_siren_process_stream();
                     mCurrentSirenState = SIREN_STATE_STARTED;
 #ifdef USB_AUDIO_DEVICE
                 }
@@ -112,8 +112,8 @@ void VoiceService::network_state_change(bool connected) {
         }
     } else if(!connected && mCurrentSpeechState == SPEECH_STATE_PREPARED) {
         pthread_mutex_lock(&siren_mutex);
-	    if(mCurrentSirenState == SIREN_STATE_STARTED){
-		    _stop_siren_process_stream();
+        if(mCurrentSirenState == SIREN_STATE_STARTED) {
+            _stop_siren_process_stream();
             mCurrentSirenState = SIREN_STATE_STOPED;
         }
         pthread_mutex_unlock(&siren_mutex);
@@ -125,31 +125,31 @@ void VoiceService::network_state_change(bool connected) {
     pthread_mutex_unlock(&speech_mutex);
 }
 
-void VoiceService::send_voice_event(int event, double sl_degree, int has_sl, double energy, double threshold){
-	if(proxy.get()){
-		Parcel data, reply;
-		data.writeInterfaceToken(proxy->getInterfaceDescriptor());
-		data.writeInt32(event);
-		data.writeDouble(sl_degree);
-		data.writeInt32(has_sl);
-		data.writeDouble(energy);
-		data.writeDouble(threshold);
-		proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
-		reply.readExceptionCode();
-	}else{
-		ALOGI("Java service is null , Waiting for it to initialize");
-	}
+void VoiceService::send_voice_event(int event, double sl_degree, int has_sl, double energy, double threshold) {
+    if(proxy.get()) {
+        Parcel data, reply;
+        data.writeInterfaceToken(proxy->getInterfaceDescriptor());
+        data.writeInt32(event);
+        data.writeDouble(sl_degree);
+        data.writeInt32(has_sl);
+        data.writeDouble(energy);
+        data.writeDouble(threshold);
+        proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
+        reply.readExceptionCode();
+    } else {
+        ALOGI("Java service is null , Waiting for it to initialize");
+    }
 }
 
-void VoiceService::update_stack(String16 &appid){
+void VoiceService::update_stack(String16 &appid) {
     this->appid = String8(appid);
-	ALOGE("appid  %s", this->appid.string());
+    ALOGE("appid  %s", this->appid.string());
 }
 
-int VoiceService::vad_start(){
-    if(mCurrentSpeechState == SPEECH_STATE_PREPARED){
+int VoiceService::vad_start() {
+    if(mCurrentSpeechState == SPEECH_STATE_PREPARED) {
         shared_ptr<Options> options = new_options();
-        if(options.get() && has_vt){
+        if(options.get() && has_vt) {
             options->set("voice_trigger", vt_data.c_str());
             char buf[64];
             snprintf(buf, sizeof(buf), "%d", vt_start);
@@ -169,8 +169,8 @@ int VoiceService::vad_start(){
     return -1;
 }
 
-void VoiceService::voice_print(const voice_event_t *voice_event){
-    if(voice_event && HAS_VT(voice_event->flag)){
+void VoiceService::voice_print(const voice_event_t *voice_event) {
+    if(voice_event && HAS_VT(voice_event->flag)) {
         vt_start = voice_event->vt.start;
         vt_end = voice_event->vt.end;
         vt_energy = voice_event->vt.energy;
@@ -179,9 +179,9 @@ void VoiceService::voice_print(const voice_event_t *voice_event){
     }
 }
 
-void VoiceService::add_binder(sp<IBinder> binder){
+void VoiceService::add_binder(sp<IBinder> binder) {
     binder->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
-	proxy = binder;
+    proxy = binder;
 }
 
 void VoiceService::config() {
@@ -189,7 +189,7 @@ void VoiceService::config() {
 
     if(json_obj == NULL) {
         ALOGE("%s cannot find", SPEECH_CONFIG_FILE);
-		return;
+        return;
     }
     json_object *host = NULL;
     json_object *port = NULL;
@@ -260,9 +260,9 @@ void* onEvent(void* args) {
 
         ALOGV("event : -------------------------%d----", message->event);
 
-		if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_DATA)){
-			service->send_voice_event(message->event, message->sl, HAS_SL(message->flag), message->background_energy, message->background_threshold);
-		}
+        if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_DATA)) {
+            service->send_voice_event(message->event, message->sl, HAS_SL(message->flag), message->background_energy, message->background_threshold);
+        }
         switch(message->event) {
         case SIREN_EVENT_WAKE_CMD:
             ALOGV("WAKE_CMD");
@@ -313,7 +313,7 @@ void* onEvent(void* args) {
     return NULL;
 }
 
-inline bool arbitration(const string &activation){
+inline bool arbitration(const string &activation) {
     return ("fake" == activation || "reject" == activation);
 }
 
@@ -322,35 +322,35 @@ void* onResponse(void* args) {
     VoiceService *service = (VoiceService*)args;
     SpeechResult sr;
     string activation;
-    while(1){
+    while(1) {
         if (!service->_speech->poll(sr)) {
             break;
         }
         ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
-        if(sr.type == SPEECH_RES_START){
+        if(sr.type == SPEECH_RES_START) {
             activation.clear();
-        }else if((sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_END) && !sr.extra.empty()){
+        } else if((sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_END) && !sr.extra.empty()) {
             json_object *obj = json_tokener_parse(sr.extra.c_str());
             activation = json_object_get_string(json_object_object_get(obj, "activation"));
             json_object_put(obj);
             ALOGV("result : extra \t %s \t activation %s", activation.c_str(), sr.extra.c_str());
-            if(arbitration(activation)){
-                if(service->proxy.get()){
+            if(arbitration(activation)) {
+                if(service->proxy.get()) {
                     Parcel data, reply;
                     data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
                     service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
                     reply.readExceptionCode();
                 }
                 set_siren_state_change(SIREN_STATE_SLEEP);
-                continue; 
+                continue;
             }
         }
-        if(!arbitration(activation)){
+        if(!arbitration(activation)) {
             if(sr.type == SPEECH_RES_END) {
                 ALOGV("result : asr\t%s", sr.asr.c_str());
                 ALOGV("result : nlp\t%s", sr.nlp.c_str());
                 ALOGV("result : action  %s", sr.action.c_str());
-                if(service->proxy.get()){
+                if(service->proxy.get()) {
                     Parcel data, reply;
                     data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
                     data.writeString16(String16(sr.asr.c_str()));
@@ -358,11 +358,11 @@ void* onResponse(void* args) {
                     data.writeString16(String16(sr.action.c_str()));
                     service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
                     reply.readExceptionCode();
-                }else{
-                	ALOGI("Java service is null , Waiting for it to initialize");
+                } else {
+                    ALOGI("Java service is null , Waiting for it to initialize");
                 }
-            }else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT){
-                if(service->proxy.get()){
+            } else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT) {
+                if(service->proxy.get()) {
                     Parcel data, reply;
                     data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
                     service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
