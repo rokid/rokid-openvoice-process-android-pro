@@ -7,6 +7,7 @@
 #include <utils/String8.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <memory>
 #include <list>
 
 #if defined(__ANDROID__) || defined(ANDROID)
