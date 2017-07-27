@@ -47,7 +47,6 @@ LOCAL_SHARED_LIBRARIES := \
 LOCAL_STATIC_LIBRARIES += libjsonc_static
 
 LOCAL_C_INCLUDES += \
-		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/hardware/include \
 		$(LOCAL_PATH)/../rokid-blacksiren/include \
 		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include
