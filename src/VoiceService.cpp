@@ -317,7 +317,7 @@ void* onEvent(void* args) {
 void* onResponse(void* args) {
     prctl(PR_SET_NAME, __FUNCTION__);
     VoiceService *service = (VoiceService*)args;
-    std::function<bool(const string&)> arbitration = [](const string& activation){return ("fake" == activation || "reject" == activation);};
+    function<bool(const string&)> arbitration = [](const string& activation){return ("fake" == activation || "reject" == activation);};
     SpeechResult sr;
     string activation;
     while(1) {
