@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <sys/prctl.h>
+#include <functional>
 #include <binder/IPCThreadState.h>
 
 #include "VoiceService.h"
@@ -98,7 +99,7 @@ void VoiceService::network_state_change(bool connected) {
 
             pthread_mutex_lock(&siren_mutex);
             if(openSiren && (mCurrentSirenState == SIREN_STATE_INITED
-                             || mCurrentSirenState == SIREN_STATE_STOPED)) {
+                        || mCurrentSirenState == SIREN_STATE_STOPED)) {
 #ifdef USB_AUDIO_DEVICE
                 if(find_card("USB-Audio")) {
 #endif
@@ -264,46 +265,46 @@ void* onEvent(void* args) {
             service->send_voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
         }
         switch(message->event) {
-        case SIREN_EVENT_WAKE_CMD:
-            ALOGV("WAKE_CMD");
-            break;
-        case SIREN_EVENT_WAKE_NOCMD:
-            ALOGV("WAKE_NOCMD");
-            break;
-        case SIREN_EVENT_SLEEP:
-            ALOGV("SLEEP");
-            break;
-        case SIREN_EVENT_VAD_START:
-        case SIREN_EVENT_WAKE_VAD_START:
-            id = service->vad_start();
-            ALOGV("VAD_START\t\t ID  :  <<%d>>", id);
-            break;
-        case SIREN_EVENT_VAD_DATA:
-        case SIREN_EVENT_WAKE_VAD_DATA:
-            if (id > 0 && HAS_VOICE(message->flag)) {
-                service->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
-            }
-            break;
-        case SIREN_EVENT_VAD_END:
-        case SIREN_EVENT_WAKE_VAD_END:
-            ALOGV("VAD_END\t\t ID  <<%d>> ", id);
-            if(id > 0) {
-                service->_speech->end_voice(id);
-                id = -1;
-            }
-            break;
-        case SIREN_EVENT_VAD_CANCEL:
-        case SIREN_EVENT_WAKE_CANCEL:
-            if(id > 0) {
-                service->_speech->cancel(id);
-                ALOGI("VAD_CANCEL\t\t ID   <<%d>>", id);
-                id = -1;
-            }
-            break;
-        case SIREN_EVENT_VOICE_PRINT:
-            service->voice_print(message);
-            ALOGI("VOICE_PRINT");
-            break;
+            case SIREN_EVENT_WAKE_CMD:
+                ALOGV("WAKE_CMD");
+                break;
+            case SIREN_EVENT_WAKE_NOCMD:
+                ALOGV("WAKE_NOCMD");
+                break;
+            case SIREN_EVENT_SLEEP:
+                ALOGV("SLEEP");
+                break;
+            case SIREN_EVENT_VAD_START:
+            case SIREN_EVENT_WAKE_VAD_START:
+                id = service->vad_start();
+                ALOGV("VAD_START\t\t ID  :  <<%d>>", id);
+                break;
+            case SIREN_EVENT_VAD_DATA:
+            case SIREN_EVENT_WAKE_VAD_DATA:
+                if (id > 0 && HAS_VOICE(message->flag)) {
+                    service->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
+                }
+                break;
+            case SIREN_EVENT_VAD_END:
+            case SIREN_EVENT_WAKE_VAD_END:
+                ALOGV("VAD_END\t\t ID  <<%d>> ", id);
+                if(id > 0) {
+                    service->_speech->end_voice(id);
+                    id = -1;
+                }
+                break;
+            case SIREN_EVENT_VAD_CANCEL:
+            case SIREN_EVENT_WAKE_CANCEL:
+                if(id > 0) {
+                    service->_speech->cancel(id);
+                    ALOGI("VAD_CANCEL\t\t ID   <<%d>>", id);
+                    id = -1;
+                }
+                break;
+            case SIREN_EVENT_VOICE_PRINT:
+                service->voice_print(message);
+                ALOGI("VOICE_PRINT");
+                break;
         }
         free(message->buff);
         free(message);
@@ -313,13 +314,10 @@ void* onEvent(void* args) {
     return NULL;
 }
 
-inline bool arbitration(const string &activation) {
-    return ("fake" == activation || "reject" == activation);
-}
-
 void* onResponse(void* args) {
     prctl(PR_SET_NAME, __FUNCTION__);
     VoiceService *service = (VoiceService*)args;
+    std::function<bool(const string&)> arbitration = [](const string& activation){return ("fake" == activation || "reject" == activation);};
     SpeechResult sr;
     string activation;
     while(1) {
