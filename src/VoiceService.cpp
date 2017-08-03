@@ -188,16 +188,7 @@ void VoiceService::config() {
         ALOGE("%s cannot find", SPEECH_CONFIG_FILE);
         return;
     }
-    json_object *host = NULL;
-    json_object *port = NULL;
-    json_object *branch = NULL;
-    json_object *ssl_roots_pem = NULL;
-    json_object *auth_key = NULL;
-    json_object *device_type = NULL;
-    json_object *device_id = NULL;
-    json_object *secret = NULL;
-    json_object *api_version = NULL;
-    json_object *codec = NULL;
+    json_object *host, *port, *branch, *ssl_roots_pem, *auth_key, *device_type, *device_id, *secret, *api_version, *codec;
 
     if(TRUE == json_object_object_get_ex(json_obj, "host", &host)) {
         _speech->config("host", json_object_get_string(host));
