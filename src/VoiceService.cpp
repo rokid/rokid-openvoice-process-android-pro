@@ -307,6 +307,7 @@ void* onResponse(void* args) {
     function<bool(const string&)> arbitration = [](const string& activation){return ("fake" == activation || "reject" == activation);};
     SpeechResult sr;
     string activation;
+    json_object *nlp_obj, *activation_obj;
     while(1) {
         if (!service->_speech->poll(sr)) {
             break;
@@ -315,19 +316,21 @@ void* onResponse(void* args) {
         if(sr.type == SPEECH_RES_START) {
             activation.clear();
         } else if((sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_END) && !sr.extra.empty()) {
-            json_object *obj = json_tokener_parse(sr.extra.c_str());
-            activation = json_object_get_string(json_object_object_get(obj, "activation"));
-            json_object_put(obj);
-            ALOGV("result : extra \t %s \t activation %s", activation.c_str(), sr.extra.c_str());
-            if(arbitration(activation)) {
-                if(service->proxy.get()) {
-                    Parcel data, reply;
-                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
-                    reply.readExceptionCode();
+            nlp_obj = json_tokener_parse(sr.extra.c_str());
+            if(TRUE == json_object_object_get_ex(nlp_obj, "activation", &activation_obj)){
+                activation = json_object_get_string(activation_obj);
+                json_object_put(nlp_obj);
+                ALOGV("result : activation %s", activation.c_str());
+                if(arbitration(activation)) {
+                    if(service->proxy.get()) {
+                        Parcel data, reply;
+                        data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                        service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+                        reply.readExceptionCode();
+                    }
+                    set_siren_state_change(SIREN_STATE_SLEEP);
+                    continue;
                 }
-                set_siren_state_change(SIREN_STATE_SLEEP);
-                continue;
             }
         }
         if(!arbitration(activation)) {
