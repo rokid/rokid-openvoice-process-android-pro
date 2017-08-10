@@ -130,15 +130,15 @@ void VoiceService::network_state_change(bool connected) {
 }
 
 void VoiceService::send_voice_event(int event, int has_sl, double sl_degree, double energy, double threshold) {
-    if(proxy.get()) {
+    if(callback.get()) {
         Parcel data, reply;
-        data.writeInterfaceToken(proxy->getInterfaceDescriptor());
+        data.writeInterfaceToken(callback->getInterfaceDescriptor());
         data.writeInt32(event);
         data.writeInt32(has_sl);
         data.writeDouble(sl_degree);
         data.writeDouble(energy);
         data.writeDouble(threshold);
-        proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
+        callback->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
         reply.readExceptionCode();
     } else {
         ALOGI("Java service is null , Waiting for it to initialize");
@@ -179,9 +179,9 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
     }
 }
 
-void VoiceService::regist_callback(const sp<IBinder> &binder) {
+void VoiceService::regist_callback(const sp<IBinder> &callback) {
     binder->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
-    proxy = binder;
+    this->callback = callback;
 }
 
 void VoiceService::config() {
@@ -324,11 +324,11 @@ void* onResponse(void* args) {
                 activation = json_object_get_string(activation_obj);
                 json_object_put(nlp_obj);
                 ALOGV("result : activation %s", activation.c_str());
-                if(service->proxy.get()) {
+                if(service->callback.get()) {
                     Parcel data, reply;
-                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                    data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
                     data.writeString16(String16(activation.c_str()));
-                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+                    service->callback->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
                     reply.readExceptionCode();
                 }
                 if(arbitration(activation)) {
@@ -342,22 +342,22 @@ void* onResponse(void* args) {
                 ALOGV("result : asr\t%s", sr.asr.c_str());
                 ALOGV("result : nlp\t%s", sr.nlp.c_str());
                 ALOGV("result : action  %s", sr.action.c_str());
-                if(service->proxy.get()) {
+                if(service->callback.get()) {
                     Parcel data, reply;
-                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                    data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
                     data.writeString16(String16(sr.asr.c_str()));
                     data.writeString16(String16(sr.nlp.c_str()));
                     data.writeString16(String16(sr.action.c_str()));
-                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
+                    service->callback->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
                     reply.readExceptionCode();
                 } else {
                     ALOGI("Java service is null , Waiting for it to initialize");
                 }
             } else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT) {
-                if(service->proxy.get()) {
+                if(service->callback.get()) {
                     Parcel data, reply;
-                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
+                    data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
+                    service->callback->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
                     reply.readExceptionCode();
                 }
             }

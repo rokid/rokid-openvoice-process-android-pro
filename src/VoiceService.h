@@ -26,9 +26,7 @@ public:
     class DeathNotifier : public IBinder::DeathRecipient {
     public:
         DeathNotifier(VoiceService *service) : _service(service) {}
-        void binderDied(const wp<IBinder> &binder) {
-            _service->proxy.clear();
-        }
+        void binderDied(const wp<IBinder> &binder) {_service->callback.clear();}
     private:
         VoiceService *_service = NULL;
     };
@@ -50,7 +48,7 @@ public:
     pthread_t response_thread;
 
     shared_ptr<Speech> _speech;
-    sp<IBinder> proxy;
+    sp<IBinder> callback;
     list<voice_event_t*> message_queue;
 
 private:
