@@ -59,7 +59,11 @@ public class RuntimeService extends android.app.Service {
         if(mNetworkInfo != null) {
             mRuntimeNative.networkStateChange(true);
         }
-        mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
+        try{
+            mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
+        }catch(android.os.RuntimeException e){
+            e.printStackTrace();
+        }
     }
 
     private void reinit() {
