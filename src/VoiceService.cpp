@@ -324,16 +324,16 @@ void* onResponse(void* args) {
                 activation = json_object_get_string(activation_obj);
                 json_object_put(nlp_obj);
                 ALOGV("result : activation %s", activation.c_str());
-                if(arbitration(activation)) {
-                    set_siren_state_change(SIREN_STATE_SLEEP);
-                    continue;
-                }
                 if(service->proxy.get()) {
                     Parcel data, reply;
                     data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
                     data.writeString16(String16(activation.c_str()));
                     service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
                     reply.readExceptionCode();
+                }
+                if(arbitration(activation)) {
+                    set_siren_state_change(SIREN_STATE_SLEEP);
+                    continue;
                 }
             }
         }
