@@ -14,7 +14,7 @@ using namespace std;
 enum {
     TRANSACTION_VOICE_COMMAND = IBinder::FIRST_CALL_TRANSACTION + 0,
     TRANSACTION_VOICE_EVENT,
-    TRANSACTION_VOICE_REJECT,
+    TRANSACTION_ARBITRATION,
     TRANSACTION_SPEECH_TIMEOUT,
 };
 
@@ -23,7 +23,7 @@ public:
     DECLARE_META_INTERFACE(VoiceCallback);
     virtual void voice_command(const string&, const string&, const string&) = 0;
     virtual void voice_event(int, bool, double, double, double) = 0;
-    virtual void voice_reject() = 0;
+    virtual void arbitration(const string&) = 0;
     virtual void speech_timeout() = 0;
 };
 

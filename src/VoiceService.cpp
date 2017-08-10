@@ -47,7 +47,10 @@ done:
 
 void VoiceService::start_siren(bool flag) {
     pid_t pid = IPCThreadState::self()->getCallingPid();
-    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t calling pid : %d", __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
+
+    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t calling pid : %d", 
+            __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
+
     pthread_mutex_lock(&siren_mutex);
     if(flag && (mCurrentSirenState == SIREN_STATE_INITED
                 || mCurrentSirenState == SIREN_STATE_STOPED)) {
@@ -325,6 +328,7 @@ void* onResponse(void* args) {
                     if(service->proxy.get()) {
                         Parcel data, reply;
                         data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                        data.writeString16(String16(activation.c_str()));
                         service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
                         reply.readExceptionCode();
                     }

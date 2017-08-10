@@ -26,10 +26,11 @@ public:
         reply.readExceptionCode();
     }
 
-    void voice_reject() {
+    void arbitration(const string& extra) {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
-        remote()->transact(TRANSACTION_VOICE_REJECT, data, &reply);
+        data.writeString16(String16(extra.c_str()));
+        remote()->transact(TRANSACTION_ARBITRATION, data, &reply);
         reply.readExceptionCode();
     }
 
@@ -65,9 +66,10 @@ status_t BnVoiceCallback::onTransact(uint32_t code, const Parcel &data, Parcel *
         reply->writeNoException();
         return NO_ERROR;
     }
-    case TRANSACTION_VOICE_REJECT: {
+    case TRANSACTION_ARBITRATION: {
         CHECK_INTERFACE(IVoiceCallback, data, reply);
-        voice_reject();
+        String8 extra(data.readString16());
+        arbitration(extra.string());
         reply->writeNoException();
         return NO_ERROR;
     }

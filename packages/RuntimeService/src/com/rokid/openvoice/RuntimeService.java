@@ -129,7 +129,7 @@ public class RuntimeService extends android.app.Service {
          * @return Nothing
          */
         @Override
-        public void onVoiceReject() {
+        public void onArbitration(String extra) {
 
         }
 
