@@ -180,7 +180,7 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
 }
 
 void VoiceService::regist_callback(const sp<IBinder> &callback) {
-    binder->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
+    callback->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
     this->callback = callback;
 }
 

@@ -139,13 +139,13 @@ public class RuntimeNative implements IBinder.DeathRecipient {
         }
     }
 
-    public void registCallback(IBinder binder) {
+    public void registCallback(IBinder callback) {
         if(runtime != null) {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
-                data.writeStrongBinder(binder);
+                data.writeStrongBinder(callback);
                 runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 5, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
