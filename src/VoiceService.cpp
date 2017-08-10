@@ -325,15 +325,15 @@ void* onResponse(void* args) {
                 json_object_put(nlp_obj);
                 ALOGV("result : activation %s", activation.c_str());
                 if(arbitration(activation)) {
-                    if(service->proxy.get()) {
-                        Parcel data, reply;
-                        data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
-                        data.writeString16(String16(activation.c_str()));
-                        service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
-                        reply.readExceptionCode();
-                    }
                     set_siren_state_change(SIREN_STATE_SLEEP);
                     continue;
+                }
+                if(service->proxy.get()) {
+                    Parcel data, reply;
+                    data.writeInterfaceToken(service->proxy->getInterfaceDescriptor());
+                    data.writeString16(String16(activation.c_str()));
+                    service->proxy->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
+                    reply.readExceptionCode();
                 }
             }
         }
