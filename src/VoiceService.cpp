@@ -8,12 +8,7 @@
 
 #include "VoiceService.h"
 #include "engine.h"
-
-#if defined(__ANDROID__) || defined(ANDROID)
 #include "json.h"
-#else
-#include <json-c/json.h>
-#endif
 
 #ifdef USB_AUDIO_DEVICE
 #warning "=============================USB_AUDIO_DEVICE==============================="

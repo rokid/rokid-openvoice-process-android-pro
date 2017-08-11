@@ -8,14 +8,8 @@
 #include <stdlib.h>
 #include <list>
 
-#if defined(__ANDROID__) || defined(ANDROID)
 #include "siren.h"
 #include "speech.h"
-#else
-#include <blacksiren/siren.h>
-#include <speech/speech.h>
-#endif
-
 #include "IVoiceService.h"
 
 using namespace rokid;

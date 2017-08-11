@@ -2,12 +2,7 @@
 #define VOICE_ENGINE_H
 
 #include "VoiceService.h"
-
-#if defined(__ANDROID__) || defined(ANDROID)
 #include "mic/mic_array.h"
-#else
-#include <hardware/mic_array.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
