@@ -12,7 +12,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
     private IBinder remote = null;
 
     private VoiceNative() {
-        remote = android.os.ServiceManager.getService("openvoice_proc");
+        remote = android.os.ServiceManager.getService("openvoice_process");
         if(remote != null) {
             try {
                 remote.linkToDeath(this, 0);
@@ -54,8 +54,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
                 return (err > 0 ? true : false);
             } catch(RemoteException e) {
                 e.printStackTrace();
-            }
-            finally{
+            }finally{
                 data.recycle();
                 reply.recycle();
             }
@@ -74,8 +73,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
-            }
-            finally{
+            }finally{
                 data.recycle();
                 reply.recycle();
             }
@@ -93,8 +91,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
-            }
-            finally{
+            }finally{
                 data.recycle();
                 reply.recycle();
             }
@@ -112,8 +109,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
-            }
-            finally{
+            }finally{
                 data.recycle();
                 reply.recycle();
             }
@@ -131,8 +127,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
-            }
-            finally{
+            }finally{
                 data.recycle();
                 reply.recycle();
             }
@@ -150,8 +145,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
-            }
-            finally{
+            }finally{
                 data.recycle();
                 reply.recycle();
             }

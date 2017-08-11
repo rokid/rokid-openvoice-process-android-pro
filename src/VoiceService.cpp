@@ -251,9 +251,8 @@ void* onEvent(void* args) {
 
         ALOGV("event : -------------------------%d----", message->event);
 
-        if(!(message->event == SIREN_EVENT_VAD_DATA || message->event == SIREN_EVENT_WAKE_VAD_DATA)) {
-            service->send_voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
-        }
+        service->send_voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
+
         switch(message->event) {
             case SIREN_EVENT_WAKE_CMD:
                 ALOGV("WAKE_CMD");
