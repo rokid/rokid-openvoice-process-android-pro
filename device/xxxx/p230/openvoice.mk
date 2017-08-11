@@ -21,12 +21,11 @@ PRODUCT_PACKAGES += \
 
 #apps
 PRODUCT_PACKAGES += \
-					RuntimeService \
+					VoiceService \
 					RKTtsService
 
 PRODUCT_PACKAGES += \
 					roots.pem \
 					workdir_cn \
-					workdir_en \
 					blacksiren.json \
 					openvoice_profile.json

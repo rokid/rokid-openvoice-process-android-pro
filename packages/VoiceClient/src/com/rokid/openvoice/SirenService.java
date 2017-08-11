@@ -12,21 +12,21 @@ public class SirenService extends android.app.Service {
     @Override
     public int onStartCommand(android.content.Intent intent, int flags, int startId) {
         int action = intent.getIntExtra("action", -1);
-        RuntimeNative mRuntimeNative = RuntimeNative.asInstance();
-        android.util.Log.e("RuntimeService", "onStartCommand  action : " + action);
-        if(RuntimeService.initialized) {
+        VoiceNative mVoiceNative = VoiceNative.asInstance();
+        android.util.Log.e("VoiceService", "onStartCommand  action : " + action);
+        if(VoiceService.initialized) {
             switch(action) {
             case SIREN_AWAKE:
-                mRuntimeNative.setSirenState(RuntimeService.SIREN_STATE_AWAKE);
+                mVoiceNative.setSirenState(VoiceService.SIREN_STATE_AWAKE);
                 break;
             case SIREN_SLEEP:
-                mRuntimeNative.setSirenState(RuntimeService.SIREN_STATE_SLEEP);
+                mVoiceNative.setSirenState(VoiceService.SIREN_STATE_SLEEP);
                 break;
             case START_SIREN:
-                mRuntimeNative.startSiren(true);
+                mVoiceNative.startSiren(true);
                 break;
             case STOP_SIREN:
-                mRuntimeNative.startSiren(false);
+                mVoiceNative.startSiren(false);
                 break;
             }
         }

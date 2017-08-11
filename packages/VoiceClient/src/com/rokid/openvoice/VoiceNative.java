@@ -4,51 +4,51 @@ import android.os.Parcel;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-public class RuntimeNative implements IBinder.DeathRecipient {
+public class VoiceNative implements IBinder.DeathRecipient {
 
     private static final String DESCRIPTOR = "com.rokid.openvoice.openvoice_process";
-    private static RuntimeNative mRuntimeNative = null;
+    private static VoiceNative mVoiceNative = null;
 
-    private IBinder runtime = null;
+    private IBinder remote = null;
 
-    private RuntimeNative() {
-        runtime = android.os.ServiceManager.getService("openvoice_proc");
-        if(runtime != null) {
+    private VoiceNative() {
+        remote = android.os.ServiceManager.getService("openvoice_proc");
+        if(remote != null) {
             try {
-                runtime.linkToDeath(this, 0);
+                remote.linkToDeath(this, 0);
             } catch(RemoteException e) {
                 e.printStackTrace();
             }
-        } else android.util.Log.e("RuntimeNative", "native service is null");
+        } else android.util.Log.e("VoiceNative", "native service is null");
     }
 
-    public static RuntimeNative asInstance() {
-        if(mRuntimeNative == null) {
+    public static VoiceNative asInstance() {
+        if(mVoiceNative == null) {
             synchronized(new Object()) {
-                if(mRuntimeNative == null) {
-                    mRuntimeNative = new RuntimeNative();
+                if(mVoiceNative == null) {
+                    mVoiceNative = new VoiceNative();
                 }
             }
         }
-        return mRuntimeNative;
+        return mVoiceNative;
     }
 
     @Override
     public void binderDied() {
-        runtime = null;
-        mRuntimeNative = null;
-        RuntimeService.initialized = false;
-        RuntimeService.mHandler.sendEmptyMessageDelayed(RuntimeService.MSG_REINIT, 1000 * 3);
-        android.util.Log.e("RuntimeNative", "native service died !");
+        remote = null;
+        mVoiceNative = null;
+        VoiceService.initialized = false;
+        VoiceService.mHandler.sendEmptyMessageDelayed(VoiceService.MSG_REINIT, 1000 * 3);
+        android.util.Log.e("VoiceNative", "native service died !");
     }
 
     public boolean init() {
-        if(runtime != null) {
+        if(remote != null) {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
-                runtime.transact(IBinder.FIRST_CALL_TRANSACTION, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION, data, reply, 0);
                 reply.readException();
                 int err = reply.readInt();
                 return (err > 0 ? true : false);
@@ -64,13 +64,13 @@ public class RuntimeNative implements IBinder.DeathRecipient {
     }
 
     public void startSiren(boolean flag) {
-        if(runtime != null) {
+        if(remote != null) {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
                 data.writeInt((flag ? 1 : 0));
-                runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 1, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 1, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
@@ -83,13 +83,13 @@ public class RuntimeNative implements IBinder.DeathRecipient {
     }
 
     public void setSirenState(int state) {
-        if(runtime != null) {
+        if(remote != null) {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
                 data.writeInt(state);
-                runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 2, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
@@ -102,13 +102,13 @@ public class RuntimeNative implements IBinder.DeathRecipient {
     }
 
     public void networkStateChange(boolean connected) {
-        if(runtime != null) {
+        if(remote != null) {
             Parcel data	= Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
                 data.writeInt(connected ? 1 : 0);
-                runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 3, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
@@ -121,13 +121,13 @@ public class RuntimeNative implements IBinder.DeathRecipient {
     }
 
     public void updateStack(String appid) {
-        if(runtime != null) {
+        if(remote != null) {
             Parcel data	= Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
                 data.writeString(appid);
-                runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 4, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
@@ -140,13 +140,13 @@ public class RuntimeNative implements IBinder.DeathRecipient {
     }
 
     public void registCallback(IBinder callback) {
-        if(runtime != null) {
+        if(remote != null) {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
                 data.writeStrongBinder(callback);
-                runtime.transact(IBinder.FIRST_CALL_TRANSACTION + 5, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 5, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();

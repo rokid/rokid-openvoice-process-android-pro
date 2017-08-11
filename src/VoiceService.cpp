@@ -353,10 +353,11 @@ void* onResponse(void* args) {
                 } else {
                     ALOGI("Java service is null , Waiting for it to initialize");
                 }
-            } else if(sr.type == SPEECH_RES_ERROR && sr.err == SPEECH_TIMEOUT) {
+            } else if(sr.type == SPEECH_RES_ERROR && (sr.err == SPEECH_TIMEOUT || sr.err == SPEECH_SERVER_INTERNAL)) {
                 if(service->callback.get()) {
                     Parcel data, reply;
                     data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
+                    data.writeInt32(sr.err);
                     service->callback->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
                     reply.readExceptionCode();
                 }
