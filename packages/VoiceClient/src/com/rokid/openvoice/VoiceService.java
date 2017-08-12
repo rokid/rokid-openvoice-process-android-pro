@@ -8,9 +8,6 @@ import android.util.Log;
 import android.net.NetworkInfo;
 import android.net.ConnectivityManager;
 
-import com.rokid.openvoice.entity.VoiceCommand;
-import com.rokid.openvoice.entity.VoiceEvent;
-
 import org.json.JSONObject;
 import org.json.JSONException;
 
@@ -23,10 +20,6 @@ public class VoiceService extends android.app.Service {
 
     public static final int MSG_REINIT = 0;
     public static final int MSG_TIMEOUT = 1;
-    public static final int MSG_VOICE_COMMAND = 2;
-    public static final int MSG_VOICE_EVENT = 3;
-    public static final int MSG_ARBITRATION = 4;
-    public static final int MSG_SPEECH_ERROR = 5;
 
     public static boolean initialized = false;
 
@@ -55,18 +48,6 @@ public class VoiceService extends android.app.Service {
                 break;
             case MSG_TIMEOUT:
                 handleTimeout();
-                break;
-            case MSG_ARBITRATION:
-                handleArbitration((String)msg.obj);
-                break;
-            case MSG_SPEECH_ERROR:
-                handleSpeechError(msg.arg1);
-                break;
-            case MSG_VOICE_COMMAND:
-                handleVoiceCommand((VoiceCommand)msg.obj);
-                break;
-            case MSG_VOICE_EVENT:
-                handleVoiceEvent((VoiceEvent)msg.obj);
                 break;
             }
         }
@@ -112,71 +93,53 @@ public class VoiceService extends android.app.Service {
         mVoiceNative.setSirenState(SIREN_STATE_SLEEP);
     }
 
-    private void handleVoiceCommand(VoiceCommand command){
-        Log.e(TAG, "asr\t" + command.asr);
-        Log.e(TAG, "nlp\t" + command.nlp);
-        Log.e(TAG, "action " + command.action);
-        String appId = "";
-        try{
-            appId = new JSONObject(command.nlp).getString("appId");
-        }catch(JSONException e){
-            e.printStackTrace();    
-        }
-        if(appId != null && appId.length() > 0 && !appId.equals("ROKID.EXCEPTION")){
-		    mVoiceNative.updateStack(appId + ":");
-        } 
-        mHandler.removeMessages(MSG_TIMEOUT);
-        mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
-        mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
-
-    }
-
-    private void handleVoiceEvent(VoiceEvent event){
-        Log.e(TAG, event.event + " ,has_sl : " + event.has_sl + " ,sl : " + event.sl);
-        if(event.event == EVENT_VAD_ATART) {
-
-        } else if(event.event == EVENT_VAD_END) {
-            mVoiceNative.setSirenState(SIREN_STATE_SLEEP);
-        }
-    }
-
-    private void handleArbitration(String extra){
-        if("accept".equals(extra)){
-            mHandler.removeMessages(MSG_TIMEOUT);
-            mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
-            mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
-        }
-    }
-
-    private void handleSpeechError(int errcode){
-        if(errcode == SPEECH_TIMEOUT){
-            mHandler.removeMessages(MSG_TIMEOUT);
-            mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
-            mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
-        }
-
-    }
-
     private final IVoiceCallback.Stub callback = new IVoiceCallback.Stub() {
 
         @Override
         public void onVoiceCommand(String asr, String nlp, String action) {
-            mHandler.obtainMessage(MSG_VOICE_COMMAND, new VoiceCommand(asr, nlp, action)).sendToTarget();
+            Log.e(TAG, "asr\t" + asr);
+            Log.e(TAG, "nlp\t" + nlp);
+            Log.e(TAG, "action " + action);
+            String appId = "";
+            try{
+                appId = new JSONObject(nlp).getString("appId");
+            }catch(JSONException e){
+                e.printStackTrace();    
+            }
+            if(appId != null && appId.length() > 0 && !appId.equals("ROKID.EXCEPTION")){
+    		    mVoiceNative.updateStack(appId + ":");
+            } 
+            mHandler.removeMessages(MSG_TIMEOUT);
+            mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
+            mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
         }
 
         @Override
-        public void onVoiceEvent(int event, boolean has_sl, double sl_degree, double energy, double threshold) {
-            mHandler.obtainMessage(MSG_VOICE_EVENT, new VoiceEvent(event, has_sl, sl_degree, energy, threshold)).sendToTarget();
+        public void onVoiceEvent(int event, boolean has_sl, double sl, double energy, double threshold) {
+            Log.e(TAG, event + " ,has_sl : " + has_sl + " ,sl : " + sl);
+            if(event == EVENT_VAD_ATART) {
+    
+            } else if(event == EVENT_VAD_END) {
+                mVoiceNative.setSirenState(SIREN_STATE_SLEEP);
+            }
         }
 
         @Override
         public void onArbitration(String extra) {
-            mHandler.obtainMessage(MSG_ARBITRATION, extra).sendToTarget();
+            if("accept".equals(extra)){
+                mHandler.removeMessages(MSG_TIMEOUT);
+                mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
+                mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
+            }
         }
 
         @Override
         public void onSpeechError(int errcode) {
-            mHandler.obtainMessage(MSG_SPEECH_ERROR, errcode, -1).sendToTarget();
+            if(errcode == SPEECH_TIMEOUT){
+                mHandler.removeMessages(MSG_TIMEOUT);
+                mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
+                mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
+            }
         }
     };
 
