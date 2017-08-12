@@ -20,7 +20,6 @@ public:
     class DeathNotifier : public IBinder::DeathRecipient {
     public:
         DeathNotifier(VoiceService *service) : _service(service) {}
-        ~DeathNotifier(){}
         void binderDied(const wp<IBinder> &binder) {_service->callback.clear();}
     private:
         VoiceService *_service = NULL;
