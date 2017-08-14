@@ -1,7 +1,7 @@
 #ifndef VOICE_CALLBACK_H
 #define VOICE_CALLBACK_H
 
-#define DESCRIPTOR "com.rokid.openvoice.callback"
+#define DESCRIPTOR "com.rokid.openvoice.IVoiceCallback"
 
 #include <binder/IInterface.h>
 #include <binder/Parcel.h>
@@ -15,7 +15,7 @@ enum {
     TRANSACTION_VOICE_COMMAND = IBinder::FIRST_CALL_TRANSACTION + 0,
     TRANSACTION_VOICE_EVENT,
     TRANSACTION_ARBITRATION,
-    TRANSACTION_SPEECH_TIMEOUT,
+    TRANSACTION_SPEECH_ERROR,
 };
 
 class IVoiceCallback: public IInterface {
@@ -24,7 +24,7 @@ public:
     virtual void voice_command(const string&, const string&, const string&) = 0;
     virtual void voice_event(int, bool, double, double, double) = 0;
     virtual void arbitration(const string&) = 0;
-    virtual void speech_timeout() = 0;
+    virtual void speech_error(int) = 0;
 };
 
 class BnVoiceCallback : public BnInterface<IVoiceCallback> {

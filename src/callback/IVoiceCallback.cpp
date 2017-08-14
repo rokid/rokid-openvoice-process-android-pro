@@ -34,10 +34,11 @@ public:
         reply.readExceptionCode();
     }
 
-    void speech_timeout() {
+    void speech_error(int errcode) {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
-        remote()->transact(TRANSACTION_SPEECH_TIMEOUT, data, &reply);
+        data.writeInt32(errcode);
+        remote()->transact(TRANSACTION_SPEECH_ERROR, data, &reply);
         reply.readExceptionCode();
     }
 };
@@ -73,9 +74,9 @@ status_t BnVoiceCallback::onTransact(uint32_t code, const Parcel &data, Parcel *
         reply->writeNoException();
         return NO_ERROR;
     }
-    case TRANSACTION_SPEECH_TIMEOUT: {
+    case TRANSACTION_SPEECH_ERROR: {
         CHECK_INTERFACE(IVoiceCallback, data, reply);
-        speech_timeout();
+        speech_error(data.readInt32());
         reply->writeNoException();
         return NO_ERROR;
     }

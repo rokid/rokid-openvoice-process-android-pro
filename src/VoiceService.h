@@ -1,7 +1,7 @@
 #ifndef VOICE_SERVICE_H
 #define VOICE_SERVICE_H
 
-#define SPEECH_CONFIG_FILE "/system/etc/openvoice_profile.json"
+#define OPENVOICE_PREFILE "/system/etc/openvoice_profile.json"
 
 #include <cutils/log.h>
 #include <pthread.h>
@@ -11,6 +11,7 @@
 #include "siren.h"
 #include "speech.h"
 #include "IVoiceService.h"
+#include "IVoiceCallback.h"
 
 using namespace rokid;
 using namespace speech;
@@ -42,7 +43,7 @@ public:
     pthread_t response_thread;
 
     shared_ptr<Speech> _speech;
-    sp<IBinder> callback;
+    sp<IVoiceCallback> callback;
     list<voice_event_t*> message_queue;
 
 private:

@@ -126,17 +126,7 @@ void VoiceService::network_state_change(bool connected) {
 
 void VoiceService::send_voice_event(int event, int has_sl, double sl_degree, double energy, double threshold) {
     if(callback.get()) {
-        Parcel data, reply;
-        data.writeInterfaceToken(callback->getInterfaceDescriptor());
-        data.writeInt32(event);
-        data.writeInt32(has_sl);
-        data.writeDouble(sl_degree);
-        data.writeDouble(energy);
-        data.writeDouble(threshold);
-        callback->transact(IBinder::FIRST_CALL_TRANSACTION + 1, data, &reply);
-        reply.readExceptionCode();
-    } else {
-        ALOGI("Java service is null , Waiting for it to initialize");
+        callback->voice_event(event, has_sl, sl_degree, energy, threshold);
     }
 }
 
@@ -176,14 +166,14 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
 
 void VoiceService::regist_callback(const sp<IBinder> &callback) {
     callback->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
-    this->callback = callback;
+    this->callback = interface_cast<IVoiceCallback>(callback);
 }
 
 void VoiceService::config() {
-    json_object *json_obj = json_object_from_file(SPEECH_CONFIG_FILE);
+    json_object *json_obj = json_object_from_file(OPENVOICE_PREFILE);
 
     if(json_obj == NULL) {
-        ALOGE("%s cannot find", SPEECH_CONFIG_FILE);
+        ALOGE("%s cannot find", OPENVOICE_PREFILE);
         return;
     }
     json_object *host, *port, *branch, *ssl_roots_pem, *auth_key, *device_type, *device_id, *secret, *api_version, *codec;
@@ -301,7 +291,7 @@ void* onEvent(void* args) {
 void* onResponse(void* args) {
     prctl(PR_SET_NAME, __FUNCTION__);
     VoiceService *service = (VoiceService*)args;
-    function<bool(const string&)> arbitration = [](const string& activation){return ("fake" == activation || "reject" == activation);};
+    auto arbitration = [](const string& activation)->bool{return ("fake" == activation || "reject" == activation);};
     SpeechResult sr;
     string activation;
     json_object *nlp_obj, *activation_obj;
@@ -319,11 +309,7 @@ void* onResponse(void* args) {
                 json_object_put(nlp_obj);
                 ALOGV("result : activation %s", activation.c_str());
                 if(service->callback.get()) {
-                    Parcel data, reply;
-                    data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
-                    data.writeString16(String16(activation.c_str()));
-                    service->callback->transact(IBinder::FIRST_CALL_TRANSACTION + 2, data, &reply);
-                    reply.readExceptionCode();
+                    service->callback->arbitration(activation);
                 }
                 if(arbitration(activation)) {
                     set_siren_state_change(SIREN_STATE_SLEEP);
@@ -337,23 +323,13 @@ void* onResponse(void* args) {
                 ALOGV("result : nlp\t%s", sr.nlp.c_str());
                 ALOGV("result : action  %s", sr.action.c_str());
                 if(service->callback.get()) {
-                    Parcel data, reply;
-                    data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
-                    data.writeString16(String16(sr.asr.c_str()));
-                    data.writeString16(String16(sr.nlp.c_str()));
-                    data.writeString16(String16(sr.action.c_str()));
-                    service->callback->transact(IBinder::FIRST_CALL_TRANSACTION, data, &reply);
-                    reply.readExceptionCode();
+                    service->callback->voice_command(sr.asr, sr.nlp, sr.action);
                 } else {
                     ALOGI("Java service is null , Waiting for it to initialize");
                 }
             } else if(sr.type == SPEECH_RES_ERROR && (sr.err == SPEECH_TIMEOUT || sr.err == SPEECH_SERVER_INTERNAL)) {
                 if(service->callback.get()) {
-                    Parcel data, reply;
-                    data.writeInterfaceToken(service->callback->getInterfaceDescriptor());
-                    data.writeInt32(sr.err);
-                    service->callback->transact(IBinder::FIRST_CALL_TRANSACTION + 3, data, &reply);
-                    reply.readExceptionCode();
+                    service->callback->speech_error(sr.err);
                 }
             }
         }
