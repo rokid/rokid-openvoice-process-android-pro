@@ -1,3 +1,5 @@
+#define DESCRIPTOR "com.rokid.openvoice.openvoice_process"
+
 #include "IVoiceService.h"
 
 class BpVoiceService : public BpInterface<IVoiceService> {

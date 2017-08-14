@@ -1,3 +1,5 @@
+#define DESCRIPTOR "com.rokid.openvoice.IVoiceCallback"
+
 #include "IVoiceCallback.h"
 
 class BpVoiceCallback : public BpInterface<IVoiceCallback> {

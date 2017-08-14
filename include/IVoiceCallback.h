@@ -1,8 +1,6 @@
 #ifndef VOICE_CALLBACK_H
 #define VOICE_CALLBACK_H
 
-#define DESCRIPTOR "com.rokid.openvoice.IVoiceCallback"
-
 #include <binder/IInterface.h>
 #include <binder/Parcel.h>
 #include <utils/String8.h>
