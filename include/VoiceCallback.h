@@ -21,7 +21,7 @@ public:
 
     void voice_event(int event, bool has_sl, double sl, double energy, double threshold);
 
-    void arbitration(const string& extra) = 0;
+    void arbitration(const string& extra);
 
     void speech_error(int errcode);
 };
