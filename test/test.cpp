@@ -1,10 +1,6 @@
-#define DESCRIPTOR "com.rokid.openvoice.openvoice_process"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <iostream>
-#include <binder/Parcel.h>
 #include <binder/IServiceManager.h>
 
 #include "IVoiceService.h"
