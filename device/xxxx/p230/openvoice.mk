@@ -1,8 +1,7 @@
-#openvoice_process
+#hardware
 PRODUCT_PACKAGES += \
-					mic_array.$(TARGET_PRODUCT) \
-					libopenvoice \
-					openvoice_proc
+					mic_array.$(TARGET_PRODUCT)
+
 #siren
 PRODUCT_PACKAGES += \
 					libbsiren \
@@ -15,15 +14,22 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 					libprotobuf-rokid-cpp-full \
 					libpoco \
-					libspeech \
-#					librokid_speech_jni \
-					rokid_speech \
+					libspeech
 
 #apps
 PRODUCT_PACKAGES += \
-					VoiceService \
-					RKTtsService
+					VoiceClient
 
+#libraries
+PRODUCT_PACKAGES += \
+					libopenvoice \
+					libtts \
+
+#C++ process
+PRODUCT_PACKAGES += \
+					openvoice_proc \
+					tts_process
+#config file
 PRODUCT_PACKAGES += \
 					roots.pem \
 					workdir_cn \

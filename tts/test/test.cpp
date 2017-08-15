@@ -15,10 +15,6 @@ void TtsCallback::onStart(int id) {
 
 }
 
-void TtsCallback::onText(int id, const string& data){
-
-}
-
 void TtsCallback::onComplete(int id) {
 
 }

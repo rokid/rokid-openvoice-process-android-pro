@@ -176,7 +176,7 @@ void VoiceService::config() {
         ALOGE("%s cannot find", OPENVOICE_PREFILE);
         return;
     }
-    json_object *host, *port, *branch, *ssl_roots_pem, *auth_key, *device_type, *device_id, *secret, *api_version, *codec;
+    json_object *host, *port, *branch, *ssl_roots_pem, *auth_key, *device_type, *device_id, *secret, *api_version;
 
     if(TRUE == json_object_object_get_ex(json_obj, "host", &host)) {
         _speech->config("host", json_object_get_string(host));
@@ -214,10 +214,7 @@ void VoiceService::config() {
         _speech->config("secret", json_object_get_string(secret));
         ALOGE("%s", json_object_get_string(secret));
     }
-    if(TRUE == json_object_object_get_ex(json_obj, "codec", &codec)) {
-        _speech->config("codec", json_object_get_string(codec));
-        ALOGE("%s", json_object_get_string(codec));
-    }
+    _speech->config("codec", "opu");
     json_object_put(json_obj);
 }
 

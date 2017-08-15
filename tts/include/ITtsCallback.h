@@ -11,7 +11,6 @@ using namespace std;
 
 enum{
 	TRANSACTION_ONSTART = IBinder::FIRST_CALL_TRANSACTION + 0,
-	TRANSACTION_ONTEXT,
 	TRANSACTION_ONCANCEL,
 	TRANSACTION_ONCOMPLETE,
 	TRANSACTION_ONERROR
@@ -21,8 +20,6 @@ class ITtsCallback : public IInterface{
 public:
 	DECLARE_META_INTERFACE(TtsCallback);
 	virtual void onStart(int id)=0;
-
-	virtual void onText(int id, const string& text)=0;
 
 	virtual void onCancel(int id)=0;
 

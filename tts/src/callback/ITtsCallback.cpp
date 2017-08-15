@@ -14,26 +14,18 @@ public:
 		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 0,data, &reply);
 		data.readExceptionCode();
 	}
-	void onText(int id, const string& text){
-		Parcel data, reply;
-		data.writeInterfaceToken(String16(DESCRIPTOR));
-		data.writeInt32(id);
-		data.writeString16(String16(text.c_str()));
-		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 1,data, &reply);
-		data.readExceptionCode();
-	}
 	void onCancel(int id){
 		Parcel data, reply;
 		data.writeInterfaceToken(String16(DESCRIPTOR));
 		data.writeInt32(id);
-		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 2,data, &reply);
+		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 1,data, &reply);
 		data.readExceptionCode();
 	}
 	void onComplete(int id){
 		Parcel data, reply;
 		data.writeInterfaceToken(String16(DESCRIPTOR));
 		data.writeInt32(id);
-		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 3,data, &reply);
+		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 2,data, &reply);
 		data.readExceptionCode();
 	}
 	void onError(int id, int err){
@@ -41,7 +33,7 @@ public:
 		data.writeInterfaceToken(String16(DESCRIPTOR));
 		data.writeInt32(id);
 		data.writeInt32(err);
-		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 4,data, &reply);
+		remote()->transact(IBinder::FIRST_CALL_TRANSACTION + 3,data, &reply);
 		data.readExceptionCode();
 
 	}
@@ -54,14 +46,6 @@ status_t BnTtsCallback::onTransact(uint32_t code, const Parcel &data, Parcel *re
 		case TRANSACTION_ONSTART:{
 			CHECK_INTERFACE(ITtsCallback, data, reply);
 			onStart(data.readInt32());
-			reply->writeNoException();
-			return NO_ERROR;
-		}
-		case TRANSACTION_ONTEXT:{
-			CHECK_INTERFACE(ITtsCallback, data, reply);
-			int id = data.readInt32();
-			String8 text8(data.readString16());
-			onText(id, text8.string());
 			reply->writeNoException();
 			return NO_ERROR;
 		}

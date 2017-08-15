@@ -35,7 +35,6 @@ LOCAL_SHARED_LIBRARIES := \
 		libtts \
 		libspeech \
 		libropus \
-		libjsonc \
 		liblog
 
 LOCAL_C_INCLUDES := \
@@ -47,7 +46,7 @@ LOCAL_SHARED_LIBRARIES += libc++ libdl
 LOCAL_C_INCLUDES += external/libcxx/include
 endif
 
-LOCAL_MODULE := TtsService
+LOCAL_MODULE := tts_process
 LOCAL_ARM_MODE := arm
 LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) -std=c++11
 LOCAL_MODULE_TAGS := optional
