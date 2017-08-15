@@ -29,6 +29,8 @@ LOCAL_SRC_FILES := \
 		src/TtsService.cpp \
 		src/main.cpp
 
+LOCAL_STATIC_LIBRARIES += libstlport_static
+
 LOCAL_SHARED_LIBRARIES := \
 		libbinder \
 		libutils \
@@ -39,6 +41,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_C_INCLUDES := \
 		$(LOCAL_PATH)/include \
+		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include
 		falcon/external/libopus/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)

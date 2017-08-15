@@ -5,7 +5,7 @@
 
 TtsService::TtsService() {
 	pthread_mutex_init(&event_mutex, NULL);
-    _player = shared_ptr<TtsPlayer>(new TtsPlayer());
+    _player = make_shared<TtsPlayer>();
 }
 
 int TtsService::speak(const string& content, sp<IBinder> &callback) {
