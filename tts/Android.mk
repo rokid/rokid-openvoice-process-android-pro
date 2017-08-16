@@ -29,7 +29,7 @@ LOCAL_SRC_FILES := \
 		src/TtsService.cpp \
 		src/main.cpp
 
-LOCAL_STATIC_LIBRARIES += libstlport_static
+LOCAL_STATIC_LIBRARIES += libjsonc_static
 
 LOCAL_SHARED_LIBRARIES := \
 		libbinder \
@@ -58,4 +58,4 @@ LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_TARGET_ARCH := arm
 
-#include $(BUILD_EXECUTABLE)
+include $(BUILD_EXECUTABLE)
