@@ -41,8 +41,11 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_C_INCLUDES := \
 		$(LOCAL_PATH)/include \
-		$(LOCAL_PATH)/../rokid-blacksiren/thirdparty/libjsonc/include
-		falcon/external/libopus/include
+		$(LOCAL_PATH)/../external/libopus/include \
+		$(LOCAL_PATH)/../../rokid-blacksiren/thirdparty/libjsonc/include
+		frameworks/av/include \
+		frameworks/base/core/jni \
+		system/media/audio/include
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl
