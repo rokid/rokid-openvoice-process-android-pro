@@ -24,6 +24,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 					libopenvoice \
 					libtts \
+					libropus
 
 #C++ process
 PRODUCT_PACKAGES += \

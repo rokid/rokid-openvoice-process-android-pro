@@ -36,16 +36,16 @@ LOCAL_SHARED_LIBRARIES := \
 		libutils \
 		libtts \
 		libspeech \
+		libmedia \
 		libropus \
 		liblog
 
 LOCAL_C_INCLUDES := \
 		$(LOCAL_PATH)/include \
 		$(LOCAL_PATH)/../external/libopus/include \
-		$(LOCAL_PATH)/../../rokid-blacksiren/thirdparty/libjsonc/include
+		$(LOCAL_PATH)/../../rokid-blacksiren/thirdparty/libjsonc/include \
 		frameworks/av/include \
-		frameworks/base/core/jni \
-		system/media/audio/include
+		system/media/audio/include 
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl
