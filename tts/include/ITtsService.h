@@ -13,6 +13,8 @@ enum{
 	TRANSACTION_PREPARE = IBinder::FIRST_CALL_TRANSACTION + 0,
 	TRANSACTION_SPEAK,
 	TRANSACTION_CANCEL,
+	TRANSACTION_IS_SPEAKING,
+	TRANSACTION_SET_VOLUME,
 };
 
 class ITtsService : public IInterface{
@@ -21,6 +23,8 @@ class ITtsService : public IInterface{
 		virtual bool prepare() = 0;
 		virtual int speak(const string&, sp<IBinder>&) = 0;
 		virtual void cancel(int id) = 0;
+		virtual bool is_speaking(int id) = 0;
+		virtual void set_volume(int volume) = 0;
 };
 
 class BnTtsService : public BnInterface<ITtsService> {
