@@ -5,4 +5,4 @@ $(patsubst ./%,%, \
           find -L $(2) -name "$(1)" -and -not -name ".*") \
  )
 endef
-endif
+endef

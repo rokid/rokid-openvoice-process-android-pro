@@ -42,8 +42,8 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_C_INCLUDES := \
 		$(LOCAL_PATH)/include \
-		$(LOCAL_PATH)/../external/libopus/include \
-		$(LOCAL_PATH)/../../rokid-blacksiren/thirdparty/libjsonc/include \
+		$(LOCAL_PATH)/../../../../external/libopus/include \
+		$(LOCAL_PATH)/../../../../../rokid-blacksiren/thirdparty/libjsonc/include \
 		frameworks/av/include \
 		system/media/audio/include 
 
