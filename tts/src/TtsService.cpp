@@ -1,37 +1,51 @@
 #define LOG_TAG "TtsService"
 #define LOG_NDEBUG 0
 
+#include <sys/prctl.h>
 #include "TtsService.h"
 
 TtsService::TtsService() {
-	pthread_mutex_init(&event_mutex, NULL);
+	pthread_mutex_init(&mutex, NULL);
     _player = make_shared<TtsPlayer>();
 }
 
 int TtsService::speak(const string& content, sp<IBinder> &callback) {
+	pthread_mutex_lock(&mutex);
 	if(!prepared) {
-        ALOGV("speak prepared is false");
+        ALOGV("speak not prepare");
+	    pthread_mutex_unlock(&mutex);
         return -1;
     }
 
-	pthread_mutex_lock(&event_mutex);
 	int id = _tts->speak(content.c_str());
 
 	ALOGD("tts speak begin id: = %d", id);
 
 	if (id > 0)
 		hmap.insert(pair<int, sp<ITtsCallback> >(id, interface_cast<ITtsCallback>(callback)));
-	pthread_mutex_unlock(&event_mutex);
 
+	pthread_mutex_unlock(&mutex);
 	return id;
 }
 
 void TtsService::cancel(int id) {
+	pthread_mutex_lock(&mutex);
     if(!prepared) {
         ALOGV("prepared is false");
+	    pthread_mutex_unlock(&mutex);
         return;
     }
     _tts->cancel(id);
+	pthread_mutex_unlock(&mutex);
+}
+
+bool TtsService::is_speaking(int id){
+    // XXX
+    return false;
+}
+
+void TtsService::set_volume(int volume){
+    // XXX
 }
 
 void TtsService::config() {
@@ -67,63 +81,70 @@ void TtsService::config() {
 }
 
 bool TtsService::prepare() {
+	pthread_mutex_lock(&mutex);
+
 	if(prepared)
-        return true;
+        goto done;
 
 	_tts = new_tts();
-
 	this->config();
 
 	if (!_tts->prepare()) {
 		ALOGW("prepare failed");
+	    pthread_mutex_unlock(&mutex);
 		return false;
 	}
+    pthread_create(&poll_thread, NULL, PollEvent, this);
 	prepared = true;
 
-    pthread_create(&poll_thread, NULL, PollEvent, this);
+done:
+	pthread_mutex_unlock(&mutex);
     return true;
-
 }
 
 void* PollEvent(void* args){
-	TtsResult res;
-	sp<ITtsCallback> callback;
-	TtsService *tts = (TtsService *)args;
-	while (true) {
-		if (!tts->_tts->poll(res)) {
-			break;
-		}
-		auto it = tts->hmap.find(res.id);
-	    ALOGW("type  %d", res.type);
-		if(it == tts->hmap.end())
+    prctl(PR_SET_NAME, __FUNCTION__);
+    TtsResult res;
+    sp<ITtsCallback> callback;
+    TtsService *tts = (TtsService *)args;
+    while (true) {
+        if (!tts->_tts->poll(res)) {
+        	break;
+        }
+        auto it = tts->hmap.find(res.id);
+        ALOGW("type  %d", res.type);
+        if(it == tts->hmap.end())
             continue;
-
-		callback = it->second;
-
-		switch(res.type) {
-			case TTS_RES_VOICE:
-                tts->_player->play(res.voice->data(), res.voice->size());
-				//callback->onVoice(res.id, res.voice.get()->data(), res.voice.get()->size());
-				break;
-			case TTS_RES_START:
-				callback->onStart(res.id);
-				break;
-			case TTS_RES_END:
-				callback->onComplete(res.id);
-				break;
-			case TTS_RES_CANCELLED:
-				callback->onCancel(res.id);
-				break;
-			case TTS_RES_ERROR:
-				callback->onError(res.id, res.err);
-				break;
-		}
-        if(res.type == TTS_RES_CANCELLED || res.type == TTS_RES_CANCELLED){
-			tts->hmap.erase(res.id);
-		}
-	}
-	tts->_tts->release();
+        
+        callback = it->second;
+        
+        switch(res.type) {
+        case TTS_RES_VOICE:
+            tts->_player->play(res.voice->data(), res.voice->size());
+        	break;
+        case TTS_RES_START:
+            if(callback.get())
+        	    callback->onStart(res.id);
+        	break;
+        case TTS_RES_END:
+            if(callback.get())
+        	    callback->onComplete(res.id);
+        	break;
+        case TTS_RES_CANCELLED:
+            if(callback.get())
+        	    callback->onCancel(res.id);
+        	break;
+        case TTS_RES_ERROR:
+            if(callback.get())
+        	    callback->onError(res.id, res.err);
+        	break;
+        }
+        if(res.type == TTS_RES_CANCELLED || res.type == TTS_RES_CANCELLED || res.type == TTS_RES_ERROR){
+        	tts->hmap.erase(res.id);
+        }
+    }
+    tts->_tts->release();
     tts->_tts.reset();
-	ALOGW("exit !!");
-	return NULL;
+    ALOGW("exit !!");
+    return NULL;
 }

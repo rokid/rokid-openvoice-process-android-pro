@@ -51,5 +51,7 @@ void TtsPlayer::play(const char* data, size_t length) {
         written = lpTrack->write(pcm_out + offset, pcm_out_length - offset);
         offset += written;
         ALOGE("%s written %d, offset %d, pcm_out %d", __FUNCTION__, written, offset, pcm_out_length);
+        if(written < 0) break;
     }
+    delete[] pcm_out;
 }

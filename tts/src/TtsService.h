@@ -25,21 +25,25 @@ public:
 
 	TtsService();
 
-	bool prepare();
+    bool is_speaking(int);
+	int speak(const string&, sp<IBinder>&);
+	void cancel(int id);
 	void config();
+    void set_volume(int);
 
 	shared_ptr<Tts> _tts;
 	shared_ptr<TtsPlayer> _player;
-	bool prepared = false;
+
 	map<int, sp<ITtsCallback> > hmap;
+
 	pthread_t poll_thread;
-	pthread_mutex_t event_mutex;
+	pthread_mutex_t mutex;
+
+	bool prepared = false;
 
 private:
 
-	int speak(const string&, sp<IBinder>&);
-
-	void cancel(int id);
+	bool prepare();
 };
 void* PollEvent(void *);
 
