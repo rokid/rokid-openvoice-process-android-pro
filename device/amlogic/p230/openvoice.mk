@@ -1,3 +1,6 @@
+PRODUCT_PACKAGES += \
+					falcon_framework
+
 #hardware
 PRODUCT_PACKAGES += \
 					mic_array.$(TARGET_PRODUCT)

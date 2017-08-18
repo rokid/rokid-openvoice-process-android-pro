@@ -11,6 +11,8 @@ import android.net.ConnectivityManager;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+//import rokid.tts.Tts;
+
 public class VoiceService extends android.app.Service {
 
     String TAG = getClass().getSimpleName();
@@ -74,6 +76,11 @@ public class VoiceService extends android.app.Service {
         }catch(Exception e){
             e.printStackTrace();
         }
+
+//        Tts _tts = new Tts();
+//        if(_tts.speak("测试", null) <= 0){
+//            //tts speak faild
+//        }
     }
 
     private void handleReinit() {
