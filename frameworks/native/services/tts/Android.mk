@@ -24,6 +24,7 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
+		src/callback/CallbackProxy.cpp \
 		src/TtsOpus.cpp \
 		src/TtsPlayer.cpp \
 		src/TtsService.cpp \

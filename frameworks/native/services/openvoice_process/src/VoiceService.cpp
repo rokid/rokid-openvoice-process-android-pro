@@ -7,8 +7,8 @@
 #include <binder/IPCThreadState.h>
 
 #include "VoiceService.h"
-#include "engine.h"
-#include "json.h"
+#include "audio_recorder.h"
+#include "voice_config.h"
 
 #ifdef USB_AUDIO_DEVICE
 #warning "=============================USB_AUDIO_DEVICE==============================="
@@ -21,10 +21,11 @@ VoiceService::VoiceService() {
     pthread_cond_init(&event_cond, NULL);
 }
 
-bool VoiceService::init() {
+bool VoiceService::setup() {
     pthread_mutex_lock(&siren_mutex);
     if(mCurrentSirenState == SIREN_STATE_UNKNOWN) {
-        if(!_init_siren(this)) {
+		if (!init(this,
+				[](void *token, voice_event_t *event) {((VoiceService*)token)->voice_event_callback(event);})) {
             ALOGE("init siren failed.");
             pthread_mutex_unlock(&siren_mutex);
             return false;
@@ -34,7 +35,11 @@ bool VoiceService::init() {
     }
     mCurrentSirenState = SIREN_STATE_INITED;
     if(!_speech.get())_speech = new_speech();
-    pthread_create(&event_thread, NULL, ::onEvent, this);
+	pthread_create(&event_thread, NULL,
+			[](void* token)->void* {return ((VoiceService*)token)->onEvent();},
+			this);
+
+    callback = make_shared<CallbackProxy>();
 done:
     pthread_mutex_unlock(&siren_mutex);
     return true;
@@ -89,10 +94,11 @@ void VoiceService::network_state_change(bool connected) {
     pthread_mutex_lock(&speech_mutex);
     if(!_speech.get())_speech = new_speech();
     if(connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
-        this->config();
-        if(_speech->prepare()) {
+        if(config(_speech) && _speech->prepare()) {
             mCurrentSpeechState = SPEECH_STATE_PREPARED;
-            pthread_create(&response_thread, NULL, ::onResponse, this);
+			pthread_create(&response_thread, NULL,
+					[](void* token)->void* {return ((VoiceService*)token)->onResponse();},
+					this);
             pthread_detach(response_thread);
 
             pthread_mutex_lock(&siren_mutex);
@@ -122,12 +128,6 @@ void VoiceService::network_state_change(bool connected) {
         mCurrentSpeechState = SPEECH_STATE_RELEASED;
     }
     pthread_mutex_unlock(&speech_mutex);
-}
-
-void VoiceService::send_voice_event(int event, int has_sl, double sl_degree, double energy, double threshold) {
-    if(callback.get()) {
-        callback->voice_event(event, has_sl, sl_degree, energy, threshold);
-    }
 }
 
 void VoiceService::update_stack(const string &appid) {
@@ -164,136 +164,93 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
     }
 }
 
-void VoiceService::regist_callback(const sp<IBinder> &callback) {
-    callback->linkToDeath(sp<DeathRecipient>(new VoiceService::DeathNotifier(this)));
-    this->callback = interface_cast<IVoiceCallback>(callback);
+void VoiceService::regist_callback(const sp<IBinder>& callback) {
+    this->callback->set_callback(callback);
 }
 
-void VoiceService::config() {
-    json_object *json_obj = json_object_from_file(OPENVOICE_PREFILE);
-
-    if(json_obj == NULL) {
-        ALOGE("%s cannot find", OPENVOICE_PREFILE);
-        return;
-    }
-    json_object *host, *port, *branch, *ssl_roots_pem, *auth_key, *device_type, *device_id, *secret, *api_version;
-
-    if(TRUE == json_object_object_get_ex(json_obj, "host", &host)) {
-        _speech->config("host", json_object_get_string(host));
-        ALOGE("%s", json_object_get_string(host));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "port", &port)) {
-        _speech->config("port", json_object_get_string(port));
-        ALOGE("%s", json_object_get_string(port));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "branch", &branch)) {
-        _speech->config("branch", json_object_get_string(branch));
-        ALOGE("%s", json_object_get_string(branch));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "ssl_roots_pem", &ssl_roots_pem)) {
-        _speech->config("ssl_roots_pem", json_object_get_string(ssl_roots_pem));
-        ALOGE("%s", json_object_get_string(ssl_roots_pem));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "key", &auth_key)) {
-        _speech->config("key", json_object_get_string(auth_key));
-        ALOGE("%s", json_object_get_string(auth_key));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "device_type_id", &device_type)) {
-        _speech->config("device_type_id", json_object_get_string(device_type));
-        ALOGE("%s", json_object_get_string(device_type));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "device_id", &device_id)) {
-        _speech->config("device_id", json_object_get_string(device_id));
-        ALOGE("%s", json_object_get_string(device_id));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "api_version", &api_version)) {
-        _speech->config("api_version", json_object_get_string(api_version));
-        ALOGE("%s", json_object_get_string(api_version));
-    }
-    if(TRUE == json_object_object_get_ex(json_obj, "secret", &secret)) {
-        _speech->config("secret", json_object_get_string(secret));
-        ALOGE("%s", json_object_get_string(secret));
-    }
-    _speech->config("codec", "opu");
-    json_object_put(json_obj);
+void VoiceService::voice_event_callback(voice_event_t *voice_event) {
+	pthread_mutex_lock(&event_mutex);
+	//add to siren_queue
+	voice_event_t *voice_message(new voice_event_t);
+	memcpy(voice_message, voice_event, sizeof(voice_event_t));
+	void *buff = NULL;
+	if (HAS_VOICE(voice_message->flag) || HAS_VT(voice_message->flag)) {
+		buff = new char(voice_event->length);
+		memcpy(buff, voice_event->buff, voice_event->length);
+		voice_message->buff = buff;
+	}
+	message_queue.push_back(voice_message);
+	pthread_cond_signal(&event_cond);
+	pthread_mutex_unlock(&event_mutex);
 }
 
-void* onEvent(void* args) {
+void* VoiceService::onEvent() {
     prctl(PR_SET_NAME, __FUNCTION__);
-    VoiceService *service = (VoiceService*)args;
     int id = -1;
     for(;;) {
-        pthread_mutex_lock(&service->event_mutex);
-        while(service->message_queue.empty()) {
-            pthread_cond_wait(&service->event_cond, &service->event_mutex);
+        pthread_mutex_lock(&event_mutex);
+        while(message_queue.empty()) {
+            pthread_cond_wait(&event_cond, &event_mutex);
         }
-        voice_event_t *message = service->message_queue.front();
-        service->message_queue.pop_front();
-        pthread_mutex_unlock(&service->event_mutex);
+        voice_event_t *message = message_queue.front();
+        message_queue.pop_front();
+        pthread_mutex_unlock(&event_mutex);
 
         ALOGV("event : -------------------------%d----", message->event);
 
-        service->send_voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
+        callback->voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
 
         switch(message->event) {
             case SIREN_EVENT_WAKE_CMD:
                 ALOGV("WAKE_CMD");
                 break;
-            case SIREN_EVENT_WAKE_NOCMD:
-                ALOGV("WAKE_NOCMD");
-                break;
             case SIREN_EVENT_SLEEP:
                 ALOGV("SLEEP");
                 break;
             case SIREN_EVENT_VAD_START:
-            case SIREN_EVENT_WAKE_VAD_START:
-                id = service->vad_start();
+                id = vad_start();
                 ALOGV("VAD_START\t\t ID  :  <<%d>>", id);
                 break;
             case SIREN_EVENT_VAD_DATA:
-            case SIREN_EVENT_WAKE_VAD_DATA:
                 if (id > 0 && HAS_VOICE(message->flag)) {
-                    service->_speech->put_voice(id, (uint8_t *)message->buff, message->length);
+                    _speech->put_voice(id, (uint8_t *)message->buff, message->length);
                 }
                 break;
             case SIREN_EVENT_VAD_END:
-            case SIREN_EVENT_WAKE_VAD_END:
                 ALOGV("VAD_END\t\t ID  <<%d>> ", id);
                 if(id > 0) {
-                    service->_speech->end_voice(id);
+                    _speech->end_voice(id);
                     id = -1;
                 }
                 break;
             case SIREN_EVENT_VAD_CANCEL:
-            case SIREN_EVENT_WAKE_CANCEL:
                 if(id > 0) {
-                    service->_speech->cancel(id);
+                    _speech->cancel(id);
                     ALOGI("VAD_CANCEL\t\t ID   <<%d>>", id);
                     id = -1;
                 }
                 break;
             case SIREN_EVENT_VOICE_PRINT:
-                service->voice_print(message);
+                voice_print(message);
                 ALOGI("VOICE_PRINT");
                 break;
         }
-        free(message->buff);
-        free(message);
+		delete[] (char*) message->buff;
+		delete message;
     }
-    service->_speech->release();
-    service->_speech.reset();
+    _speech->release();
+    _speech.reset();
     return NULL;
 }
 
-void* onResponse(void* args) {
+void* VoiceService::onResponse() {
     prctl(PR_SET_NAME, __FUNCTION__);
-    VoiceService *service = (VoiceService*)args;
     auto arbitration = [](const string& activation)->bool{return ("fake" == activation || "reject" == activation);};
     SpeechResult sr;
     string activation;
     json_object *nlp_obj, *activation_obj;
     while(1) {
-        if (!service->_speech->poll(sr)) {
+        if (!_speech->poll(sr)) {
             break;
         }
         ALOGV("result : type \t %d \t err \t %d \t id \t %d", sr.type, sr.err, sr.id);
@@ -305,9 +262,7 @@ void* onResponse(void* args) {
                 activation = json_object_get_string(activation_obj);
                 json_object_put(nlp_obj);
                 ALOGV("result : activation %s", activation.c_str());
-                if(service->callback.get()) {
-                    service->callback->arbitration(activation);
-                }
+                callback->arbitration(activation);
                 if(arbitration(activation)) {
                     set_siren_state_change(SIREN_STATE_SLEEP);
                     continue;
@@ -319,15 +274,9 @@ void* onResponse(void* args) {
                 ALOGV("result : asr\t%s", sr.asr.c_str());
                 ALOGV("result : nlp\t%s", sr.nlp.c_str());
                 ALOGV("result : action  %s", sr.action.c_str());
-                if(service->callback.get()) {
-                    service->callback->voice_command(sr.asr, sr.nlp, sr.action);
-                } else {
-                    ALOGI("Java service is null , Waiting for it to initialize");
-                }
+                callback->voice_command(sr.asr, sr.nlp, sr.action);
             } else if(sr.type == SPEECH_RES_ERROR && (sr.err == SPEECH_TIMEOUT || sr.err == SPEECH_SERVER_INTERNAL)) {
-                if(service->callback.get()) {
-                    service->callback->speech_error(sr.err);
-                }
+                callback->speech_error(sr.err);
             }
         }
     }

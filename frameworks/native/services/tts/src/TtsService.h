@@ -10,8 +10,7 @@
 
 #include "TtsPlayer.h"
 #include "ITtsService.h"
-#include "ITtsCallback.h"
-#include "json.h"
+#include "callback/CallbackProxy.h"
 #include "tts.h"
 
 using namespace rokid;
@@ -28,23 +27,22 @@ public:
     bool is_speaking(int);
 	int speak(const string&, sp<IBinder>&);
 	void cancel(int id);
-	void config();
     void set_volume(int);
+	bool prepare();
 
+private:
 	shared_ptr<Tts> _tts;
 	shared_ptr<TtsPlayer> _player;
 
-	map<int, sp<ITtsCallback> > hmap;
+	map<int, shared_ptr<CallbackProxy> > hmap;
 
 	pthread_t poll_thread;
 	pthread_mutex_t mutex;
 
 	bool prepared = false;
 
-private:
+    void* PollEvent();
 
-	bool prepare();
 };
-void* PollEvent(void *);
 
 #endif

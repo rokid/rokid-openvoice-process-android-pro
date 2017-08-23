@@ -11,49 +11,30 @@
 #include "siren.h"
 #include "speech.h"
 #include "IVoiceService.h"
-#include "IVoiceCallback.h"
+#include "callback/CallbackProxy.h"
 
 using namespace rokid;
 using namespace speech;
 
 class VoiceService: public BnVoiceService {
+
 public:
-    class DeathNotifier : public IBinder::DeathRecipient {
-    public:
-        DeathNotifier(VoiceService *service) : _service(service) {}
-        void binderDied(const wp<IBinder> &binder) {_service->callback.clear();}
-    private:
-        VoiceService *_service = NULL;
-    };
 
     static char const* getServiceName() {
         return "openvoice_process";
     }
 
     VoiceService();
-    void send_voice_event(int, int, double, double, double);
-    int vad_start();
-    void voice_print(const voice_event_t *);
 
-    pthread_mutex_t event_mutex;
-    pthread_mutex_t speech_mutex;
-    pthread_mutex_t siren_mutex;
-    pthread_cond_t event_cond;
-    pthread_t event_thread;
-    pthread_t response_thread;
-
-    shared_ptr<Speech> _speech;
-    sp<IVoiceCallback> callback;
-    list<voice_event_t*> message_queue;
-
-private:
-    bool init();
-    void config();
+    bool setup();
     void start_siren(bool);
     void set_siren_state(const int);
     void network_state_change(bool);
     void update_stack(const string&);
     void regist_callback(const sp<IBinder>&);
+
+private:
+
 #ifdef USB_AUDIO_DEVICE
     bool wait_for_alsa_usb_card();
 #endif
@@ -71,6 +52,25 @@ private:
         SPEECH_STATE_PREPARED,
         SPEECH_STATE_RELEASED
     };
+
+	void* onEvent();
+	void* onResponse();
+
+    int vad_start();
+    void voice_print(const voice_event_t *);
+	void voice_event_callback(voice_event_t *voice_event);
+
+    pthread_mutex_t event_mutex;
+    pthread_mutex_t speech_mutex;
+    pthread_mutex_t siren_mutex;
+    pthread_cond_t event_cond;
+    pthread_t event_thread;
+    pthread_t response_thread;
+
+    shared_ptr<Speech> _speech;
+    shared_ptr<CallbackProxy> callback;
+    list<voice_event_t*> message_queue;
+
     string appid;
     int vt_start;
     int vt_end;
@@ -79,8 +79,5 @@ private:
     bool has_vt = false;
     bool openSiren = true;
 };
-
-void* onEvent(void *);
-void* onResponse(void *);
 
 #endif // VOICE_SERVICE_H

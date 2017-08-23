@@ -24,8 +24,9 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
+		src/callback/CallbackProxy.cpp \
 		src/VoiceService.cpp \
-		src/Engine.cpp \
+		src/audio_recorder.cpp \
 		src/main.cpp
 
 LOCAL_SHARED_LIBRARIES := \

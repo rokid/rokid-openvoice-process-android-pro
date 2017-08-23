@@ -6,10 +6,10 @@ class BpVoiceService : public BpInterface<IVoiceService> {
 public:
     BpVoiceService(const sp<IBinder> &impl): BpInterface<IVoiceService>(impl) {}
     ~BpVoiceService() {}
-    bool init() {
+    bool setup() {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
-        remote()->transact(TRANSACTION_INIT, data, &reply);
+        remote()->transact(TRANSACTION_SETUP, data, &reply);
         reply.readExceptionCode();
         return ((reply.readInt32() > 0) ? true : false);        
     }
@@ -41,10 +41,10 @@ public:
         remote()->transact(TRANSACTION_UPDATE_STACK, data, &reply);
         reply.readExceptionCode();
     }
-    void regist_callback(const sp<IBinder> &binder) {
+    void regist_callback(const sp<IBinder>& callback) {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
-        data.writeStrongBinder(binder);
+        data.writeStrongBinder(callback);
         remote()->transact(TRANSACTION_REGIST_CALLBACK, data, &reply);
         reply.readExceptionCode();
     }
@@ -54,9 +54,9 @@ IMPLEMENT_META_INTERFACE (VoiceService, DESCRIPTOR);
 
 status_t BnVoiceService::onTransact(uint32_t code, const Parcel &data, Parcel *reply, uint32_t flag) {
     switch(code) {
-    case TRANSACTION_INIT: {
+    case TRANSACTION_SETUP: {
         CHECK_INTERFACE(IVoiceService, data, reply);
-        bool err = init();
+        bool err = setup();
         reply->writeNoException();
         reply->writeInt32((err ? 1 : 0));
         return NO_ERROR;

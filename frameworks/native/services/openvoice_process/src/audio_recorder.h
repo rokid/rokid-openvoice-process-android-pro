@@ -1,14 +1,14 @@
-#ifndef VOICE_ENGINE_H
-#define VOICE_ENGINE_H
+#ifndef __AUDIO_RECORDER_H
+#define __AUDIO_RECORDER_H
 
-#include "VoiceService.h"
 #include "mic/mic_array.h"
+#include "siren.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool _init_siren(VoiceService*);
+bool init(void*, on_voice_event_t);
 
 void set_siren_state_change(int state);
 
@@ -32,10 +32,8 @@ void _stop_siren_process_stream();
 
 int find_card(const char*);
 
-void voice_event_callback(void *, voice_event_t *);
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif // VOICE_ENGINE_H
+#endif // __AUDIO_RECORDER_H
