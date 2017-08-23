@@ -39,20 +39,20 @@ bool VoiceService::setup() {
 			[](void* token)->void* {return ((VoiceService*)token)->onEvent();},
 			this);
 
-    callback = make_shared<CallbackProxy>();
+    if(!this->callback.get()) callback = make_shared<CallbackProxy>();
 done:
     pthread_mutex_unlock(&siren_mutex);
     return true;
 }
 
-void VoiceService::start_siren(bool flag) {
+void VoiceService::start_siren(bool isopen) {
     pid_t pid = IPCThreadState::self()->getCallingPid();
 
-    ALOGV("%s \t flag : %d \t mCurrState : %d \t opensiren : %d \t calling pid : %d", 
-            __FUNCTION__, flag, mCurrentSirenState, openSiren, pid);
+    ALOGV("%s \t isopen : %d \t mCurrState : %d \t opensiren : %d \t calling pid : %d", 
+            __FUNCTION__, isopen, mCurrentSirenState, openSiren, pid);
 
     pthread_mutex_lock(&siren_mutex);
-    if(flag && (mCurrentSirenState == SIREN_STATE_INITED
+    if(isopen && (mCurrentSirenState == SIREN_STATE_INITED
                 || mCurrentSirenState == SIREN_STATE_STOPED)) {
         openSiren = true;
 #ifdef USB_AUDIO_DEVICE
@@ -63,11 +63,11 @@ void VoiceService::start_siren(bool flag) {
 #ifdef USB_AUDIO_DEVICE
         }
 #endif
-    } else if(!flag && mCurrentSirenState == SIREN_STATE_STARTED) {
+    } else if(!isopen && mCurrentSirenState == SIREN_STATE_STARTED) {
         _stop_siren_process_stream();
         mCurrentSirenState = SIREN_STATE_STOPED;
     }
-    if(!flag && mCurrentSirenState != SIREN_STATE_UNKNOWN) openSiren = false;
+    if(!isopen && mCurrentSirenState != SIREN_STATE_UNKNOWN) openSiren = false;
     pthread_mutex_unlock(&siren_mutex);
 }
 
@@ -124,7 +124,7 @@ void VoiceService::network_state_change(bool connected) {
         pthread_mutex_unlock(&siren_mutex);
         ALOGV("===============================BEGIN================================");
         _speech->release();
-        ALOGV("=================================END==============================");
+        ALOGV("================================END=================================");
         mCurrentSpeechState = SPEECH_STATE_RELEASED;
     }
     pthread_mutex_unlock(&speech_mutex);
@@ -132,10 +132,18 @@ void VoiceService::network_state_change(bool connected) {
 
 void VoiceService::update_stack(const string &appid) {
     this->appid = appid;
-    ALOGE("appid  %s", this->appid.c_str());
+    ALOGE("%s  %s", __FUNCTION__, this->appid.c_str());
 }
 
-int VoiceService::vad_start() {
+void VoiceService::update_config(const string& device_id, const string& device_type_id,
+                                const string& key, const string& secret) {
+
+    if(!save_config(device_id, device_type_id, key, secret)){
+
+    }
+}
+
+int32_t VoiceService::vad_start() {
     if(mCurrentSpeechState == SPEECH_STATE_PREPARED) {
         shared_ptr<Options> options = new_options();
         if(options.get() && has_vt) {
@@ -165,78 +173,74 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
 }
 
 void VoiceService::regist_callback(const sp<IBinder>& callback) {
+    if(!this->callback.get()) this->callback = make_shared<CallbackProxy>();
     this->callback->set_callback(callback);
 }
 
 void VoiceService::voice_event_callback(voice_event_t *voice_event) {
 	pthread_mutex_lock(&event_mutex);
-	//add to siren_queue
-	voice_event_t *voice_message(new voice_event_t);
-	memcpy(voice_message, voice_event, sizeof(voice_event_t));
-	void *buff = NULL;
-	if (HAS_VOICE(voice_message->flag) || HAS_VT(voice_message->flag)) {
-		buff = new char(voice_event->length);
-		memcpy(buff, voice_event->buff, voice_event->length);
-		voice_message->buff = buff;
-	}
-	message_queue.push_back(voice_message);
+
+    int32_t len =  0;
+    char *buff = nullptr;
+    if(voice_event->length > 0){
+        len = voice_event->length;
+    }
+    char *temp = new char[sizeof(voice_event_t) + len];
+    if(len) buff = temp + sizeof(voice_event_t);
+    
+    voice_event_t *_event_t = (voice_event_t*)temp;
+    memcpy(_event_t, voice_event, sizeof(voice_event_t));
+    
+    if ((HAS_VOICE(_event_t->flag) || HAS_VT(_event_t->flag)) && len) {
+    	memcpy(buff, voice_event->buff, len);
+    	_event_t->buff = buff;
+    }
+    _events.push_back(_event_t);
 	pthread_cond_signal(&event_cond);
 	pthread_mutex_unlock(&event_mutex);
 }
 
 void* VoiceService::onEvent() {
     prctl(PR_SET_NAME, __FUNCTION__);
-    int id = -1;
-    for(;;) {
+    int32_t id = -1;
+    while(true) {
         pthread_mutex_lock(&event_mutex);
-        while(message_queue.empty()) {
+        while(_events.empty()) {
             pthread_cond_wait(&event_cond, &event_mutex);
         }
-        voice_event_t *message = message_queue.front();
-        message_queue.pop_front();
+        voice_event_t *_event = _events.front();
+        _events.pop_front();
         pthread_mutex_unlock(&event_mutex);
 
-        ALOGV("event : -------------------------%d----", message->event);
+        ALOGV("event : -------------------------%d----", _event->event);
 
-        callback->voice_event(message->event, HAS_SL(message->flag), message->sl, message->background_energy, message->background_threshold);
+        callback->voice_event(_event->event, HAS_SL(_event->flag), _event->sl, 
+                                    _event->background_energy, _event->background_threshold);
 
-        switch(message->event) {
-            case SIREN_EVENT_WAKE_CMD:
-                ALOGV("WAKE_CMD");
-                break;
-            case SIREN_EVENT_SLEEP:
-                ALOGV("SLEEP");
-                break;
+        switch(_event->event) {
             case SIREN_EVENT_VAD_START:
                 id = vad_start();
                 ALOGV("VAD_START\t\t ID  :  <<%d>>", id);
                 break;
             case SIREN_EVENT_VAD_DATA:
-                if (id > 0 && HAS_VOICE(message->flag)) {
-                    _speech->put_voice(id, (uint8_t *)message->buff, message->length);
-                }
+                if (id > 0 && HAS_VOICE(_event->flag))
+                    _speech->put_voice(id, (uint8_t *)_event->buff, _event->length);
                 break;
             case SIREN_EVENT_VAD_END:
-                ALOGV("VAD_END\t\t ID  <<%d>> ", id);
-                if(id > 0) {
-                    _speech->end_voice(id);
-                    id = -1;
-                }
+                ALOGV("VAD_END\t\t ID  :   <<%d>> ", id);
+                if(id > 0) _speech->end_voice(id);
+                id = -1;
                 break;
             case SIREN_EVENT_VAD_CANCEL:
-                if(id > 0) {
-                    _speech->cancel(id);
-                    ALOGI("VAD_CANCEL\t\t ID   <<%d>>", id);
-                    id = -1;
-                }
+                if(id > 0) _speech->cancel(id);
+                id = -1;
+                ALOGI("VAD_CANCEL\t\t ID  :   <<%d>>", id);
                 break;
             case SIREN_EVENT_VOICE_PRINT:
-                voice_print(message);
-                ALOGI("VOICE_PRINT");
+                voice_print(_event);
                 break;
         }
-		delete[] (char*) message->buff;
-		delete message;
+		delete[] (char *)_event;
     }
     _speech->release();
     _speech.reset();
@@ -249,7 +253,7 @@ void* VoiceService::onResponse() {
     SpeechResult sr;
     string activation;
     json_object *nlp_obj, *activation_obj;
-    while(1) {
+    while(true) {
         if (!_speech->poll(sr)) {
             break;
         }

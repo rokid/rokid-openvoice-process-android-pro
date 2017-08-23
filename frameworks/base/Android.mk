@@ -26,5 +26,5 @@ LOCAL_JACK_FLAGS := --multi-dex native
 
 LOCAL_RMTYPEDEFS := true
 
-#include $(BUILD_JAVA_LIBRARY)
+include $(BUILD_JAVA_LIBRARY)
 

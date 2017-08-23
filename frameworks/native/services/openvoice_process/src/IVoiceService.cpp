@@ -41,6 +41,17 @@ public:
         remote()->transact(TRANSACTION_UPDATE_STACK, data, &reply);
         reply.readExceptionCode();
     }
+    void update_config(const string& device_id, const string& device_type_id, 
+                                        const string& key, const string& secret) {
+        Parcel data, reply;
+        data.writeInterfaceToken(String16(DESCRIPTOR));
+        data.writeString16(String16(device_id.c_str()));
+        data.writeString16(String16(device_type_id.c_str()));
+        data.writeString16(String16(key.c_str()));
+        data.writeString16(String16(secret.c_str()));
+        remote()->transact(TRANSACTION_UPDATE_CONFIG, data, &reply);
+        reply.readExceptionCode();
+    }
     void regist_callback(const sp<IBinder>& callback) {
         Parcel data, reply;
         data.writeInterfaceToken(String16(DESCRIPTOR));
@@ -86,6 +97,16 @@ status_t BnVoiceService::onTransact(uint32_t code, const Parcel &data, Parcel *r
         CHECK_INTERFACE(IVoiceService, data, reply);
         String8 appid(data.readString16());
         update_stack(appid.string());
+        reply->writeNoException();
+        return NO_ERROR;
+    }
+    case TRANSACTION_UPDATE_CONFIG: {
+        CHECK_INTERFACE(IVoiceService, data, reply);
+        String8 device_id(data.readString16());
+        String8 device_type_id(data.readString16());
+        String8 key(data.readString16());
+        String8 secret(data.readString16());
+        update_config(device_id.string(), device_type_id.string(), key.string(), secret.string());
         reply->writeNoException();
         return NO_ERROR;
     }

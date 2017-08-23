@@ -1,8 +1,6 @@
 #ifndef VOICE_SERVICE_H
 #define VOICE_SERVICE_H
 
-#define OPENVOICE_PREFILE "/system/etc/openvoice_profile.json"
-
 #include <cutils/log.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -31,6 +29,7 @@ public:
     void set_siren_state(const int);
     void network_state_change(bool);
     void update_stack(const string&);
+    void update_config(const string&, const string&, const string&, const string&);
     void regist_callback(const sp<IBinder>&);
 
 private:
@@ -56,7 +55,7 @@ private:
 	void* onEvent();
 	void* onResponse();
 
-    int vad_start();
+    int32_t vad_start();
     void voice_print(const voice_event_t *);
 	void voice_event_callback(voice_event_t *voice_event);
 
@@ -69,7 +68,7 @@ private:
 
     shared_ptr<Speech> _speech;
     shared_ptr<CallbackProxy> callback;
-    list<voice_event_t*> message_queue;
+    list<voice_event_t*> _events;
 
     string appid;
     int vt_start;

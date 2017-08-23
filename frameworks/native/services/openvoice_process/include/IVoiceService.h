@@ -15,6 +15,7 @@ enum {
     TRANSACTION_SET_SIREN_STATUS,
     TRANSACTION_NETWORK_STATE_CHANGE,
     TRANSACTION_UPDATE_STACK,
+    TRANSACTION_UPDATE_CONFIG,
     TRANSACTION_REGIST_CALLBACK,
 };
 
@@ -26,6 +27,7 @@ public:
     virtual void set_siren_state(const int) = 0;
     virtual void network_state_change(bool) = 0;
     virtual void update_stack(const string&) = 0;
+    virtual void update_config(const string&, const string&, const string&, const string&) = 0;
     virtual void regist_callback(const sp<IBinder>&) = 0;
 };
 

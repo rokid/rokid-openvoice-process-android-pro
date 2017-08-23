@@ -134,6 +134,27 @@ public class VoiceNative implements IBinder.DeathRecipient {
         }
     }
 
+    public void updateConfig(String device_id, String device_type_id, String key, String secret) {
+        if(remote != null) {
+            Parcel data	= Parcel.obtain();
+            Parcel reply = Parcel.obtain();
+            try {
+                data.writeInterfaceToken(DESCRIPTOR);
+                data.writeString(device_id);
+                data.writeString(device_type_id);
+                data.writeString(key);
+                data.writeString(secret);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 5, data, reply, 0);
+                reply.readException();
+            } catch(RemoteException e) {
+                e.printStackTrace();
+            }finally{
+                data.recycle();
+                reply.recycle();
+            }
+        }
+    }
+
     public void registCallback(IBinder callback) {
         if(remote != null) {
             Parcel data = Parcel.obtain();
@@ -141,7 +162,7 @@ public class VoiceNative implements IBinder.DeathRecipient {
             try {
                 data.writeInterfaceToken(DESCRIPTOR);
                 data.writeStrongBinder(callback);
-                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 5, data, reply, 0);
+                remote.transact(IBinder.FIRST_CALL_TRANSACTION + 6, data, reply, 0);
                 reply.readException();
             } catch(RemoteException e) {
                 e.printStackTrace();
