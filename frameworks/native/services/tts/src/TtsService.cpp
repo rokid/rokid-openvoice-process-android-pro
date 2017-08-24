@@ -4,11 +4,12 @@
 #include <sys/prctl.h>
 
 #include "TtsService.h"
-#include "tts_config.h"
 
 TtsService::TtsService() {
 	pthread_mutex_init(&mutex, NULL);
     _player = make_shared<TtsPlayer>();
+    _tts_config = make_shared<TtsConfig>();
+	_tts = new_tts();
 }
 
 int TtsService::speak(const string& content, sp<IBinder> &callback) {
@@ -56,8 +57,9 @@ bool TtsService::prepare() {
 	if(prepared)
         goto done;
 
-	_tts = new_tts();
-	if (config(_tts) && _tts->prepare()) {
+	if (_tts_config->config(
+                [&](const char* key, const char* value){_tts->config(key, value);}) 
+                && _tts->prepare()) {
 	    pthread_create(&poll_thread, NULL,
 	    		[](void* token)->void* {return ((TtsService*)token)->PollEvent();},
 	    		this);

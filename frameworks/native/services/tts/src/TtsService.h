@@ -11,6 +11,7 @@
 #include "TtsPlayer.h"
 #include "ITtsService.h"
 #include "callback/CallbackProxy.h"
+#include "tts_config.h"
 #include "tts.h"
 
 using namespace rokid;
@@ -32,6 +33,7 @@ public:
 
 private:
 	shared_ptr<Tts> _tts;
+	shared_ptr<TtsConfig> _tts_config;
 	shared_ptr<TtsPlayer> _player;
 
 	map<int, shared_ptr<CallbackProxy> > hmap;

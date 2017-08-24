@@ -3,12 +3,11 @@
 
 #include <stdio.h>
 #include <sys/prctl.h>
-#include <functional>
+//#include <functional>
 #include <binder/IPCThreadState.h>
 
 #include "VoiceService.h"
 #include "audio_recorder.h"
-#include "voice_config.h"
 
 #ifdef USB_AUDIO_DEVICE
 #warning "=============================USB_AUDIO_DEVICE==============================="
@@ -19,6 +18,10 @@ VoiceService::VoiceService() {
     pthread_mutex_init(&speech_mutex, NULL);
     pthread_mutex_init(&siren_mutex, NULL);
     pthread_cond_init(&event_cond, NULL);
+
+    voice_config = make_shared<VoiceConfig>();
+    callback = make_shared<CallbackProxy>();
+    _speech = new_speech();
 }
 
 bool VoiceService::setup() {
@@ -34,12 +37,9 @@ bool VoiceService::setup() {
         goto done;
     }
     mCurrentSirenState = SIREN_STATE_INITED;
-    if(!_speech.get())_speech = new_speech();
 	pthread_create(&event_thread, NULL,
 			[](void* token)->void* {return ((VoiceService*)token)->onEvent();},
 			this);
-
-    if(!this->callback.get()) callback = make_shared<CallbackProxy>();
 done:
     pthread_mutex_unlock(&siren_mutex);
     return true;
@@ -92,9 +92,10 @@ void VoiceService::set_siren_state(const int state) {
 void VoiceService::network_state_change(bool connected) {
     ALOGV("network_state_change      isconnect  <<%d>>", connected);
     pthread_mutex_lock(&speech_mutex);
-    if(!_speech.get())_speech = new_speech();
     if(connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
-        if(config(_speech) && _speech->prepare()) {
+        if(voice_config->config(
+                    [&](const char* key, const char* value){_speech->config(key, value);}) 
+                    && _speech->prepare()) {
             mCurrentSpeechState = SPEECH_STATE_PREPARED;
 			pthread_create(&response_thread, NULL,
 					[](void* token)->void* {return ((VoiceService*)token)->onResponse();},
@@ -138,7 +139,7 @@ void VoiceService::update_stack(const string &appid) {
 void VoiceService::update_config(const string& device_id, const string& device_type_id,
                                 const string& key, const string& secret) {
 
-    if(!save_config(device_id, device_type_id, key, secret)){
+    if(!voice_config->save_config(device_id, device_type_id, key, secret)){
 
     }
 }
@@ -173,7 +174,6 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
 }
 
 void VoiceService::regist_callback(const sp<IBinder>& callback) {
-    if(!this->callback.get()) this->callback = make_shared<CallbackProxy>();
     this->callback->set_callback(callback);
 }
 

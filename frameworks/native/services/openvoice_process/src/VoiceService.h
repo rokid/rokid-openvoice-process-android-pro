@@ -8,6 +8,7 @@
 
 #include "siren.h"
 #include "speech.h"
+#include "voice_config.h"
 #include "IVoiceService.h"
 #include "callback/CallbackProxy.h"
 
@@ -68,6 +69,7 @@ private:
 
     shared_ptr<Speech> _speech;
     shared_ptr<CallbackProxy> callback;
+    shared_ptr<VoiceConfig> voice_config;
     list<voice_event_t*> _events;
 
     string appid;
