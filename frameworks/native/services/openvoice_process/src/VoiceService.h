@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <list>
+#include <memory>
 
 #include "siren.h"
 #include "speech.h"

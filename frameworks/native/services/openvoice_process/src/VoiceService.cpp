@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <sys/prctl.h>
-//#include <functional>
 #include <binder/IPCThreadState.h>
 
 #include "VoiceService.h"
@@ -149,9 +148,13 @@ int32_t VoiceService::vad_start() {
         shared_ptr<Options> options = new_options();
         if(options.get() && has_vt) {
             options->set("voice_trigger", vt_data.c_str());
-            options->set("trigger_start", to_string(vt_start).c_str());
-            options->set("trigger_length", to_string(vt_end - vt_start).c_str());
-            options->set("voice_power", to_string(vt_energy).c_str());
+            char buf[64];
+            snprintf(buf, sizeof(buf), "%d", vt_start);
+            options->set("trigger_start", buf);
+            snprintf(buf, sizeof(buf), "%d", vt_end - vt_start);
+            options->set("trigger_length", buf);
+            snprintf(buf, sizeof(buf), "%F", vt_energy);
+            options->set("voice_power", buf);
             has_vt = false;
         }
         options->set("stack", appid.empty() ? "" : appid.c_str());

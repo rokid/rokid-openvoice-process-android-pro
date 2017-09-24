@@ -34,7 +34,7 @@ void automatic_test(int count) {
             proxy->network_state_change(false);
             break;
         case 6:
-            proxy->init();
+            proxy->setup();
             break;
         }
         sleep(2);
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     printf("%s\n", argv[1]);
     if(proxy != NULL) {
         if(strcmp(argv[1], "init") == 0) {
-            proxy->init();
+            proxy->setup();
         } else if(strcmp(argv[1], "start") == 0) {
             if(argc < 3) {
                 printf("Needs three arguments");
