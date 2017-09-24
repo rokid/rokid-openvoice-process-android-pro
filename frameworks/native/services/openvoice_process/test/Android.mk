@@ -15,7 +15,6 @@ else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
 	external/stlport/stlport \
 	bionic
-LOCAL_STATIC_LIBRARIES += libstlport_static
 endif
 
 LOCAL_MODULE := test

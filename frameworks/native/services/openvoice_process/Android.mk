@@ -57,7 +57,6 @@ LOCAL_C_INCLUDES += external/libcxx/include
 else ifeq ($(PLATFORM_SDK_VERSION), 19)
 MY_LOCAL_STATIC_LIBRARIES := prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_CPU_ABI)/libgnustl_static.a
 LOCAL_LDFLAGS += $(MY_LOCAL_STATIC_LIBRARIES) -ldl
-LOCAL_STATIC_LIBRARIES += libstlport_static
 LOCAL_C_INCLUDES += \
 		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_CPU_ABI)/include \
 		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/include \
