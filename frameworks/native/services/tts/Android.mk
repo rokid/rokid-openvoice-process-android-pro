@@ -16,6 +16,11 @@ LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl
 LOCAL_C_INCLUDES += external/libcxx/include
+else ifeq ($(PLATFORM_SDK_VERSION), 19)
+LOCAL_C_INCLUDES += \
+	external/stlport/stlport \
+	bionic
+LOCAL_STATIC_LIBRARIES += libstlport_static
 endif
 
 LOCAL_MODULE := libtts
