@@ -20,7 +20,6 @@ else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
 	external/stlport/stlport \
 	bionic
-LOCAL_STATIC_LIBRARIES += libstlport_static
 endif
 
 LOCAL_MODULE := libtts
@@ -56,9 +55,15 @@ LOCAL_C_INCLUDES := \
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl
 LOCAL_C_INCLUDES += external/libcxx/include
+else ifeq ($(PLATFORM_SDK_VERSION), 19)
+MY_LOCAL_STATIC_LIBRARIES := prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_CPU_ABI)/libgnustl_static.a
+LOCAL_LDFLAGS += $(MY_LOCAL_STATIC_LIBRARIES) -ldl
+LOCAL_C_INCLUDES += \
+		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_CPU_ABI)/include \
+		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/include
 endif
 
-LOCAL_MODULE := tts_process
+LOCAL_MODULE := tts_proc
 LOCAL_ARM_MODE := arm
 LOCAL_CPPFLAGS := -DCURRENT_ANDROID_PLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) -std=c++11
 LOCAL_MODULE_TAGS := optional

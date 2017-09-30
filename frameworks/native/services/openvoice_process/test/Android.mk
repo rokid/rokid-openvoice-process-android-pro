@@ -1,20 +1,19 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
-LOCAL_SRC_FILES := \
-	test.cpp
+LOCAL_SRC_FILES := test.cpp
 
 LOCAL_SHARED_LIBRARIES := \
-	libutils \
-	libbinder \
-	libopenvoice
+		libutils \
+		libbinder \
+		libopenvoice
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl
 LOCAL_C_INCLUDES += external/libcxx/include
 else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
-	external/stlport/stlport \
-	bionic
+		external/stlport/stlport \
+		bionic
 endif
 
 LOCAL_MODULE := test

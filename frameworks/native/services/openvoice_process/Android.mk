@@ -20,7 +20,6 @@ else ifeq ($(PLATFORM_SDK_VERSION), 19)
 LOCAL_C_INCLUDES += \
 		external/stlport/stlport \
 		bionic
-LOCAL_STATIC_LIBRARIES += libstlport_static
 endif
 
 LOCAL_MODULE := libopenvoice
@@ -59,9 +58,8 @@ MY_LOCAL_STATIC_LIBRARIES := prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++
 LOCAL_LDFLAGS += $(MY_LOCAL_STATIC_LIBRARIES) -ldl
 LOCAL_C_INCLUDES += \
 		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/libs/$(TARGET_CPU_ABI)/include \
-		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/include \
-		external/stlport/stlport \
-		bionic
+		prebuilts/ndk/current/sources/cxx-stl/gnu-libstdc++/include
+#		prebuilts/ndk/current/platforms/android-14/arch-arm/usr/include
 endif
 
 LOCAL_MODULE := openvoice_proc
