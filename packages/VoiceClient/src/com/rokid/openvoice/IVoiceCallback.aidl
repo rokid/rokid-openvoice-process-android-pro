@@ -1,8 +1,9 @@
 package com.rokid.openvoice;
 
 interface IVoiceCallback{
-    void onVoiceCommand(String asr, String nlp, String action);
-    void onVoiceEvent(int event, boolean has_sl, double sl, double energy, double threshold);
-    void onArbitration(String extra);
-    void onSpeechError(int errcode);
+    void onVoiceEvent(int id, int event, double sl, double energy);
+    void onIntermediateResult(int id, int type, String asr);
+    void onVoiceCommand(int id, String asr, String nlp, String action);
+    void onSpeechError(int id, int errcode);
+    String getSkillOptions();
 }

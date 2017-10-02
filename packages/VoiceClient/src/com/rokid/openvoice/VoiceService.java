@@ -17,29 +17,26 @@ public class VoiceService extends android.app.Service {
 
     String TAG = getClass().getSimpleName();
 
-    public VoiceNative mVoiceNative = null;
+    public VoiceManager mVoiceManager = null;
     public static MainHandler mHandler = null;
 
-    public static final int MSG_REINIT = 0;
-    public static final int MSG_TIMEOUT = 1;
+    private static final int DELAY                      = 15 * 1000;
 
-    public static boolean initialized = false;
+    public static final int MSG_REINIT                  = 0;
+    public static final int MSG_TIMEOUT                 = 1;
 
-    public static final int SPEECH_TIMEOUT = 3;
-    public static final int SERVICE_UNAVAILABLE = 6;
+    private static final int VOICE_COMING               = 0;
+    private static final int VOICE_LOCAL_WAKE           = 1;
+    private static final int VOICE_START                = 2;
+    private static final int VOICE_ACCEPT               = 3;
+    private static final int VOICE_REJECT               = 4;
+    private static final int VOICE_CANCEL               = 5;
+    private static final int VOICE_LOCAL_SLEEP          = 6;
 
-    public static final int SIREN_STATE_AWAKE = 1;
-    public static final int SIREN_STATE_SLEEP = 2;
-
-    private static final int DELAY = 15 * 1000;
-
-    private static final int EVENT_VAD_ATART = 100;
-    private static final int EVENT_VAD_DATA = 101;
-    private static final int EVENT_VAD_END = 102;
-    private static final int EVENT_VAD_CANCEL = 103;
-    private static final int EVENT_WAKE_NOCMD = 108;
-    private static final int EVENT_WAKE_CMD = 109;
-    private static final int EVENT_SLEEP = 111;
+    private static final int SPEECH_SERVER_INTERNAL     = 6;
+    private static final int SPEECH_VAD_TIMEOUT         = 7;
+    private static final int SPEECH_SERVICE_UNAVAILABLE = 101;
+    private static final int SPEECH_TIMEOUT             = 103;
 
     class MainHandler extends Handler {
 
@@ -57,10 +54,8 @@ public class VoiceService extends android.app.Service {
 
     public VoiceService() {
         Log.e(TAG, "VoiceService  created ");
-        mVoiceNative = VoiceNative.asInstance();
-        mVoiceNative.init();
-        mVoiceNative.registCallback(callback);
-        initialized = true;
+        mVoiceManager = VoiceManager.asInstance();
+        mVoiceManager.registCallback(callback);
     }
 
     @Override
@@ -69,7 +64,7 @@ public class VoiceService extends android.app.Service {
         ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
         if(mNetworkInfo != null) {
-            mVoiceNative.networkStateChange(true);
+            mVoiceManager.networkStateChange(true);
         }
         try{
             mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
@@ -85,25 +80,37 @@ public class VoiceService extends android.app.Service {
 
     private void handleReinit() {
         Log.e(TAG, "+++++++++++++++++++++REINITT+++++++++++++++++++++");
-        mVoiceNative = VoiceNative.asInstance();
-        mVoiceNative.init();
-        mVoiceNative.registCallback(callback);
-        initialized = true;
+        mVoiceManager = VoiceManager.asInstance();
+        mVoiceManager.init();
+        mVoiceManager.registCallback(callback);
         ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
         if(mNetworkInfo != null) {
-            mVoiceNative.networkStateChange(true);
+            mVoiceManager.networkStateChange(true);
         }
     }
 
     private void handleTimeout(){
-        mVoiceNative.setSirenState(SIREN_STATE_SLEEP);
+        mVoiceManager.setSirenState(VoiceManager.SIREN_STATE_SLEEP);
     }
 
     private final IVoiceCallback.Stub callback = new IVoiceCallback.Stub() {
 
         @Override
-        public void onVoiceCommand(String asr, String nlp, String action) {
+        public void onVoiceEvent(int id, int event, double sl, double energy) {
+            Log.e(TAG, event + " ,sl : " + sl);
+            if(event == VOICE_COMING){
+
+            }
+        }
+
+        @Override
+        public void onIntermediateResult(int id, int type, String asr) {
+
+        }
+
+        @Override
+        public void onVoiceCommand(int id, String asr, String nlp, String action) {
             Log.e(TAG, "asr\t" + asr);
             Log.e(TAG, "nlp\t" + nlp);
             Log.e(TAG, "action " + action);
@@ -114,39 +121,18 @@ public class VoiceService extends android.app.Service {
                 e.printStackTrace();    
             }
             if(appId != null && appId.length() > 0 && !appId.equals("ROKID.EXCEPTION")){
-    		    mVoiceNative.updateStack(appId + ":");
+    		    mVoiceManager.updateStack(appId + ":");
             } 
-            mHandler.removeMessages(MSG_TIMEOUT);
-            mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
-            mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
         }
 
         @Override
-        public void onVoiceEvent(int event, boolean has_sl, double sl, double energy, double threshold) {
-            Log.e(TAG, event + " ,has_sl : " + has_sl + " ,sl : " + sl);
-            if(event == EVENT_VAD_ATART) {
-    
-            } else if(event == EVENT_VAD_END) {
-                mVoiceNative.setSirenState(SIREN_STATE_SLEEP);
-            }
+        public void onSpeechError(int id, int errcode) {
+
         }
 
         @Override
-        public void onArbitration(String extra) {
-            if("accept".equals(extra)){
-                mHandler.removeMessages(MSG_TIMEOUT);
-                mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
-                mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
-            }
-        }
-
-        @Override
-        public void onSpeechError(int errcode) {
-            if(errcode == SPEECH_TIMEOUT){
-                mHandler.removeMessages(MSG_TIMEOUT);
-                mHandler.sendEmptyMessageDelayed(MSG_TIMEOUT, DELAY);
-                mVoiceNative.setSirenState(SIREN_STATE_AWAKE);
-            }
+        public String getSkillOptions() {
+            return "{}";
         }
     };
 
@@ -155,13 +141,11 @@ public class VoiceService extends android.app.Service {
         @Override
         public void onUEvent(android.os.UEventObserver.UEvent event) {
             Log.e(TAG, event.toString());
-            if(initialized) {
-                String action = event.get("ACTION");
-                if("add".equals(action)) {
-                    mVoiceNative.startSiren(true);
-                } else if("remove".equals(action)) {
-                    mVoiceNative.startSiren(false);
-                }
+            String action = event.get("ACTION");
+            if("add".equals(action)) {
+                mVoiceManager.startSiren(true);
+            } else if("remove".equals(action)) {
+                mVoiceManager.startSiren(false);
             }
         }
     };

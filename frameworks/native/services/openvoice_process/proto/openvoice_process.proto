@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+package openvoice_process;
+
+message vt_word_t{
+    required string vt_phone = 1;
+    required string vt_word = 2;
+    required int32 vt_type = 3;
+    required bool use_default_config = 4;
+    optional alg_config_t alg_config = 5;
+}
+
+message alg_config_t{
+    required string nnet_path = 1;
+    required float vt_block_avg_score = 2;
+    required float vt_classify_shield = 3;
+    required float vt_block_min_score = 4;
+    required bool vt_left_sil_det = 5;
+    required bool vt_right_sil_det = 6;
+    required bool vt_remote_check_with_aec = 7;
+    required bool vt_remote_check_without_aec = 8;
+    required bool vt_local_classify_check = 9;
+}

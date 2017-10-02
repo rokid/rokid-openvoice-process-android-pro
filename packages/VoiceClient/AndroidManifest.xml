@@ -8,8 +8,10 @@
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
 
-	<application android:persistent="true">
-        <service android:name="com.rokid.openvoice.VoiceService" android:exported="true"/>
+    <application 
+        android:name="VoiceApplication"
+        android:persistent="true">
+        <service android:name="com.rokid.openvoice.VoiceService"/>
 		<service android:name="com.rokid.openvoice.SirenService" android:exported="true">
 			<intent-filter>
 				<action android:name="com.rokid.openvoice" />

@@ -1,17 +1,33 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
+LOCAL_MODULE := libopenvoice
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+
+ifeq ($(PLATFORM_SDK_VERSION), 19)
+MY_PROTOC_OUT_DIR := $(call local-intermediates-dir)/gen
+else
+MY_PROTOC_OUT_DIR := $(call local-generated-sources-dir)/proto
+endif
 
 LOCAL_SRC_FILES := \
+		$(call all-proto-files-under, proto) \
 		src/IVoiceService.cpp \
 		src/callback/IVoiceCallback.cpp
 
 LOCAL_SHARED_LIBRARIES := \
+		libprotobuf-cpp-full \
 		libbinder \
 		libutils
 
-LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
+LOCAL_C_INCLUDES := \
+		$(LOCAL_PATH)/include \
+		$(MY_PROTOC_OUT_DIR)/$(LOCAL_PATH)/proto \
+		external/protobuf/src
+
+LOCAL_EXPORT_C_INCLUDE_DIRS := \
+		$(LOCAL_PATH)/include \
+		$(MY_PROTOC_OUT_DIR)/$(LOCAL_PATH)/proto
 
 ifeq ($(PLATFORM_SDK_VERSION), 22)
 LOCAL_SHARED_LIBRARIES += libc++ libdl
@@ -23,7 +39,6 @@ LOCAL_C_INCLUDES += \
 		bionic
 endif
 
-LOCAL_MODULE := libopenvoice
 include $(BUILD_SHARED_LIBRARY)
 
 #########################################################################
@@ -31,12 +46,13 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-		src/callback/CallbackProxy.cpp \
 		src/VoiceService.cpp \
-		src/audio_recorder.cpp \
+		src/CallbackProxy.cpp \
+		src/siren_control.cpp \
 		src/main.cpp
 
 LOCAL_SHARED_LIBRARIES := \
+		libprotobuf-cpp-full \
 		libhardware \
 		libbinder \
 		libutils \

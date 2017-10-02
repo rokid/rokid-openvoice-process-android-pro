@@ -11,7 +11,8 @@ PRODUCT_PACKAGES += \
 					libr2audio \
 					libr2ssp \
 					libztvad \
-					libr2vt
+					libr2vt \
+					libr2mvdrbf
 
 #speech
 PRODUCT_PACKAGES += \
@@ -35,7 +36,4 @@ PRODUCT_PACKAGES += \
 					tts_process
 #config file
 PRODUCT_PACKAGES += \
-					roots.pem \
-					workdir_cn \
-					blacksiren.json \
-					openvoice_profile.json
+					workdir_cn

@@ -15,10 +15,9 @@ public class VoiceReceiver extends android.content.BroadcastReceiver {
         } else if(android.net.ConnectivityManager.CONNECTIVITY_ACTION.equals(action)) {
 
             android.net.NetworkInfo mNetworkInfo = intent.getParcelableExtra(android.net.ConnectivityManager.EXTRA_NETWORK_INFO);
-            if(mNetworkInfo != null && VoiceService.initialized) {
-
+            if(mNetworkInfo != null) {
                 android.util.Log.e("VoiceReceiver", mNetworkInfo.toString());
-                VoiceNative.asInstance().networkStateChange(mNetworkInfo.isConnected());
+                VoiceManager.asInstance().networkStateChange(mNetworkInfo.isConnected());
             }
         }
     }

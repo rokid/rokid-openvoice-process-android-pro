@@ -3,15 +3,20 @@ package com.rokid.openvoice;
 import android.os.Parcel;
 import android.os.IBinder;
 import android.os.RemoteException;
+import java.util.List;
 
-public class VoiceNative implements IBinder.DeathRecipient {
+public class VoiceManager implements IBinder.DeathRecipient {
+
+    public static final int SIREN_STATE_AWAKE           = 1;
+    public static final int SIREN_STATE_SLEEP           = 2;
+    public static final int SIREN_STATE_START           = 3;
+    public static final int SIREN_STATE_STOP            = 4;
 
     private static final String DESCRIPTOR = "com.rokid.openvoice.openvoice_process";
-    private static VoiceNative mVoiceNative = null;
-
+    private static VoiceManager mVoiceManager = null;
     private IBinder remote = null;
 
-    private VoiceNative() {
+    private VoiceManager() {
         remote = android.os.ServiceManager.getService("openvoice_process");
         if(remote != null) {
             try {
@@ -19,27 +24,26 @@ public class VoiceNative implements IBinder.DeathRecipient {
             } catch(RemoteException e) {
                 e.printStackTrace();
             }
-        } else android.util.Log.e("VoiceNative", "native service is null");
+        } else android.util.Log.e("VoiceManager", "native service is null");
     }
 
-    public static VoiceNative asInstance() {
-        if(mVoiceNative == null) {
+    public static VoiceManager asInstance() {
+        if(mVoiceManager == null) {
             synchronized(new Object()) {
-                if(mVoiceNative == null) {
-                    mVoiceNative = new VoiceNative();
+                if(mVoiceManager == null) {
+                    mVoiceManager = new VoiceManager();
                 }
             }
         }
-        return mVoiceNative;
+        return mVoiceManager;
     }
 
     @Override
     public void binderDied() {
         remote = null;
-        mVoiceNative = null;
-        VoiceService.initialized = false;
+        mVoiceManager = null;
         VoiceService.mHandler.sendEmptyMessageDelayed(VoiceService.MSG_REINIT, 1000 * 3);
-        android.util.Log.e("VoiceNative", "native service died !");
+        android.util.Log.e("VoiceManager", "native service died !");
     }
 
     public boolean init() {
@@ -172,4 +176,76 @@ public class VoiceNative implements IBinder.DeathRecipient {
             }
         }
     }
+
+//	public int insertVTWord(VTConfig.VTWord vt_word) {
+//		if (remote != null) {
+//			Parcel data = Parcel.obtain();
+//			Parcel reply = Parcel.obtain();
+//			try {
+//				data.writeInterfaceToken(DESCRIPTOR);
+//				data.writeByteArray(vt_word.toByteArray());
+//				remote.transact(IBinder.FIRST_CALL_TRANSACTION + 7, data, reply, 0);
+//				reply.readException();
+//				return reply.readInt();
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			} finally {
+//				data.recycle();
+//				reply.recycle();
+//			}
+//		}
+//		return -1;
+//	}
+//
+//	public int deleteVTWord(String word) {
+//		if (remote != null) {
+//			Parcel data = Parcel.obtain();
+//			Parcel reply = Parcel.obtain();
+//			try {
+//				data.writeInterfaceToken(DESCRIPTOR);
+//				data.writeString(word);
+//				remote.transact(IBinder.FIRST_CALL_TRANSACTION + 8, data, reply, 0);
+//				reply.readException();
+//				return reply.readInt();
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			} finally {
+//				data.recycle();
+//				reply.recycle();
+//			}
+//		}
+//		return -1;
+//	}
+//
+//	public int queryVTWord(List<VTConfig.VTWord> vt_words) {
+//		if (remote != null) {
+//			Parcel data = Parcel.obtain();
+//			Parcel reply = Parcel.obtain();
+//			try {
+//				data.writeInterfaceToken(DESCRIPTOR);
+//				remote.transact(IBinder.FIRST_CALL_TRANSACTION + 9, data, reply, 0);
+//				reply.readException();
+//				int temp = 0;
+//				int count = reply.readInt();
+//				if (count > 0) {
+//					for (int i = 0; i < count; i++) {
+//						int len = reply.readInt();
+//						byte[] vt_word = new byte[len];
+//						reply.readByteArray(vt_word);
+//						if (vt_word != null && vt_word.length > 0) {
+//							vt_words.add(VTConfig.VTWord.parseFrom(vt_word));
+//							temp++;
+//						}
+//					}
+//				}
+//				return temp;
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				data.recycle();
+//				reply.recycle();
+//			}
+//		}
+//		return -1;
+//	}
 }
