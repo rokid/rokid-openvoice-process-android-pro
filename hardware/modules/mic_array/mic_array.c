@@ -270,8 +270,8 @@ static int mic_array_device_start_stream(struct mic_array_device_t* dev)
         pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_in);
     }
     
-    if (pcm == NULL && !pcm_is_ready(pcm)) {
-        ALOGE("pcm open failed");
+    if (!pcm || !pcm_is_ready(pcm)) {
+        ALOGE("Unable to open PCM device %u (%s)\n", card, pcm_get_error(pcm));
         if (pcm != NULL) {
             pcm_close(pcm);
             pcm = NULL;
