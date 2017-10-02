@@ -17,6 +17,7 @@
 #include "EventTypes.h"
 
 using namespace rokid::speech;
+using namespace openvoice_process;
 
 class VoiceService: public BnVoiceService {
 
@@ -36,9 +37,9 @@ public:
     void update_config(const string&, const string&, const string&, const string&);
     void regist_callback(const sp<IBinder>&);
 
-    int32_t insert_vt_word(const vt_word_t&);
-    int32_t delete_vt_word(const string&);
-    int32_t query_vt_word(vector<vt_word_t>& _vt_words_in);
+//    int32_t insert_vt_word(const vt_word_t&);
+//    int32_t delete_vt_word(const string&);
+//    int32_t query_vt_word(vector<vt_word_t>& _vt_words_in);
 
 private:
 #ifdef USB_AUDIO_DEVICE

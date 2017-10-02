@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "openvoice_process.pb.h"
+//#include "openvoice_process.pb.h"
 
-using namespace openvoice_process;
+//using namespace openvoice_process;
 using namespace android;
 using namespace std;
 
@@ -38,9 +38,9 @@ public:
     virtual void update_config(const string& device_id, const string& device_type_id, const string& key, const string& secret) = 0;
     virtual void regist_callback(const sp<IBinder>& callback) = 0;
 
-    virtual int32_t insert_vt_word(const vt_word_t& _vt_word) = 0;
-    virtual int32_t delete_vt_word(const string& _vt_word) = 0;
-    virtual int32_t query_vt_word(vector<vt_word_t>& _vt_words_in) = 0;
+//    virtual int32_t insert_vt_word(const vt_word_t& _vt_word) = 0;
+//    virtual int32_t delete_vt_word(const string& _vt_word) = 0;
+//    virtual int32_t query_vt_word(vector<vt_word_t>& _vt_words_in) = 0;
 };
 
 class BnVoiceService : public BnInterface<IVoiceService> {

@@ -37,7 +37,7 @@ bool VoiceService::init() {
     } else {
         goto done;
     }
-    mCurrentSirenState = SIREN_STATE_STARTED;
+    mCurrentSirenState = SIREN_STATE_INITED;
 	pthread_create(&event_thread, NULL,
 			[](void* token)->void* {return ((VoiceService*)token)->onEvent();},
 			this);
@@ -176,26 +176,26 @@ void VoiceService::regist_callback(const sp<IBinder>& _callback) {
     this->_callback->set_callback(_callback);
 }
 
-int32_t VoiceService::insert_vt_word(const vt_word_t& _vt_word){
-    ALOGV("%s", __FUNCTION__);
-    if(mCurrentSirenState != SIREN_STATE_UNKNOWN)
-        return insert_vt_word_cmd(_vt_word);
-    return -1;
-}
-
-int32_t VoiceService::delete_vt_word(const string& word){
-    ALOGV("%s", __FUNCTION__);
-    if(mCurrentSirenState != SIREN_STATE_UNKNOWN)
-        return delete_vt_word_cmd(word);
-    return -1;
-}
-
-int32_t VoiceService::query_vt_word(vector<vt_word_t>& _vt_words_in){
-    ALOGV("%s", __FUNCTION__);
-    if(mCurrentSirenState != SIREN_STATE_UNKNOWN)
-        return query_vt_word_cmd(_vt_words_in);
-    return -1;
-}
+//int32_t VoiceService::insert_vt_word(const vt_word_t& _vt_word){
+//    ALOGV("%s", __FUNCTION__);
+//    if(mCurrentSirenState != SIREN_STATE_UNKNOWN)
+//        return insert_vt_word_cmd(_vt_word);
+//    return -1;
+//}
+//
+//int32_t VoiceService::delete_vt_word(const string& word){
+//    ALOGV("%s", __FUNCTION__);
+//    if(mCurrentSirenState != SIREN_STATE_UNKNOWN)
+//        return delete_vt_word_cmd(word);
+//    return -1;
+//}
+//
+//int32_t VoiceService::query_vt_word(vector<vt_word_t>& _vt_words_in){
+//    ALOGV("%s", __FUNCTION__);
+//    if(mCurrentSirenState != SIREN_STATE_UNKNOWN)
+//        return query_vt_word_cmd(_vt_words_in);
+//    return -1;
+//}
 
 void VoiceService::voice_event_callback(voice_event_t *voice_event) {
     pthread_mutex_lock(&event_mutex);

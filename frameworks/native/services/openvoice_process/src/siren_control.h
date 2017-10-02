@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "mic/mic_array.h"
-#include "openvoice_process.pb.h"
+//#include "openvoice_process.pb.h"
 #include "siren.h"
 
 #ifdef __cplusplus
@@ -13,11 +13,11 @@ extern "C" {
 
 bool setup(void*, on_voice_event_t);
 
-int32_t insert_vt_word_cmd(const vt_word_t&);
+//int32_t insert_vt_word_cmd(const vt_word_t&);
 
-int32_t delete_vt_word_cmd(const string&);
+//int32_t delete_vt_word_cmd(const string&);
 
-int32_t query_vt_word_cmd(vector<vt_word_t>& _vt_words_in);
+//int32_t query_vt_word_cmd(vector<vt_word_t>& _vt_words_in);
 
 void set_siren_state_change(int state);
 

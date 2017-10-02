@@ -40,58 +40,58 @@ bool setup(void* token, on_voice_event_t callback) {
     return true;
 }
 
-int32_t insert_vt_word_cmd(const vt_word_t& _vt_word){
-    siren_vt_word vt;
-    vt.vt_phone = _vt_word.vt_phone();
-    vt.vt_type  = _vt_word.vt_type();
-    vt.vt_word  = _vt_word.vt_word();
-    vt.use_default_config = _vt_word.use_default_config();
-    if(!vt.use_default_config){
-        vt.alg_config.vt_block_avg_score = _vt_word.alg_config().vt_block_avg_score();
-        vt.alg_config.vt_classify_shield = _vt_word.alg_config().vt_classify_shield();
-        vt.alg_config.vt_block_min_score = _vt_word.alg_config().vt_block_min_score();
-        vt.alg_config.vt_left_sil_det = _vt_word.alg_config().vt_left_sil_det();
-        vt.alg_config.vt_right_sil_det = _vt_word.alg_config().vt_right_sil_det();
-        vt.alg_config.vt_remote_check_with_aec = _vt_word.alg_config().vt_remote_check_with_aec();
-        vt.alg_config.vt_remote_check_without_aec = _vt_word.alg_config().vt_remote_check_without_aec();
-        vt.alg_config.vt_local_classify_check = _vt_word.alg_config().vt_local_classify_check();
-        vt.alg_config.nnet_path = _vt_word.alg_config().nnet_path();
-    }
-    return add_vt_word(_siren, &vt, true);
-}
-
-int32_t delete_vt_word_cmd(const string& word){
-    return remove_vt_word(_siren, word.c_str());
-}
-
-int32_t query_vt_word_cmd(vector<vt_word_t>& _vt_words_in){
-
-    siren_vt_word *_vt_words_out = nullptr;
-
-    int32_t count = get_vt_word(_siren, &_vt_words_out);
-    if(count > 0 && _vt_words_out != nullptr){
-        _vt_words_in.reserve(count);
-        for(int i = 0; i < count; i++){
-//            _vt_words_in.insert(_vt_words_in.begin() + i, vt_word_t());
-            _vt_words_in.push_back(vt_word_t());
-            _vt_words_in[i].set_vt_phone(_vt_words_out[i].vt_phone);
-            _vt_words_in[i].set_vt_type(_vt_words_out[i].vt_type);
-            _vt_words_in[i].set_vt_word(_vt_words_out[i].vt_word);
-            _vt_words_in[i].set_use_default_config(_vt_words_out[i].use_default_config);
-            _vt_words_in[i].mutable_alg_config()->set_vt_block_avg_score(_vt_words_out[i].alg_config.vt_block_avg_score);
-            _vt_words_in[i].mutable_alg_config()->set_vt_classify_shield(_vt_words_out[i].alg_config.vt_classify_shield);
-            _vt_words_in[i].mutable_alg_config()->set_vt_block_min_score(_vt_words_out[i].alg_config.vt_block_min_score);
-            _vt_words_in[i].mutable_alg_config()->set_vt_left_sil_det(_vt_words_out[i].alg_config.vt_left_sil_det);
-            _vt_words_in[i].mutable_alg_config()->set_vt_right_sil_det(_vt_words_out[i].alg_config.vt_right_sil_det);
-            _vt_words_in[i].mutable_alg_config()->set_vt_remote_check_with_aec(_vt_words_out[i].alg_config.vt_remote_check_with_aec);
-            _vt_words_in[i].mutable_alg_config()->set_vt_remote_check_without_aec(_vt_words_out[i].alg_config.vt_remote_check_without_aec);
-            _vt_words_in[i].mutable_alg_config()->set_vt_local_classify_check(_vt_words_out[i].alg_config.vt_local_classify_check);
-            _vt_words_in[i].mutable_alg_config()->set_nnet_path(_vt_words_out[i].alg_config.nnet_path);
-            ALOGV("%s\n", _vt_words_in[i].DebugString().c_str());
-        }
-    }
-    return count;
-}
+//int32_t insert_vt_word_cmd(const vt_word_t& _vt_word){
+//    siren_vt_word vt;
+//    vt.vt_phone = _vt_word.vt_phone();
+//    vt.vt_type  = _vt_word.vt_type();
+//    vt.vt_word  = _vt_word.vt_word();
+//    vt.use_default_config = _vt_word.use_default_config();
+//    if(!vt.use_default_config){
+//        vt.alg_config.vt_block_avg_score = _vt_word.alg_config().vt_block_avg_score();
+//        vt.alg_config.vt_classify_shield = _vt_word.alg_config().vt_classify_shield();
+//        vt.alg_config.vt_block_min_score = _vt_word.alg_config().vt_block_min_score();
+//        vt.alg_config.vt_left_sil_det = _vt_word.alg_config().vt_left_sil_det();
+//        vt.alg_config.vt_right_sil_det = _vt_word.alg_config().vt_right_sil_det();
+//        vt.alg_config.vt_remote_check_with_aec = _vt_word.alg_config().vt_remote_check_with_aec();
+//        vt.alg_config.vt_remote_check_without_aec = _vt_word.alg_config().vt_remote_check_without_aec();
+//        vt.alg_config.vt_local_classify_check = _vt_word.alg_config().vt_local_classify_check();
+//        vt.alg_config.nnet_path = _vt_word.alg_config().nnet_path();
+//    }
+//    return add_vt_word(_siren, &vt, true);
+//}
+//
+//int32_t delete_vt_word_cmd(const string& word){
+//    return remove_vt_word(_siren, word.c_str());
+//}
+//
+//int32_t query_vt_word_cmd(vector<vt_word_t>& _vt_words_in){
+//
+//    siren_vt_word *_vt_words_out = nullptr;
+//
+//    int32_t count = get_vt_word(_siren, &_vt_words_out);
+//    if(count > 0 && _vt_words_out != nullptr){
+//        _vt_words_in.reserve(count);
+//        for(int i = 0; i < count; i++){
+////            _vt_words_in.insert(_vt_words_in.begin() + i, vt_word_t());
+//            _vt_words_in.push_back(vt_word_t());
+//            _vt_words_in[i].set_vt_phone(_vt_words_out[i].vt_phone);
+//            _vt_words_in[i].set_vt_type(_vt_words_out[i].vt_type);
+//            _vt_words_in[i].set_vt_word(_vt_words_out[i].vt_word);
+//            _vt_words_in[i].set_use_default_config(_vt_words_out[i].use_default_config);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_block_avg_score(_vt_words_out[i].alg_config.vt_block_avg_score);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_classify_shield(_vt_words_out[i].alg_config.vt_classify_shield);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_block_min_score(_vt_words_out[i].alg_config.vt_block_min_score);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_left_sil_det(_vt_words_out[i].alg_config.vt_left_sil_det);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_right_sil_det(_vt_words_out[i].alg_config.vt_right_sil_det);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_remote_check_with_aec(_vt_words_out[i].alg_config.vt_remote_check_with_aec);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_remote_check_without_aec(_vt_words_out[i].alg_config.vt_remote_check_without_aec);
+//            _vt_words_in[i].mutable_alg_config()->set_vt_local_classify_check(_vt_words_out[i].alg_config.vt_local_classify_check);
+//            _vt_words_in[i].mutable_alg_config()->set_nnet_path(_vt_words_out[i].alg_config.nnet_path);
+//            ALOGV("%s\n", _vt_words_in[i].DebugString().c_str());
+//        }
+//    }
+//    return count;
+//}
 
 void _start_siren_process_stream() {
     start_siren_process_stream(_siren, &event_callback);

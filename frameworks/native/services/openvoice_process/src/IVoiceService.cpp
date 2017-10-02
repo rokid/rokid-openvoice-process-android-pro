@@ -63,51 +63,54 @@ public:
         remote()->transact(TRANSACTION_REGIST_CALLBACK, data, &reply);
         reply.readExceptionCode();
     }
-    int32_t insert_vt_word(const vt_word_t& _vt_word){
-        Parcel data, reply;
-        data.writeInterfaceToken(String16(DESCRIPTOR));
-        string buff;
-        if (!_vt_word.SerializeToString(&buff)) {
-            return -1;
-        }
-        data.writeByteArray(buff.length(), (uint8_t*)buff.c_str());
-        remote()->transact(TRANSACTION_INSERT_VT_WORD, data, &reply);
-        reply.readExceptionCode();
-        return reply.readInt32();        
-    }
-    int32_t delete_vt_word(const string& _vt_word){
-        Parcel data, reply;
-        data.writeInterfaceToken(String16(DESCRIPTOR));
-        data.writeString16(String16(_vt_word.c_str()));
-        remote()->transact(TRANSACTION_DELETE_VT_WORD, data, &reply);
-        reply.readExceptionCode();
-        return reply.readInt32();        
-    }
-    int32_t query_vt_word(vector<vt_word_t>& _vt_words_in){
-        Parcel data, reply;
-        data.writeInterfaceToken(String16(DESCRIPTOR));
-        remote()->transact(TRANSACTION_QUERY_VT_WORD, data, &reply);
-        reply.readExceptionCode();
-        int32_t temp = 0;
-        int32_t count = reply.readInt32();
-        if(count > 0){
-            _vt_words_in.reserve(count);
-            for(int i = 0; i < count; i++){
-                int32_t len = reply.readInt32();
-                len = reply.readInt32();
-                if(len > 0){
-                    vt_word_t _vt_word;
-                    const char* vt_word_ch = (const char*)reply.readInplace(len);
-                    if(vt_word_ch && _vt_word.ParseFromArray(vt_word_ch, len)){
-                        _vt_words_in.push_back(_vt_word);
-                        ALOGV("%s\n", _vt_words_in[i].DebugString().c_str());
-                        temp++;
-                    }
-                }
-            }
-        }
-        return temp;        
-    }
+//    int32_t insert_vt_word(const vt_word_t& _vt_word){
+//        Parcel data, reply;
+//        data.writeInterfaceToken(String16(DESCRIPTOR));
+//        string buff;
+//        if (!_vt_word.SerializeToString(&buff)) {
+//            return -1;
+//
+//        }
+//#if (PLATFORM_SDK_VERSION > 22)
+//        data.writeByteArray(buff.length(), (uint8_t*)buff.c_str());
+//#endif
+//        remote()->transact(TRANSACTION_INSERT_VT_WORD, data, &reply);
+//        reply.readExceptionCode();
+//        return reply.readInt32();        
+//    }
+//    int32_t delete_vt_word(const string& _vt_word){
+//        Parcel data, reply;
+//        data.writeInterfaceToken(String16(DESCRIPTOR));
+//        data.writeString16(String16(_vt_word.c_str()));
+//        remote()->transact(TRANSACTION_DELETE_VT_WORD, data, &reply);
+//        reply.readExceptionCode();
+//        return reply.readInt32();        
+//    }
+//    int32_t query_vt_word(vector<vt_word_t>& _vt_words_in){
+//        Parcel data, reply;
+//        data.writeInterfaceToken(String16(DESCRIPTOR));
+//        remote()->transact(TRANSACTION_QUERY_VT_WORD, data, &reply);
+//        reply.readExceptionCode();
+//        int32_t temp = 0;
+//        int32_t count = reply.readInt32();
+//        if(count > 0){
+//            _vt_words_in.reserve(count);
+//            for(int i = 0; i < count; i++){
+//                int32_t len = reply.readInt32();
+//                len = reply.readInt32();
+//                if(len > 0){
+//                    vt_word_t _vt_word;
+//                    const char* vt_word_ch = (const char*)reply.readInplace(len);
+//                    if(vt_word_ch && _vt_word.ParseFromArray(vt_word_ch, len)){
+//                        _vt_words_in.push_back(_vt_word);
+//                        ALOGV("%s\n", _vt_words_in[i].DebugString().c_str());
+//                        temp++;
+//                    }
+//                }
+//            }
+//        }
+//        return temp;        
+//    }
 };
 
 IMPLEMENT_META_INTERFACE (VoiceService, DESCRIPTOR);
@@ -175,49 +178,51 @@ status_t BnVoiceService::onTransact(uint32_t code, const Parcel &data, Parcel *r
         reply->writeNoException();
         return NO_ERROR;
     }
-    case TRANSACTION_INSERT_VT_WORD: {
-        CHECK_INTERFACE(IVoiceService, data, reply);
-        vt_word_t _vt_word; 
-        int32_t result = -1;
-        int32_t len = data.readInt32();
-        if(len > 0){
-            const char* vt_word = (const char*)data.readInplace(len);
-            if(vt_word && _vt_word.ParseFromArray(vt_word, len)){
-                result = insert_vt_word(_vt_word);
-            }
-        }
-        reply->writeNoException();
-        reply->writeInt32(result);
-        return NO_ERROR;
-    }
-    case TRANSACTION_DELETE_VT_WORD: {
-        CHECK_INTERFACE(IVoiceService, data, reply);
-        String8 vt_word(data.readString16());
-        int32_t result = delete_vt_word(string(vt_word.string()));
-        reply->writeNoException();
-        reply->writeInt32(result);
-        return NO_ERROR;
-    }
-    case TRANSACTION_QUERY_VT_WORD: {
-        CHECK_INTERFACE(IVoiceService, data, reply);
-        string buff;
-        vector<vt_word_t> _vt_words_in, temp;
-        int32_t count = query_vt_word(_vt_words_in);
-        reply->writeNoException();
-        reply->writeInt32(count);
-        if(count > 0){
-            for(int i = 0; i < count; i++){
-                ALOGV("%s\n", _vt_words_in[i].DebugString().c_str());
-                if(_vt_words_in[i].SerializeToString(&buff)){
-                    reply->writeInt32(buff.length());
-                    reply->writeByteArray(buff.length(), (uint8_t*)buff.c_str());
-                }
-                buff.clear();
-            }
-            _vt_words_in.swap(temp);
-        }
-        return NO_ERROR;
-    }
+//    case TRANSACTION_INSERT_VT_WORD: {
+//        CHECK_INTERFACE(IVoiceService, data, reply);
+//        vt_word_t _vt_word; 
+//        int32_t result = -1;
+//        int32_t len = data.readInt32();
+//        if(len > 0){
+//            const char* vt_word = (const char*)data.readInplace(len);
+//            if(vt_word && _vt_word.ParseFromArray(vt_word, len)){
+//                result = insert_vt_word(_vt_word);
+//            }
+//        }
+//        reply->writeNoException();
+//        reply->writeInt32(result);
+//        return NO_ERROR;
+//    }
+//    case TRANSACTION_DELETE_VT_WORD: {
+//        CHECK_INTERFACE(IVoiceService, data, reply);
+//        String8 vt_word(data.readString16());
+//        int32_t result = delete_vt_word(string(vt_word.string()));
+//        reply->writeNoException();
+//        reply->writeInt32(result);
+//        return NO_ERROR;
+//    }
+//    case TRANSACTION_QUERY_VT_WORD: {
+//        CHECK_INTERFACE(IVoiceService, data, reply);
+//        string buff;
+//        vector<vt_word_t> _vt_words_in, temp;
+//        int32_t count = query_vt_word(_vt_words_in);
+//        reply->writeNoException();
+//        reply->writeInt32(count);
+//        if(count > 0){
+//            for(int i = 0; i < count; i++){
+//                ALOGV("%s\n", _vt_words_in[i].DebugString().c_str());
+//                if(_vt_words_in[i].SerializeToString(&buff)){
+//                    reply->writeInt32(buff.length());
+//#if (PLATFORM_SDK_VERSION > 22)
+//                    reply->writeByteArray(buff.length(), (uint8_t*)buff.c_str());
+//#endif
+//                }
+//                buff.clear();
+//            }
+//            _vt_words_in.swap(temp);
+//        }
+//        return NO_ERROR;
+//    }
     }
     return BBinder::onTransact (code, data, reply, flag);
 }
