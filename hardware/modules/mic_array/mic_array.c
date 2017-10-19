@@ -222,7 +222,7 @@ static int mic_array_device_open(const struct hw_module_t* module,
     dev->sample_rate = MIC_SAMPLE_RATE;
     dev->bit = pcm_format_to_bits(pcm_config_in.format);
     dev->pcm = NULL;
-    dev->frame_cnt = 4 * 1024;
+    dev->frame_cnt = FRAME_COUNT;
     ALOGI("alloc frame buffer size %d", dev->frame_cnt);
     dev_ex->buffer = (char*)malloc(dev->frame_cnt);
 
@@ -250,26 +250,14 @@ static int mic_array_device_close(struct hw_device_t* device)
 
 static int mic_array_device_start_stream(struct mic_array_device_t* dev)
 {
-	char **values = "0";
-    struct mixer* mixer;
     struct pcm* pcm = NULL;
 
     int card = find_snd("USB-Audio");
-    ALOGI("find card with %d", card);
-    if (card <= 0) {
+    if (card < 0) {
         card = PCM_CARD;
-        mixer = mixer_open(card);
-        if (!mixer) {
-            ALOGE("Failed to open mixer +++%s\n", strerror(errno));
-            return -1;
-        }
-        tinymix_set_value(mixer, "MultiMedia1 Mixer QUAT_MI2S_TX", &values, 1);
-        mixer_close(mixer);
-        pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_in);
-    } else {
-        pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_in);
     }
-    
+    pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_in);
+
     if (!pcm || !pcm_is_ready(pcm)) {
         ALOGE("Unable to open PCM device %u (%s)\n", card, pcm_get_error(pcm));
         if (pcm != NULL) {
