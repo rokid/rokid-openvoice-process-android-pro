@@ -28,9 +28,8 @@ git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-protobuf -b android2
 
 ## 1 目录结构
 ![](images/menu.png)
-**命名建议与上图一致，先在 Android 根目录建一个 openvoice 文件夹，把上图中的库放进去**
 
-**命名建议与上图一致**
+**命名建议与上图一致，先在 Android 根目录建一个 openvoice 文件夹，把上图中的库放进去**
 
  rokid-openvoice_process-android-pro 与整个的业务逻辑相关，其中包含一个 **openvoice_proc** 的C++服务和一个 **VoiceClient** 的Java服务，以及MIC HAL。C++服务用于为Siren提供pcm流，然后传递由Siren滤波降噪过的纯净语音给NLP或ASR，NLP或ASR经过云端处理返回结果，还有一个最重要的点就是维持Siren与NLP或ASR之间的状态。Java服务用于解析NLP或ASR返回结果，处理应用层逻辑。
 
@@ -47,16 +46,19 @@ git clone https://github.com/Rokid/rokid-openvoice-sdk-deps-protobuf -b android2
 通过以上信息，您就可以获取Rokid语音服务了，然后把申请得到的账号信息写入到 `/rokid-openvoice_process-android-pro/etc/openvoice-profile.json`文件中。
 
     {
-	    'host': 'apigwws.open.rokid.com',
-	    'port': '443',
-	    'branch': '/api',
-	    'ssl_roots_pem': '/system/etc/roots.pem',
-	    'key': 'your_key',
-	    'device_type_id': 'your_device_type_id',
-	    'device_id': 'your_device_id',
-	    'api_version': '1',
-	    'secret': 'your_secret',
-	    'codec': 'opu'
+        "host": "apigwws.open.rokid.com",
+        "event_req_host": "apigwrest.open.rokid.com",
+        "port": "443",
+        "branch": "/api",
+        "key": "rokid_test_key",
+        "device_type_id": "rokid_test_device_type_id",
+        "device_id": "rokid_test_device_id",
+        "secret": "rokid_test_secret",
+        "api_version":"1",
+        "lang": "zh",
+        "codec": "opu",
+        "vad_mode": "cloud",
+        "vend_timeout": 500
     }
 
 请添加如下内容到 `/device/xxxx/p230/p230.mk`，每个人的路径是不一样的。这一步是为了让SDK编译出来的东西打包进system.img。
