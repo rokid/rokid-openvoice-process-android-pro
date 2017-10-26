@@ -3,13 +3,13 @@
     "event_req_host": "apigwrest.open.rokid.com",
     "port": "443",
     "branch": "/api",
-    "key": "rokid_test_key",
-    "device_type_id": "rokid_test_device_type_id",
-    "device_id": "rokid_test_device_id",
-    "secret": "rokid_test_secret",
+    "key": "your_auth_key",
+    "device_type_id": "your_device_type_id",
+    "device_id": "your_device_id",
+    "secret": "your_secret",
     "api_version":"1",
     "lang": "zh",
     "codec": "opu",
     "vad_mode": "cloud",
-    "vend_timeout": 400
+    "vend_timeout": 500
 }
