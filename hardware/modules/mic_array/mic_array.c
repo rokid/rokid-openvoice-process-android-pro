@@ -36,7 +36,7 @@
 #define MODULE_AUTHOR "jiaqi@rokid.com"
 
 #define MIC_SAMPLE_RATE 48000
-#define MIC_CHANNEL 4
+#define MIC_CHANNEL 8
 #define FRAME_COUNT 15360
 
 #define PCM_CARD 0
